@@ -840,10 +840,10 @@
             <div class="reference-plates">${images.map((im,i)=>`<figure><img src="${im.image}" alt="${escape(im.alt)}" data-expand="${i}"><figcaption>${escape(im.caption)}</figcaption><button class="image-save" data-save="${i}">Save PNG</button></figure>`).join('')}</div>
             <details class="plane-details" ${['interval','fascia','longus'].includes(phase)?'open':''}><summary>Anterior Cervical Tissue Planes</summary>
             <svg viewBox="0 0 740 295" role="img" aria-label="The superficial to deep layers of the anterior cervical approach">
-            <g font-family="DM Sans, system-ui, sans-serif" font-size="14" fill="#dce9dd">${layers.map(([name,color],i)=>`<rect x="22" y="${15+i*45}" width="185" height="26" rx="6" fill="${color}"/><text x="230" y="${33+i*45}">${escape(name)}</text>`).join('')}</g></svg></details>
+            <g font-family="Calibri, Carlito, Arial, sans-serif" font-size="14" fill="#dce9dd">${layers.map(([name,color],i)=>`<rect x="22" y="${15+i*45}" width="185" height="26" rx="6" fill="${color}"/><text x="230" y="${33+i*45}">${escape(name)}</text>`).join('')}</g></svg></details>
             <details class="plane-details" ${phase==='interval'?'open':''}><summary>Axial Approach Corridor</summary>
             <svg viewBox="0 0 580 355" role="img" aria-label="Axial ${side} anterior approach between the visceral and carotid complexes">
-                <g font-family="DM Sans, system-ui, sans-serif" fill="#e7e8e2" font-size="14">
+                <g font-family="Calibri, Carlito, Arial, sans-serif" fill="#e7e8e2" font-size="14">
                 <text x="290" y="30" text-anchor="middle">Anterior</text><text x="290" y="337" text-anchor="middle">Posterior</text>
                 <text x="26" y="178">Patient Right</text><text x="459" y="178">Patient Left</text>
                 <rect x="223" y="185" width="134" height="86" rx="34" fill="#b9a589"/><text x="290" y="232" text-anchor="middle" fill="#132029">Vertebral Body</text>
