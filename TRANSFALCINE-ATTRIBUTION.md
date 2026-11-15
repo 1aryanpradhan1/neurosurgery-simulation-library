@@ -10,3 +10,5 @@ The interactive page uses the Pterional Craniotomy reference from nyuolab/operat
 The revised cutaway includes thin cut edges fitted between the atlas skull tables. The dural leaf follows the inner table and curls from its sagittal sinus base after the incision is shown. The illustrated bone flap rises clear of the rim before tilting and is returned along the same path.
 
 The geometry generator is in `tools/build_transfalcine_geometry.py`. To regenerate the mesh and regional data, provide the native cranial reference records in the shared model frame with `--reference-json`, the original guide containing the native medial records with `--medial-guide`, and an output directory with `--output`. The hosted and standalone guides bundle the derived geometry and do not need either source file at runtime.
+
+The scalp, galea, and pericranium reuse the smooth surfaces fitted to the shared skull in the Pterional guide. The Transfalcine flap borders and incision guides are cut and fitted on those surfaces.

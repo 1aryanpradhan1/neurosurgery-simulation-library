@@ -205,7 +205,7 @@
     }
     let camGlide = null;
     // Map the preset's up direction to the orbit controller's +Y axis.
-    let orbitBasis = [0, 0, 0, 1], screenPlaneOrbit = false;
+    let orbitBasis = [0, 0, 0, 1];
     function orbitBasisFor(up) {
         if (!up) return [0, 0, 0, 1];
         const y = vNorm(up);
@@ -217,8 +217,11 @@
         if (frame === camFrame) return;
         const Pq = matQ(poseR);
         const convert = q => qNorm(qMul(q, frame === 'world' ? qConj(Pq) : Pq));
+        const continuingOrbit = orbit?.q === viewQ;
         viewQ = convert(viewQ);
         orbitBasis = convert(orbitBasis);
+        // The change of frame transforms both orientations equally.
+        if (continuingOrbit) orbit.q = viewQ;
         if (camGlide) {
             for (const pose of [camGlide.from, camGlide.to]) {
                 pose.q = convert(pose.q);
@@ -229,14 +232,15 @@
         viewChanged();
     }
     function orientCamera(v) {
-        screenPlaneOrbit = v.screenPlaneOrbit ?? false;
         if (v.q) {
             viewQ = qNorm(v.q);
             if (v.orbitBasis) orbitBasis = qNorm(v.orbitBasis);
             else if (v.up) orbitBasis = orbitBasisFor(v.up);
         } else {
             viewQ = v.eye ? qLook(v.eye, v.up || [0, 1, 0]) : qFromAngles(v.yaw, v.pitch || 0, v.roll || 0);
-            orbitBasis = orbitBasisFor(v.eye ? v.up : null);
+            // Surgeon’s View starts a level orbit in its preset orientation.
+            // Store yaw, pitch and intentional roll separately just like Normal View.
+            orbitBasis = v.orbitFromPreset ? viewQ : orbitBasisFor(v.eye ? v.up : null);
         }
     }
     function applyCamera(v) {
@@ -263,14 +267,6 @@
     let orbit = null;
     function rotateByDrag(dx, dy, k = .008) {
         if (!dx && !dy) return;
-        if (screenPlaneOrbit) {
-            // Orbit about axes in the image plane. A preset-up yaw would
-            // also twist around the sightline when looking steeply down.
-            const turn = qAxis([dy, dx, 0], Math.hypot(dx, dy) * k);
-            viewQ = qNorm(qMul(turn, viewQ));
-            viewChanged();
-            return;
-        }
         if (orbit?.q !== viewQ) {
             const relativeView = qMul(viewQ, qConj(orbitBasis));
             const M = qMat(relativeView);
@@ -476,7 +472,7 @@
     $('#paperSearch').oninput = renderPapers;
     function openPaper(id) { setTab('papers'); $('#paperSearch').value = ''; renderPapers(); $('#paper-' + id)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
     function captureStepImages() { if (!available || typeof canvas.toDataURL !== 'function')
-        return manifest.study_plates || []; const saved = { viewQ, orbitBasis, screenPlaneOrbit, camFrame, poseOverride, distance, viewZoom, pan: [...pan], selected, opening, procedure, contextSide, separateLayers, enabled: { ...enabled }, allEnabled: { ...allEnabled }, beforeCurrent, regionalContext, hidden: meshes.map(m => m.hidden) }; const s = steps[stage], vside = stepView(s), images = []; capturing = true; try {
+        return manifest.study_plates || []; const saved = { viewQ, orbitBasis, camFrame, poseOverride, distance, viewZoom, pan: [...pan], selected, opening, procedure, contextSide, separateLayers, enabled: { ...enabled }, allEnabled: { ...allEnabled }, beforeCurrent, regionalContext, hidden: meshes.map(m => m.hidden) }; const s = steps[stage], vside = stepView(s), images = []; capturing = true; try {
         viewZoom = 1;
         regionalContext = saved.regionalContext;
         selected = -1;
@@ -507,7 +503,6 @@
     finally {
         viewQ = saved.viewQ;
         orbitBasis = saved.orbitBasis;
-        screenPlaneOrbit = saved.screenPlaneOrbit;
         camFrame = saved.camFrame;
         poseOverride = saved.poseOverride;
         distance = saved.distance;
@@ -1197,7 +1192,7 @@
     function setSurgeonView() {
         const [elevation, approach] = { anterior: [.60, .73], middle: [.65, .53], posterior: [.43, -1.26] }[config.region];
         setCamera({ frame: 'head', eye: [-.47 * sideSign(), elevation, approach], up: [0, 0, 1],
-            distance: 16.5, screenPlaneOrbit: true });
+            distance: 16.5, orbitFromPreset: true });
     }
     // ---- Patient Position controls (Layers & View panel) -------------------------------------------------------------
     // Changing the pose re-attaches the camera to the room first (same image), so the head visibly turns while the
@@ -1324,24 +1319,8 @@
         updateMobileReaderHeight(); }).observe($('.layout'));
     function ensureGeometry(m) { if (m.geometryReady)
         return; const bytes = decode64(m.data), floats = new Float32Array(bytes.buffer); if (floats.length !== m.count * 6)
-        throw Error('Invalid geometry buffer ' + m.id); if (m.group === 'skin')
-        tiltSkinWalls(floats); m.vertexData = floats; gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferSubData(gl.ARRAY_BUFFER, m.first * 24, floats); m.geometryReady = true; delete m.data; }
-    // Skin slabs: cut-wall triangles (face normal across the shell radial) span the whole slab; tilt each wall vertex
-    // normal by about 20 degrees outward (outer-surface vertex) or inward (inner-surface vertex), keeping its length
-    // (baked AO). The fragment shader reads the interpolated tilt as depth across the wall (dermis over fat) and the
-    // tilt also rounds the shading of the cut edge.
-    function tiltSkinWalls(f) { const k = .36; for (let t = 0; t + 18 <= f.length; t += 18) {
-        const P = [0, 1, 2].map(i => [f[t + i * 6], f[t + i * 6 + 1], f[t + i * 6 + 2]]), fn = vNorm(vCross(vSub(P[1], P[0]), vSub(P[2], P[0]))), rc = vNorm(vSub(vScale(vAdd(vAdd(P[0], P[1]), P[2]), 1 / 3), SHELL_C));
-        if (Math.abs(vDot(fn, rc)) >= .5)
-            continue;
-        const r = P.map(q => Math.hypot(...vSub(q, SHELL_C))), mid = (Math.max(...r) + Math.min(...r)) / 2;
-        if (Math.max(...r) - Math.min(...r) < 1e-4)
-            continue;
-        for (let i = 0; i < 3; i++) {
-            const o = t + i * 6 + 3, n = [f[o], f[o + 1], f[o + 2]], len = Math.hypot(...n) || 1, out = vNorm(vSub(P[i], SHELL_C)), nn = vScale(vNorm(vAdd(vScale(n, 1 / len), vScale(out, r[i] > mid ? k : -k))), len);
-            f[o] = nn[0]; f[o + 1] = nn[1]; f[o + 2] = nn[2];
-        }
-    } }
+        throw Error('Invalid geometry buffer ' + m.id);
+        m.vertexData = floats; gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferSubData(gl.ARRAY_BUFFER, m.first * 24, floats); m.geometryReady = true; delete m.data; }
     function shader(type, text) { const s = gl.createShader(type); gl.shaderSource(s, text); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
         throw Error(gl.getShaderInfoLog(s)); return s; }
     function initGL() {
@@ -1451,7 +1430,7 @@ if(tissue&&uSurgical>.5){
  else if(uMaterial<10.5){
   /* skin: mottled warm epidermis with fine pores and a faint sheen; cut edge = pink-white dermis over lobulated
      yellow subcutaneous fat with a thin bloody line at the epidermis; inner face = subcutaneous fat */
-  if(srad>.45){float m=fbm(P*6.);base*=.9+.13*m;base=mix(base,base*vec3(1.07,.86,.84),.3*smoothstep(.45,.8,fbm(P*2.3+5.)));base*=1.-.07*NOISE*smoothstep(.68,.9,vnoise(P*95.));shin=24.;specI=.13;wrap=.5;sss=.6;}
+  if(srad>.45){float m=fbm(P*3.5);base*=.96+.08*m;base=mix(base,base*vec3(1.04,.93,.92),.24*smoothstep(.45,.8,fbm(P*2.3+5.)));base*=1.-.025*NOISE*smoothstep(.68,.9,vnoise(P*60.));shin=16.;specI=.09;wrap=.57;sss=.6;}
   else if(srad>-.45){float f=clamp(.5-srad*1.47,0.,1.);vec3 derm=vec3(.9,.72,.67)*(.93+.1*vnoise(P*120.)),fat=uInner*(.86+.2*fbm(P*45.));base=mix(derm,fat,smoothstep(.5,.62,f));base=mix(base,vec3(.52,.12,.1),.55*(1.-smoothstep(.02,.1,f)));shin=80.;specI=.4;wrap=.5;sss=.35;}
   else{base=uInner*(.86+.2*fbm(P*40.));shin=70.;specI=.35;wrap=.6;sss=.4;}}
  else if(uMaterial<11.5){
@@ -1509,7 +1488,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         available = true;
         window.guideQA = { solidDepth: true, zoomBy, syncMobileLayout, alignActiveStep, updateMobileReaderHeight, changeKind, procedureLabelRegion, activeLabelMesh, fixedLabelRect, visible, indicationGroups, chooseIndication, setProcedureSide, operativeSide, sideSign, canonicalPoint, onOperativeSide, relevantMesh, stepView, baseId, meshSide, meshOffset, scanPickAnchors, pickIdAt, meshCount: meshes.length, vertexCount, draw, activate, choose, configs, select, setTab, setView, enabled, allEnabled, getMeshes: () => meshes.map(({ data, vertexData, procedureCandidates, fissureCache, ...m }) => m), visibleCount: () => meshes.filter(visible).length, getSteps: () => steps, getState: () => ({ palette, viewZoom, isMobile, config: { ...config }, model: modelIndex() + 1, stage, mode, selected, contextAlpha, contextSide, prelabelsOn, opening, beforeCurrent, regionalContext, instrumentsOn, separateLayers, ...cameraState(), distance, pan: [...pan], enabled: { ...enabled }, allEnabled: { ...allEnabled } }), surgicalState, setPalette, opacity, refreshLabels: updateStepLabels,
             // Camera / head-pose API (see the orientation and head-positioning blocks near the top of this file).
-            getCamera: () => ({ q: [...viewQ], orbitBasis: [...orbitBasis], screenPlaneOrbit, frame: camFrame, target: camFrame === 'world' ? posePoint(anatomyCenter) : [...anatomyCenter], distance, pan: [...pan], viewZoom }), setCamera, rotateByDrag: (dx, dy) => { stopGlide(); rotateByDrag(dx, dy); render(); }, rollView: a => { stopGlide(); rollView(a); render(); }, attachCamera: f => { attachCamera(f); render(); }, viewBasis: () => ({ M: [...viewBasis().M], target: [...viewBasis().target] }), project, transform, pickAt: (x, y) => { draw(true); cacheLabelVisibility(); const id = pickIdAt(x, y); draw(); return id; }, setSurgeonView,
+            getCamera: () => ({ q: [...viewQ], orbitBasis: [...orbitBasis], frame: camFrame, target: camFrame === 'world' ? posePoint(anatomyCenter) : [...anatomyCenter], distance, pan: [...pan], viewZoom }), setCamera, rotateByDrag: (dx, dy) => { stopGlide(); rotateByDrag(dx, dy); render(); }, rollView: a => { stopGlide(); rollView(a); render(); }, attachCamera: f => { attachCamera(f); render(); }, viewBasis: () => ({ M: [...viewBasis().M], target: [...viewBasis().target] }), project, transform, pickAt: (x, y) => { draw(true); cacheLabelVisibility(); const id = pickIdAt(x, y); draw(); return id; }, setSurgeonView,
             getPose: poseState, setPose, setPoseMode, resetPose, gravityInModel, posePoint, poseInverse, posePivot: [...POSE_PIVOT], poseDefault: corridorPose(),
             // Soft-tissue deformation (curl / peel, incision parting, two-pass regions); see the curl block above.
             stateProgress, movePoint: (i, p) => movePoint(meshes[i], p), getDeformation: i => { const d = deformation(meshes[i]); return d && { curl: d.curl && { key: d.curl.mo.key, progress: d.curl.P, hingeTravel: d.curl.dh, angle: d.curl.T, radius: d.curl.mo.R, dmax: d.curl.mo.dmax }, split: d.split && { kind: d.split.kind, margin: d.split.margin, plane: d.split.plane }, part: d.part && { reveal: d.part.reveal, gap: d.part.gap, sign: d.part.sign }, groove: d.groove, leafCut: !!d.leafCut }; }, curlTuning: CURL_TUNING, variantSnapshot };

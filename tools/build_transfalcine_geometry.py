@@ -126,8 +126,7 @@ def build(reference_json, medial_guide, output):
     # both tables of the skull, with the presented cortical surface beneath them.
     from functools import lru_cache
 
-    def vertical_hits(records):
-        vertices = np.concatenate([decode(m)[:, :, :3] for m in records])
+    def vertical_hits(vertices):
         low, high = vertices.min(1), vertices.max(1)
         bins = {}
 
@@ -151,7 +150,39 @@ def build(reference_json, medial_guide, output):
             return tuple(sorted(map(float, y), reverse=True))
         return hits
 
-    vault_hits, cortex_hits = vertical_hits(vault), vertical_hits(cortex)
+    def native_hits(records):
+        return vertical_hits(np.concatenate([decode(m)[:, :, :3] for m in records]))
+
+    vault_hits, cortex_hits = native_hits(vault), native_hits(cortex)
+
+    # The Pterional layers were fitted to this same skull. Reuse their
+    # continuous outer surfaces and smooth normals, then cut the Transfalcine
+    # flap from them. Retire the roof grid whose clipped cells made a sawtooth rim.
+    scalp_center = np.array([0, -.4, -.4])
+    scalp_surfaces, scalp_height = {}, {}
+    for layer in ('skin', 'galea', 'pericranium'):
+        surfaces = []
+        for mesh in atlas:
+            if mesh['group'] != layer or not mesh['id'].startswith('ILL-') or mesh.get('marker'):
+                continue
+            tri = decode(mesh)
+            radial = tri[:, :, :3] - scalp_center
+            normal = tri[:, :, 3:]
+            # Outer sheet normals point away from the shell center. The
+            # inward sheet and near-tangent seam walls belong to the old flap.
+            alignment = np.sum(radial * normal, axis=2) / np.maximum(
+                1e-8, np.linalg.norm(radial, axis=2) * np.linalg.norm(normal, axis=2))
+            faces = np.cross(tri[:, 1, :3] - tri[:, 0, :3], tri[:, 2, :3] - tri[:, 0, :3])
+            outward = np.sum(faces * radial.mean(axis=1), axis=1)
+            surfaces.append(tri[(alignment > .40).all(axis=1) & (outward > 0)])
+        if not surfaces:
+            raise ValueError(f"Reference atlas is missing the fitted Pterional {layer} surfaces.")
+        scalp_surfaces[layer] = np.concatenate(surfaces)
+        scalp_height[layer] = vertical_hits(scalp_surfaces[layer][:, :, :3])
+
+    def scalp_y(layer, x, z):
+        hits = scalp_height[layer](float(x), float(z))
+        return hits[0] if hits else float('nan')
 
     @lru_cache(maxsize=None)
     def tables(x, z):
@@ -268,8 +299,8 @@ def build(reference_json, medial_guide, output):
                      sheet(*rect,0,height=dura_height),part='duraMargin')
 
             # Skin and galea move together, with separate visibility and staged return.
-            for layer,offset,color in [('skin',.21,'#d3a486'),('galea',.14,'#cccfc4'),('pericranium',.065,'#ddd8df')]:
-                cap=sheet(-3.6,3.6,-5.12,4.21,offset,60,76)
+            for layer,color in [('skin','#d3a486'),('galea','#cccfc4'),('pericranium','#ddd8df')]:
+                cap = scalp_surfaces[layer]
                 # The anterior cap is based toward the forehead. The middle and posterior
                 # caps open laterally from a linear sagittal skin exposure.
                 xa,xb=sorted([-2.48*sign,1.14*sign])
@@ -283,8 +314,14 @@ def build(reference_json, medial_guide, output):
                     away=[sign,0,0]
                 flap,rest=partition(cap,planes)
                 part(layer+'-rest','Vault '+layer,layer,color,rest,part='skinRest')
+                pivot_y = scalp_y(layer, px, pz)
+                if not math.isfinite(pivot_y):
+                    # The pericranium tapers at the fascia. Use the nearest
+                    # flap vertex when that layer ends just inside the hinge.
+                    vertices = flap[:, :, :3].reshape(-1,3)
+                    pivot_y = vertices[np.argmin((vertices[:,0]-px)**2+(vertices[:,2]-pz)**2),1]
                 part(layer+'-flap','Reflected '+layer,layer,color,flap,part='skinFlap',fold=layer,
-                     pivot=[px,top(px,pz)+offset,pz],away=away,lift=[0,1,0])
+                     pivot=[px,float(pivot_y),pz],away=away,lift=[0,1,0])
             # Markings use the same surface sampler as the skin and bone cutaways.
             def chain(points,r):
                 return np.concatenate([tube([a,b],r) for a,b in zip(points,points[1:]) if np.linalg.norm(np.array(a)-b)>.001])
@@ -297,9 +334,9 @@ def build(reference_json, medial_guide, output):
                      tube([[x,dura_height(x,zq)+.014,zq],[xx,dura_height(xx,zz)+.014,zz]],.012),
                      marker=True,markerStages=['dura'],markerAt=.28*(i+1)/(len(dura_cut)-1),markerUntil=.32)
             if region=='anterior':
-                line=[[x,top(x,z0-.18)+.235,z0-.18] for x in np.linspace(-2.25,2.25,41)]
+                line=[[x,scalp_y("skin",x,z0-.18)+.020,z0-.18] for x in np.linspace(-2.25,2.25,41)]
             else:
-                line=[[-.57*sign,top(-.57*sign,t)+.235,t] for t in np.linspace(z0-.16,z1+.15,31)]
+                line=[[-.57*sign,scalp_y("skin",-.57*sign,t)+.020,t] for t in np.linspace(z0-.16,z1+.15,31)]
             part('incision','Planned scalp incision','skin','#d1ee9b',chain(line,.022),marker=True,markerAxis=0 if region=='anterior' else 2,
                  markerKind=2,markerRange=[min(c[0 if region=='anterior' else 2] for c in line),max(c[0 if region=='anterior' else 2] for c in line)],markerStages=['orient','incision'])
             corners=[(x0,z0),(x0,z1),(x1,z1),(x1,z0),(x0,z0)]
@@ -371,7 +408,7 @@ def build(reference_json, medial_guide, output):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--reference-json', type=Path, required=True, help='Native atlas mesh records in the reference cranial frame')
+    parser.add_argument('--reference-json', type=Path, required=True, help='Atlas mesh records with the fitted Pterional scalp layers')
     parser.add_argument('--medial-guide', type=Path, required=True, help='Original guide with the native medial atlas records')
     parser.add_argument('--output', type=Path, required=True, help='Directory for mesh-data.json and regions.json')
     args = parser.parse_args()
