@@ -4,19 +4,19 @@ import base64
 import json
 import math
 import re
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
 
 REGIONS = {
-    'anterior': {'z': 2.56, 'half': .68, 'floor': 1.2, 'deep': .38, 'target': 1.72, 'figure': 1, 'page': 2},
-    'middle': {'z': 1.05, 'half': .76, 'floor': 1.55, 'deep': .92, 'target': .12, 'figure': 2, 'page': 3},
-    'posterior': {'z': -4.02, 'half': .66, 'floor': .34, 'deep': .11, 'target': -2.17, 'figure': 3, 'page': 4},
+    'anterior': {'z': 2.56, 'half': .68, 'floor': 1.2, 'deep': .38, 'target': 1.72,
+                 'figure': 1, 'page': 2, 'falx_z': 1.83, 'falx_half': .53, 'falx_top': 2.56},
+    'middle': {'z': 1.05, 'half': .76, 'floor': 1.55, 'deep': .92, 'target': .12,
+               'figure': 2, 'page': 3, 'falx_z': .52, 'falx_half': .61, 'falx_top': 2.62},
+    'posterior': {'z': -4.02, 'half': .66, 'floor': .34, 'deep': .11, 'target': -2.17,
+                  'figure': 3, 'page': 4, 'falx_z': -2.76, 'falx_half': .69, 'falx_top': 1.46},
 }
-for name, spec in REGIONS.items():
-    spec['falx_z'] = {'anterior': 1.83, 'middle': .52, 'posterior': -2.76}[name]
-    spec['falx_half'] = {'anterior': .53, 'middle': .61, 'posterior': .69}[name]
-    spec['falx_top'] = {'anterior': 2.56, 'middle': 2.62, 'posterior': 1.46}[name]
 
 def decode(mesh):
     return np.frombuffer(base64.b64decode(mesh['data']), dtype='<f4').reshape(-1, 3, 6)
@@ -33,7 +33,7 @@ def encode(mesh, triangles):
                 bounds=[point.tolist() for point in bounds], anchor=anchor.tolist())
 
 def cut(triangles, axis, threshold, positive):
-    """Split a triangle soup against one plane, interpolating normals and AO."""
+    """Split a triangle soup against one plane, interpolating vertex attributes."""
     if not len(triangles):
         return triangles, triangles
     dist = (triangles[:, :, axis] - threshold) * (1 if positive else -1)
@@ -116,16 +116,12 @@ def build(reference_json, medial_guide, output):
                         source='Illustrative geometry registered to native atlas landmarks',**extra), triangles))
     for m in bone + cortex + vascular:
         extra = {}
-        if m in cortex:
-            extra['gravitySide'] = 'right' if m['name'].startswith('Right') else 'left'
-        elif re.search(r'callosomarginal|pericallosal',m['name'],re.I):
+        if m in cortex or re.search(r'callosomarginal|pericallosal', m['name'], re.I):
             extra['gravitySide'] = 'right' if m['name'].startswith('Right') else 'left'
         add(dict(m, contextOnly=False, procedureSide='both', part='vaultOriginal' if m['id'] in ids else '',
                  group='brain' if m['id']=='MED-ZA-15' else m['group'], **extra))
     # Cast vertical rays through the native vault and cortex separately. Keep
     # both tables of the skull, with the presented cortical surface beneath them.
-    from functools import lru_cache
-
     def vertical_hits(vertices):
         low, high = vertices.min(1), vertices.max(1)
         bins = {}

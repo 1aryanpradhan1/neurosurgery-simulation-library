@@ -820,9 +820,6 @@ canvas:active {
   .sectionintro {
     padding:18px
   }
-  .step {
-    padding:18px
-  }
   .viewhead {
     padding:0 12px
   }
@@ -844,12 +841,6 @@ canvas:active {
   }
   .visual {
     display:none
-  }
-  .side {
-    height:auto
-  }
-  .scroll {
-    overflow:visible
   }
   .step {
     break-inside:avoid
@@ -1605,12 +1596,6 @@ header {
   .visual {
     height:720px
   }
-  .side {
-    height:760px
-  }
-  .config legend {
-    font-size:8px
-  }
   .choices span {
     font-size:10px
   }
@@ -1821,18 +1806,11 @@ header p {
   .config fieldset {
     flex:1 1 44%
   }
-  .layout {
-    display:flex;
-    height:auto
-  }
   .visual {
     height:680px
   }
   .side {
     height:760px
-  }
-  .reference-plates {
-    grid-template-columns:1fr
   }
 }
 
@@ -2036,9 +2014,6 @@ header h1 {
   .step h2 {
     font-size:13px
   }
-  .step p {
-    font-size:11px
-  }
   .side .tabs {
     gap:12px;
     padding:0 12px
@@ -2072,9 +2047,6 @@ header h1 {
   }
   .step {
     padding:11px 15px
-  }
-  .step p {
-    font-size:12px
   }
   .step h2 {
     font-size:14px
@@ -64716,10 +64688,13 @@ header {
     "variants": "snapshot of assets/app.js buildSteps (guideQA.variantSnapshot()); legacy cranial group lists and the fissure-step note are re-synced by the build"
   }
 }
-</script><script>(async()=>{try{const b=Uint8Array.from(atob(document.getElementById("pterional-data").textContent),c=>c.charCodeAt(0));const meshes=await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).json();const manifest=JSON.parse(document.getElementById("pterional-manifest").textContent);window.__PTERIONAL_DATA__={meshes,manifest};document.getElementById("anatomy-loading")?.remove();(() => {
+</script><script>(async () => {
     'use strict';
     const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-    const { meshes, manifest } = window.__PTERIONAL_DATA__;
+    const bytes = decode64($('#pterional-data').textContent);
+    const meshes = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).json();
+    const manifest = JSON.parse($('#pterional-manifest').textContent);
+    $('#anatomy-loading')?.remove();
     const displayConflicts = window.__GUIDE_DATA__?.['clearance-data'] ??
         JSON.parse($('#clearance-data')?.textContent || '{}');
     const clearanceMeshById = new Map(meshes.map(mesh => [mesh.id, mesh]));
@@ -64756,9 +64731,6 @@ header {
         for (const m of ['subfascial', 'split'])
             for (const f of ['yes', 'no'])
                 configs.push({ clinoid: c, muscle: m, fissure: f });
-    const cname = c => ({ none: 'No clinoidectomy', extra: 'Extradural clinoidectomy', intra: 'Intradural clinoidectomy' }[c]);
-    const mname = m => m === 'split' ? 'Muscle-splitting' : 'Subfascial';
-    const configName = c => `${cname(c.clinoid)} · ${mname(c.muscle)} · ${c.fissure === 'yes' ? 'Split fissure' : 'No fissure split'}`;
     function operativeSide() { return contextSide === 'left' ? 'left' : 'right'; }
     function sideSign() { return operativeSide() === 'left' ? -1 : 1; }
     function canonicalPoint(p) { return [p[0] * sideSign(), p[1], p[2]]; }
@@ -65117,7 +65089,6 @@ header {
         $('#papers').append(card);
     } $('#paperEmpty').hidden = count > 0; $('#paperCount').textContent = papers.length; }
     $('#paperSearch').oninput = renderPapers;
-    function openPaper(id) { setTab('papers'); $('#paperSearch').value = ''; renderPapers(); $('#paper-' + id)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
     function captureStepImages() { if (!available || typeof canvas.toDataURL !== 'function')
         return manifest.study_plates || []; const saved = { viewQ, camFrame, poseOverride, distance, viewZoom, pan: [...pan], selected, opening, procedure, contextSide, separateLayers, enabled: { ...enabled }, allEnabled: { ...allEnabled }, beforeCurrent, regionalContext, hidden: meshes.map(m => m.hidden) }; const s = steps[stage], vside = stepView(s), images = []; capturing = true; try {
         viewZoom = 1;
@@ -65228,7 +65199,7 @@ header {
     function rebuild({ reset = false } = {}) { animationToken++; const old = steps[stage]?.id; steps = buildSteps(); $('#steps').replaceChildren(); steps.forEach((s, i) => { const card = document.createElement('article'); card.className = 'step'; card.tabIndex = 0; card.innerHTML = `<div class="step-heading"><span class="step-number">${String(i + 1).padStart(2, '0')}</span><div class="step-heading-text"><h2>${escape(titleCase(s.title))}</h2></div></div><p>${escape(s.body)}</p>`; card.onclick = () => activate(i); card.onkeydown = e => { if (e.target === card && ['Enter', ' '].includes(e.key)) {
         e.preventDefault();
         activate(i);
-    } }; $('#steps').append(card); }); const index = modelIndex(); $('#conflict').hidden = !(config.clinoid === 'intra' && config.fissure === 'no'); $('#conflict').textContent = 'Evidence conflict: this intradural clinoidectomy source describes wide Sylvian splitting. This selectable combination is shown for comparison, but is not validated by the cited sequence.'; renderPapers(); renderIndications(); activate(reset ? 0 : Math.max(0, steps.findIndex(s => s.id === old))); $('#planLive').textContent = steps.length + ' guide steps. Configuration updated.'; }
+    } }; $('#steps').append(card); }); $('#conflict').hidden = !(config.clinoid === 'intra' && config.fissure === 'no'); $('#conflict').textContent = 'Evidence conflict: this intradural clinoidectomy source describes wide Sylvian splitting. This selectable combination is shown for comparison, but is not validated by the cited sequence.'; renderPapers(); renderIndications(); activate(reset ? 0 : Math.max(0, steps.findIndex(s => s.id === old))); $('#planLive').textContent = steps.length + ' guide steps. Configuration updated.'; }
     function choose(c) { config = { ...c }; for (const [k, v] of Object.entries(config))
         $(`input[name="${k}"][value="${v}"]`).checked = true; rebuild(); }
     // Static snapshot of the guide steps for all 12 configurations, as stored in data/manifest.json `variants`
@@ -65284,7 +65255,7 @@ header {
         showDiagram();
     else
         render(); };
-    function playStepAnimation() { const token = ++animationToken; const s = steps[stage]; opening = 1; if (mode !== '3d' || !procedure || !hasStageChange() || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    function playStepAnimation() { const token = ++animationToken; opening = 1; if (mode !== '3d' || !procedure || !hasStageChange() || matchMedia('(prefers-reduced-motion: reduce)').matches) {
         $('#opening').value = 100;
         $('#openingValue').textContent = '100%';
         render();
@@ -65742,9 +65713,6 @@ header {
         d[0] += (meshSide(m) === 'left' ? 1 : -1) * separationIndex(m) * .35;
     } return d; }
     // Rodrigues rotation (bone flap travel uses the same rotation in the shader through uFlapAngle/uFlapAxis/uFlapPivot).
-    function rotateAbout(p, h) { if (!h || !h.angle)
-        return p; const c = Math.cos(h.angle), sn = Math.sin(h.angle), k = h.axis, v = p.map((x, i) => x - h.pivot[i]), kv = k[0] * v[0] + k[1] * v[1] + k[2] * v[2], cr = [k[1] * v[2] - k[2] * v[1], k[2] * v[0] - k[0] * v[2], k[0] * v[1] - k[1] * v[0]]; return v.map((x, i) => h.pivot[i] + x * c + cr[i] * sn + k[i] * kv * (1 - c)); }
-    function labelPoint(m) { return movePoint(m, m.labelAnchor || m.anchor); }
     $('#separateLayers').onclick = () => { separateLayers = !separateLayers; $('#separateLayers').setAttribute('aria-pressed', separateLayers); $('#separateLayers').textContent = separateLayers ? 'Join Fascial Layers' : 'Separate Fascial Layers'; if (separateLayers) {
         enabled.fascia = enabled.deepfascia = enabled.fat = enabled.muscle = true;
         syncControls();
@@ -65902,7 +65870,6 @@ header {
         clearSelection();
         return;
     } selected = i; labelKey = ''; render(); }
-    function positionPopup() { return null; }
     function updateStepLabels() { const popup = $('#popup'), svg = $('#labelLines'); $('#stepLabels').replaceChildren(); svg.replaceChildren(); if (mode !== '3d') {
         popup.hidden = true;
         return;
@@ -66623,7 +66590,8 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         $('#noGL').textContent = 'The 3D renderer could not start: ' + error.message + '. The paper library and reading sequence remain available.';
         console.error(error);
     } });
-})();
-}catch(e){document.body.innerHTML="Unable to load anatomy: "+e.message}})()</script>
+})().catch(error => {
+    document.body.textContent = 'Unable to load anatomy: ' + error.message;
+});</script>
 <script>if(document.documentElement.classList.contains('library-preview')){const t=setInterval(()=>{if(window.guideQA){clearInterval(t);window.guideQA.setSurgeonView();const play=()=>window.guideQA.activate(12);play();setInterval(play,9000);}},100);}</script></body>
 </html>
