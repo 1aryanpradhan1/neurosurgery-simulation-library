@@ -1127,17 +1127,21 @@
         line.setAttribute('y2', Math.max(r.y, Math.min(r.y + r.h, a.y)));
         svg.append(line);
     } }
+    function overviewCamera() {
+        const view = stepView(steps[0]);
+        return { ...view, zoom: view.zoom ?? 1 };
+    }
     function setView(v) {
         const views = { anterior: [0, 0], right: [Math.PI / 2, 0], left: [-Math.PI / 2, 0], posterior: [Math.PI, 0], superior: [0, 1.5] };
         if (!views[v]) return;
-        const { distance, zoom } = steps[0].view;
+        const { distance, zoom } = overviewCamera();
         setCamera({ frame: 'head', yaw: views[v][0], pitch: views[v][1], distance, zoom });
     }
     function resetView() {
-        // Reset the camera to the opening overview while keeping the active procedure step.
+        // Restore the opening camera and leave the active procedure step in place.
         stopGlide();
         cameraExplicit = false;
-        applyCamera(stepView(steps[0]));
+        applyCamera(overviewCamera());
         render();
     }
     // Center the anatomy at the surgeon preset’s orientation and magnification.
