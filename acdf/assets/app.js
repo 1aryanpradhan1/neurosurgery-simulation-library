@@ -1200,7 +1200,8 @@
             `<a href="${escape(paper.url)}" title="${escape(paper.citation || paper.title)}" aria-label="${escape(paper.citation || paper.title)}" target="_blank" rel="noopener noreferrer">[${i + 1}]</a>`);
         if (reading) links.push(sourceLink(reading.url, 'Atlas'));
         return `<details class="study-notes"><summary>Details</summary>
-            <p>${escape(entry.detail)}${links.length ? ` <span class="study-reference-links">${links.join(' ')}</span>` : ''}</p></details>`;
+            <p>${escape(entry.detail)}${links.length ? ` <span class="study-reference-links">${links.join(' ')}</span>` : ''}</p>
+            ${citations.length || reading ? `<h4>Sources for this step</h4><ul class="study-citations">${citations.map(paper => `<li>${sourceLink(paper.url, paper.citation || paper.title)}</li>`).join('')}${reading ? `<li>${sourceLink(reading.url, reading.label || 'Atlas')}</li>` : ''}</ul>` : ''}</details>`;
     }
 
     function stepFigures(step) {
@@ -1212,6 +1213,8 @@
         const panel = $('#figurepanel');
         const step = steps[stage];
         const figures = stepFigures(step);
+        const videoTimes = {incise:[73,'Opening the operative site'],platysma:[73,'Opening the operative site'],interval:[73,'Exposure'],fascia:[73,'Exposure'],longus:[149,'Retractor positioning'],blades:[149,'Retractor positioning'],annulus:[182,'Discectomy'],discectomy:[182,'Discectomy'],osteophyte:[182,'Discectomy and decompression'],pll:[182,'Discectomy and decompression'],foramen:[182,'Discectomy and decompression'],endplate:[182,'Disc and endplate preparation'],trial:[364,'Allograft placement and fixation'],cage:[364,'Allograft placement and fixation'],plate:[364,'Allograft placement and fixation'],screws:[364,'Allograft placement and fixation'],release:[500,'Drain and closure'], 'close-platysma':[500,'Drain and closure'], 'close-skin':[500,'Drain and closure']};
+        const video = videoTimes[step.phase || step.id];
         const images = figures.map(figure => {
             const paper = paperById(figure.paper);
             const url = figure.url || paper?.url;
@@ -1232,6 +1235,7 @@
         panel.innerHTML = `<section class="diagram source-figure-panel">
             <h2>${escape(titleCase(step.title))}</h2>
             ${images || `<p>See the cited sources for this step.</p>${stepCitations(step.sources || [])}`}
+            ${video ? `<p class="figure-credit"><strong>Operative video · ${escape(video[1])}</strong><br>Gajski, Dennis and Arnautović (2021), three-level C4–C7 ACDF with allografts and plate. This is a separate clinical case and may differ from the selected configuration. ${sourceLink('https://www.youtube.com/watch?v=DN_TxMPdHGY&t=' + video[0] + 's', 'Watch at ' + Math.floor(video[0]/60) + ':' + String(video[0]%60).padStart(2,'0'))} · ${sourceLink('https://pmc.ncbi.nlm.nih.gov/articles/PMC8112558/', 'Article and transcript')}</p>` : ''}
         </section>`;
         for (const image of panel.querySelectorAll('.source-figure-image img')) {
             image.addEventListener('error', () => {
