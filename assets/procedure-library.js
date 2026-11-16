@@ -218,10 +218,10 @@ function openDetail(name) {
     ).join('');
 
     if (simulation) {
-        action.innerHTML = `<a class="launch" href="${simulation.url}" target="_blank" rel="noopener noreferrer">Open simulation ↗</a><p class="note">Your selected options will open in the guide.</p>`;
+        action.innerHTML = `<a class="launch" href="${simulation.url}?from=procedures">Open simulation</a><p class="note">Your selected options will open in the guide.</p>`;
         const launch = action.querySelector('a');
         launch.onclick = () => {
-            const params = new URLSearchParams();
+            const params = new URLSearchParams({ from: 'procedures' });
             for (const button of options.querySelectorAll('.opt.selected')) {
                 params.set(button.parentElement.dataset.parameter, button.dataset.value);
             }

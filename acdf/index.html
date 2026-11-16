@@ -2947,11 +2947,17 @@ header {
 
 @media(max-width:760px){header h1{font-size:clamp(16px,4.5vw,24px);line-height:1.1}}
 
-.study-notes { margin-top: .55rem; color: inherit; }
-.study-notes summary { cursor: pointer; font-weight: 600; padding: .2rem 0; }
-.study-notes p { margin: .4rem 0; }
-.study-citations { margin: .45rem 0 0; padding-inline-start: 1.15rem; }
+
+#labelLines[hidden], #stepLabels[hidden] { display: none; }
+.study-notes { margin-top: .5rem; color: inherit; }
+.study-notes summary { cursor: pointer; font-size: .8rem; font-weight: 450; padding: .25rem 0; }
+.study-notes p { margin: .35rem 0; }
+.study-reference-links { display: inline; color: inherit; font-size: .72em; white-space: nowrap; }
+.study-reference-links a { opacity: .78; }
+.study-reference-links a:hover, .study-reference-links a:focus-visible { opacity: 1; }
+.study-citations { margin: .45rem 0 0; padding-inline-start: 1.15rem; font-size: .8rem; }
 .study-citations li { margin: .3rem 0; }
+.source-figure .figure-credit { font-size: .78rem; }
 .study-notes a, .source-figure-panel a { text-decoration: underline; text-underline-offset: .14em; overflow-wrap: anywhere; }
 .source-figure-panel { color: #e4ece6; max-width: 54rem; margin: 0 auto; }
 .source-figure-panel .source-figure { margin: 0 0 .9rem; padding: .8rem; border: 1px solid #48615b; border-radius: .55rem; }
@@ -2959,10 +2965,10 @@ header {
 .source-figure-panel .source-figure img { max-width: 100%; max-height: min(62vh, 47rem); object-fit: contain; }
 .source-figure figcaption p { margin: .38rem 0; }
 </style>
-</head>
+<link rel="stylesheet" href="../assets/case-back.css?v=study-details-2"><script defer src="../assets/case-back.js?v=study-details-2"></script></head>
 <body><div id="guide-loading" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:9999;display:grid;place-content:center;background:#101b20;color:#e5efdf;padding:30px;font:16px Calibri, Carlito, Arial, sans-serif;text-align:center"><span id="guide-loading-message">Loading Anatomy…</span></div><noscript>This interactive guide requires JavaScript.</noscript>
 
-<header><div><h1>Anterior Cervical Discectomy and Fusion</h1></div><div class="headeractions"><button class="pill" id="exportPlan">Export guide</button><button class="pill" id="creditsOpen">About</button></div></header>
+<header><div class="case-header-heading"><a class="case-back" href="../procedures.html" data-case-back>← Back</a><h1>Anterior Cervical Discectomy and Fusion</h1></div><div class="headeractions"><button class="pill" id="exportPlan">Export guide</button><button class="pill" id="creditsOpen">About</button></div></header>
 <section class="config" aria-label="Choose the Surgical Approach"><div class="config-heading"><strong>Choose the Surgical Approach</strong></div>
 <fieldset><legend>Treated Disc Levels</legend><div class="choices">
 <label><input name="levels" type="radio" value="1" checked><span>1 level · C5–6</span></label>
@@ -3008,6 +3014,6 @@ header {
 <button class="smallbutton" id="manifestDownload">Download Full Mesh Provenance</button></dialog>
 
 
-<script defer src="assets/loader.js?v=bundled-figures"></script>
+<script defer src="assets/loader.js?v=study-details-2"></script>
 </body>
 </html>

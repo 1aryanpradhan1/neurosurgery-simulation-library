@@ -370,8 +370,11 @@
     } }
     $$('[role=tab]').forEach(b => b.onclick = () => setTab(b.id.slice(4)));
     function setMode(next) { animationToken++; mode = next; $('#mode3d').setAttribute('aria-pressed', mode === '3d'); $('#mode2d').setAttribute('aria-pressed', mode === '2d'); for (const s of ['#canvas', '#viewinfo', '.floating', '#gesturehint', '.viewtools', '#mobileModelDock', '#stepLabels', '#labelLines', '#orientGizmo'])
-        $(s).hidden = mode !== '3d'; $('#figurepanel').hidden = mode === '3d'; $('#popup').hidden = true; if (mode === '2d')
+        $(s).toggleAttribute('hidden', mode !== '3d'); $('#figurepanel').hidden = mode === '3d'; $('#popup').hidden = true; if (mode === '2d') {
+        $('#labelLines').replaceChildren();
+        $('#stepLabels').replaceChildren();
         showSourceFigures();
+    }
     else {
         playStepAnimation();
         render();
@@ -420,7 +423,6 @@
     } $('#paperEmpty').hidden = count > 0; $('#paperCount').textContent = papers.length; }
     $('#paperSearch').oninput = renderPapers;
     const studyGuide = {
-  "overview": "An interhemispheric route enters from the opposite side of the target and looks through a window in the falx. The superior sagittal sinus and bridging veins constrain the upper corridor. Compare how the anterior, middle and posterior routes relate to the genu, body and splenium of the corpus callosum.",
   "overviewCitations": [
     "alexander"
   ],
@@ -429,7 +431,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "Decide which third of the fissure lines up with the mesial target. The entry side and target side differ, and the sagittal midline remains the shared surface landmark.",
+      "detail": "A contralateral transfalcine approach reaches the medial surface of one cerebral hemisphere from the opposite side. The interhemispheric fissure is the cleft between the hemispheres, and the falx is the vertical fold of dura within it. A window in that fold provides a view across the midline. Compare the anterior, middle and posterior corridors to see how the entry aligns with a different part of the corpus callosum.",
       "figures": [
         {
           "paper": "alexander",
@@ -457,7 +459,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "Alexander and colleagues angled the vertex upward in the anterior and middle specimens. Their posterior dissection used a three-quarter prone setup. In each, the target side was uppermost.",
+      "detail": "The specimens were positioned with the target side uppermost so gravity could help the approach hemisphere fall away from the falx. The anterior and middle exposures used a lateral setup with the vertex elevated. The posterior exposure used a three-quarter prone position. The purpose of these positions is to improve the natural space between the medial cortex and the falx.",
       "figures": [
         {
           "paper": "alexander",
@@ -485,7 +487,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "Compare the anterior bicoronal access behind the hairline with the linear access in the other thirds. The black line on the model represents the planned skin mark.",
+      "detail": "The anterior dissection used a broad bicoronal incision behind the hairline to expose the frontal vault. The other two corridors used a linear incision over a smaller target region. Relate the black mark to the sagittal suture and the intended bone opening beneath it. The mark travels with the scalp surface as the soft tissues are reflected.",
       "figures": [
         {
           "paper": "alexander",
@@ -513,7 +515,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "Follow the scalp and galea away from the planned opening. The aim in the dissection was to expose the adjacent calvarial landmarks while leaving the sagittal reference visible.",
+      "detail": "The scalp and galea lift over the calvarium, the bony vault of the skull. The pericranium lies deeper against the outer table and is cleared from the planned bone opening. The sagittal suture marks where the two parietal bones meet. Comparing it with the transverse sutures helps localize the intended corridor.",
       "figures": [
         {
           "paper": "alexander",
@@ -541,7 +543,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "The central opening is related to the superior sagittal sinus. The paired openings establish the boundary of the planned parasagittal flap.",
+      "detail": "The central burr hole is positioned in relation to the superior sagittal sinus, a large venous channel beneath the midline. The paired holes on either side frame the edges of the rectangular opening. Their arrangement allows a view of the entry-side dura and the sinus region after the bone flap lifts. Follow the relationship between the visible sutures and the venous channel beneath them.",
       "figures": [
         {
           "paper": "alexander",
@@ -569,7 +571,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "Beneath the bone flap, distinguish the dura from the inner table. The sinus relationship becomes clearer after the flap is lifted.",
+      "detail": "The inner table is the compact inner layer of the skull. The underlying dura can adhere to it, especially near the midline and the superior sagittal sinus. Releasing this interface lets the bone flap lift while the dura remains below. The illustrated plane is extradural, between the bone and the outer dural surface.",
       "figures": [
         {
           "paper": "alexander",
@@ -597,7 +599,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "The cadaveric opening exposed the entry-side dura, the width of the sinus and a strip of opposite dura.",
+      "detail": "The raised bone flap exposes dura on the entry side and across a narrow strip of the opposite side. The superior sagittal sinus runs in the attached edge of the falx under the sagittal suture. Exposing its width helps establish where the dural opening and interhemispheric corridor will sit. Compare the bone window with the midline and the selected third.",
       "figures": [
         {
           "paper": "alexander",
@@ -625,7 +627,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "The dural flap is based on the superior sagittal sinus. Its medial reflection creates the superficial part of the interhemispheric opening.",
+      "detail": "The dural flap is based medially near the superior sagittal sinus. Reflecting it exposes the entry-side medial brain surface while keeping the venous channel in view. Branches draining the brain can enter the sinus near this edge. The dural opening is the surface entrance to the deeper space between the hemispheres.",
       "figures": [
         {
           "paper": "alexander",
@@ -653,7 +655,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "Arachnoid dissection follows the medial hemispheric surface toward the appropriate callosal landmark. Bridging veins can constrain this path.",
+      "detail": "The arachnoid spans the interhemispheric fissure, and bridging veins travel from the cortical surface to the superior sagittal sinus. The corridor follows the medial hemisphere toward the genu, body or splenium of the corpus callosum, depending on its level. These are the front bend, central portion and thick posterior end of the fiber bundle joining the hemispheres. Identify the veins that can limit the working angle.",
       "figures": [
         {
           "paper": "alexander",
@@ -681,7 +683,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "The superior boundary is constrained by the sinus. The paper shows how the anteroposterior bone window and, posteriorly, the straight sinus relate to the falcine opening.",
+      "detail": "The falx is a sagittal sheet of dura separating the hemispheres. The study’s window accesses the opposite side through this sheet while remaining below the superior sagittal sinus. The straight sinus, where the falx meets the tentorium posteriorly, is an additional posterior landmark. Compare the location of the window with both the venous boundaries and the original bone opening.",
       "figures": [
         {
           "paper": "alexander",
@@ -709,7 +711,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "The reported window was lower relative to the cortex in more posterior specimens. The study measurements describe cadaveric exposure.",
+      "detail": "The study measured how far upward and laterally the opposite hemisphere could be seen through the falcine opening. The upper reach was farther below the cortical surface in more posterior exposures. The lateral field also varied with depth within the fissure. These measurements describe the cadaveric specimens and help explain why an opening at one level gives a different view from an opening at another.",
       "figures": [
         {
           "paper": "alexander",
@@ -725,7 +727,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "At the end of the illustrated corridor, reassess the position of the released hemisphere and the bridging veins. The model reverses its illustrated tissue movement.",
+      "detail": "The model lets the medial hemisphere return toward the falx after the working corridor is released. Bridging veins connect the moving brain surface with fixed dural venous channels, so their position can change as the space closes. Follow their path back toward the superior sagittal sinus. This step illustrates the return from the working position.",
       "figures": [
         {
           "paper": "alexander",
@@ -754,7 +756,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "The model demonstrates reapproximation of the earlier sinus-based dural flap. The referenced figure shows the opening from which this illustrative reversal starts.",
+      "detail": "The dural leaflet returns toward the margins of its earlier opening. Its base stays adjacent to the superior sagittal sinus, the landmark that oriented the opening from the start. Watch which surface is covered as the leaflet returns. The related paper figure shows the open stage that the model reverses here.",
       "figures": [
         {
           "paper": "alexander",
@@ -783,7 +785,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "The model returns the flap to its original calvarial margins. The study illustrates creation of the opening rather than a reconstruction sequence.",
+      "detail": "The rectangular calvarial flap returns to its original position after the dura has been reapproximated. Its edges line up with the surrounding skull, and the original relationship to the sagittal suture becomes visible again. This step illustrates how the bony covering is restored. The related paper figure shows the original exposure.",
       "figures": [
         {
           "paper": "alexander",
@@ -812,7 +814,7 @@
       "citations": [
         "alexander"
       ],
-      "detail": "The scalp layers are returned over the restored calvarium. This is the model’s illustrative reversal of the exposure.",
+      "detail": "The pericranium, galea and skin return above the replaced bone. The pericranium coats the skull, the galea forms the strong fibrous layer of the scalp, and the skin lies outermost. The black line helps trace the original planned opening after these layers come together. The model illustrates closure by reversing the earlier exposure.",
       "figures": [
         {
           "paper": "alexander",
@@ -847,20 +849,27 @@
         const variation = key === 'muscle' ? config.muscle : key === 'clinoid' ? config.clinoid : null;
         return studyGuide.steps[key + ':' + variation] || studyGuide.steps[key];
     }
-    function stepCitations(ids) {
-        const sources = [...new Set(ids)].map(paperById).filter(Boolean);
-        return sources.length ? `<ul class="study-citations">${sources.map(p =>
-            `<li>${sourceLink(p.url, p.citation || p.title)}</li>`).join('')}</ul>` : '';
+    function studyCitations(ids) {
+        return [...new Set(ids)].map(paperById).filter(Boolean);
     }
+
+    function stepCitations(ids) {
+        const sources = studyCitations(ids);
+        return sources.length ? `<ul class="study-citations">${sources.map(paper =>
+            `<li>${sourceLink(paper.url, paper.citation || paper.title)}</li>`).join('')}</ul>` : '';
+    }
+
     function studyNotes(step, index) {
         const entry = studyEntry(step);
-        const notes = entry ? `<details class="study-notes"><summary>Step notes &amp; sources</summary>
-            <p>${escape(entry.detail)}</p>${stepCitations(entry.citations)}</details>` : '';
-        if (index !== 0) return notes;
-        const reading = studyGuide.reading;
-        return notes + `<details class="study-notes"><summary>Approach background</summary>
-            <p>${escape(studyGuide.overview)}</p>${stepCitations(studyGuide.overviewCitations)}
-            ${reading ? sourceLink(reading.url, reading.label) : ''}</details>`;
+        if (!entry) return '';
+        const reading = index === 0 ? studyGuide.reading : null;
+        const citations = studyCitations(index === 0
+            ? [...entry.citations, ...studyGuide.overviewCitations] : entry.citations);
+        const links = citations.map((paper, i) =>
+            `<a href="${escape(paper.url)}" title="${escape(paper.citation || paper.title)}" aria-label="${escape(paper.citation || paper.title)}" target="_blank" rel="noopener noreferrer">[${i + 1}]</a>`);
+        if (reading) links.push(sourceLink(reading.url, 'Atlas'));
+        return `<details class="study-notes"><summary>Details</summary>
+            <p>${escape(entry.detail)}${links.length ? ` <span class="study-reference-links">${links.join(' ')}</span>` : ''}</p></details>`;
     }
 
     function stepFigures(step) {
@@ -885,7 +894,7 @@
                     <img src="${escape(figure.image)}" alt="${escape(figure.takeaway)}" loading="lazy">
                 </a>
                 <figcaption><strong>${escape(label)}</strong><p>${escape(figure.takeaway)}</p>
-                    <p>${escape(credit)}${license}</p>${url ? sourceLink(url, 'Open published source') : ''}
+                    <p class="figure-credit">${escape(credit)}${license}</p>${url ? sourceLink(url, 'Open published source') : ''}
                 </figcaption>
             </figure>`;
         }).join('');
@@ -1002,7 +1011,7 @@
         if (!m || m.hidden || m.region && (m.region !== config.region || m.entrySide !== operativeSide())) return false;
         const step = steps[stage];
         if (m.marker)
-            return procedure && m.markerStages.includes(step.id) && (wholeStep || (!beforeCurrent || m.markerAt == null) && opening >= (m.markerAt ?? 0) && opening <= (m.markerUntil ?? 1));
+            return procedure && (step.id === 'orient' || !m.id.endsWith('-incision')) && m.markerStages.includes(step.id) && (wholeStep || (!beforeCurrent || m.markerAt == null) && opening >= (m.markerAt ?? 0) && opening <= (m.markerUntil ?? 1));
         if (m.instrument)
             return procedure && instrumentsOn && m.instrumentStage === step.id &&
                 (wholeStep || !beforeCurrent && opening >= (m.fromProgress ?? 0) && opening <= (m.to ?? 1));
@@ -1528,6 +1537,7 @@
     function shader(type, text) { const s = gl.createShader(type); gl.shaderSource(s, text); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
         throw Error(gl.getShaderInfoLog(s)); return s; }
     function initGL() {
+        skinInkMasks.clear();
         gl = canvas.getContext('webgl', { antialias: true, alpha: false, preserveDrawingBuffer: true });
         if (!gl)
             throw Error('WebGL is unavailable');
@@ -1568,6 +1578,7 @@ precision highp float;
 precision mediump float;
 #endif
 #define FISSURE_N ${fissureN}
+uniform sampler2D uInkMask;uniform vec4 uInkBounds;uniform float uInkProgress;
 uniform mediump float uLine;uniform vec4 uColor;uniform float uSelected,uPick,uIsMarker,uMarkKind,uMarkAxis,uMarkReveal,uMaterial,uSurgical,uQuality;uniform vec3 uMarkCenter;uniform vec2 uMarkRange,uViewport;uniform vec3 uFissure[FISSURE_N];uniform float uFisVeil;uniform vec3 uInner;varying mediump vec3 vNormal;varying vec3 vOriginal;varying vec3 vEye;varying mediump float vAO;varying mediump vec3 vObjN;varying float vIncT;
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 float hsh(vec3 p){p=fract(p*.1031);p+=dot(p,p.zyx+31.32);return fract((p.x+p.y)*p.z);}
@@ -1643,12 +1654,24 @@ if(tissue&&uSurgical>.5){
  if(arach)alpha=clamp(alpha*(.55+1.3*pow(1.-nv,2.))+specI*(s1+s2)*.5,0.,.92);
 }
 if(arach&&veil>0.){c=mix(c,vec3(.92,.94,.95),.4*veil);alpha=max(alpha,.62*veil);}
+if(uInkProgress>0.){
+  vec2 uv=(vOriginal.xz-uInkBounds.xy)/uInkBounds.zw;
+  vec4 ink=texture2D(uInkMask,uv);
+  float outer=smoothstep(.18,.55,vObjN.y);
+  c=mix(c,vec3(.052,.041,.038),ink.a*outer*step(ink.r,uInkProgress));
+}
 if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb,.8);gl_FragColor=vec4(c,alpha);}`));
         gl.linkProgram(program);
         if (!gl.getProgramParameter(program, gl.LINK_STATUS))
             throw Error(gl.getProgramInfoLog(program));
         gl.useProgram(program);
-        ['View', 'StudyShift', 'StudyBurr', 'BoneSection', 'Distance', 'Aspect', 'Scale', 'Pan', 'Color', 'Selected', 'Pick', 'Target', 'Offset', 'FlapAngle', 'Side', 'IsMarker', 'Line', 'LinePx', 'LineNudge', 'MarkKind', 'MarkAxis', 'MarkReveal', 'MarkCenter', 'MarkRange', 'Material', 'Surgical', 'Quality', 'Viewport', 'Fissure', 'FlapAxis', 'FlapPivot', 'FisVeil', 'CurlOn', 'CurlIA', 'CurlPivot', 'CurlAxis', 'CurlAway', 'CurlLift', 'CurlP', 'CurlRow', 'Inc', 'IncReveal', 'Inner'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
+        ['InkMask', 'InkBounds', 'InkProgress', 'View', 'StudyShift', 'StudyBurr', 'BoneSection', 'Distance', 'Aspect', 'Scale', 'Pan', 'Color', 'Selected', 'Pick', 'Target', 'Offset', 'FlapAngle', 'Side', 'IsMarker', 'Line', 'LinePx', 'LineNudge', 'MarkKind', 'MarkAxis', 'MarkReveal', 'MarkCenter', 'MarkRange', 'Material', 'Surgical', 'Quality', 'Viewport', 'Fissure', 'FlapAxis', 'FlapPivot', 'FisVeil', 'CurlOn', 'CurlIA', 'CurlPivot', 'CurlAxis', 'CurlAway', 'CurlLift', 'CurlP', 'CurlRow', 'Inc', 'IncReveal', 'Inner'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
+        gl.uniform1i(uniforms.InkMask, 1);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.activeTexture(gl.TEXTURE0);
         let vertexCount = 0;
         meshes.forEach((m, i) => { m.index = i; m.hidden = false; m.first = vertexCount; vertexCount += m.count; m.rgb = m.color.match(/\w\w/g).map(x => parseInt(x, 16) / 255); m.innerRgb = m.innerColor ? hexRgb(m.innerColor) : null; m.surgicalTint = /^ILL-sulcal-backing/.test(m.id) ? surgicalRgb.brain.map(x => x * .62) : surgicalLayerTints[baseId(m)] ? hexRgb(surgicalLayerTints[baseId(m)]) : null; });
         buffer = gl.createBuffer();
@@ -1718,6 +1741,76 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         const vp = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
         drawLimitCache = Math.max(256, Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || 4096, gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096, vp ? Math.min(vp[0], vp[1]) : 4096));
     } return drawLimitCache; }
+    function skinInkPath() {
+        const mark = clearanceMeshById.get(config.region + '-' + operativeSide() + '-incision');
+        if (!mark) return null;
+        const [start, end] = mark.markerRange;
+        return mark.markerAxis === 0
+            ? [[start, mark.anchor[2]], [end, mark.anchor[2]]]
+            : [[mark.anchor[0] * sideSign(), start], [mark.anchor[0] * sideSign(), end]];
+    }
+
+    // Draw ink in the skin's rest coordinates. The same pixels then follow the
+    // parted edges, reflected flap and closure through the existing mesh transforms.
+    const skinInkMasks = new Map();
+    function skinInkTexture(points) {
+        const size = 512, radius = .065, padding = .12;
+        const left = Math.min(...points.map(([x]) => x)) - padding;
+        const bottom = Math.min(...points.map(([, y]) => y)) - padding;
+        const width = Math.max(...points.map(([x]) => x)) + padding - left;
+        const height = Math.max(...points.map(([, y]) => y)) + padding - bottom;
+        const pixels = new Uint8Array(size * size * 4);
+        const u = x => (x - left) / width * size;
+        const v = y => (y - bottom) / height * size;
+        const clampPixel = n => Math.min(size - 1, Math.max(0, Math.floor(n)));
+        for (let i = 1; i < points.length; i++) {
+            const [ax, ay] = points[i - 1], [bx, by] = points[i];
+            const dx = bx - ax, dy = by - ay, lengthSquared = dx * dx + dy * dy;
+            for (let py = clampPixel(v(Math.min(ay, by) - radius)); py <= clampPixel(v(Math.max(ay, by) + radius)); py++) {
+                for (let px = clampPixel(u(Math.min(ax, bx) - radius)); px <= clampPixel(u(Math.max(ax, bx) + radius)); px++) {
+                    const x = left + (px + .5) * width / size - ax;
+                    const y = bottom + (py + .5) * height / size - ay;
+                    const t = Math.max(0, Math.min(1, (x * dx + y * dy) / (lengthSquared || 1)));
+                    const alpha = Math.round(255 * Math.max(0, Math.min(1, (radius - Math.hypot(x - dx * t, y - dy * t)) / .02)));
+                    const index = 4 * (py * size + px);
+                    if (alpha <= pixels[index + 3]) continue;
+                    pixels[index] = Math.round(255 * (i - 1 + t) / (points.length - 1));
+                    pixels[index + 3] = alpha;
+                }
+            }
+        }
+        const texture = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.activeTexture(gl.TEXTURE0);
+        return { texture, bounds: [left, bottom, width, height] };
+    }
+
+    function prepareSkinInk(picking) {
+        if (picking || !procedure) return 0;
+        const marking = steps.findIndex(step => step.id === 'incision');
+        if (marking < 0 || stage < marking || stage === marking && beforeCurrent) return 0;
+        const progress = stage === marking ? opening : 1;
+        if (progress <= 0) return 0;
+        const key = config.region + ':' + operativeSide();
+        if (!skinInkMasks.has(key)) {
+            const points = skinInkPath();
+            if (!points?.length) return 0;
+            skinInkMasks.set(key, skinInkTexture(points));
+        }
+        const { texture, bounds } = skinInkMasks.get(key);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.uniform4fv(uniforms.InkBounds, bounds);
+        return progress;
+    }
+
     function draw(picking = false) {
         if (!available)
             return;
@@ -1761,13 +1854,15 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         gl.depthMask(true);
         gl.uniform4fv(uniforms.StudyShift,[0,0,0,0]);
         gl.uniform4fv(uniforms.StudyBurr,[0,0,0,0]);
+        gl.uniform1f(uniforms.InkProgress, 0);
         drawProps(picking); // schematic head holder and table (room views only); restores the anatomy buffer
+        const inkProgress = prepareSkinInk(picking);
         for (const m of list) {
             ensureGeometry(m);
             const flat = m.marker || m.instrument || !(m.group in materialIds), see = !picking && opacity(m) < 1;
             // The illustrative sulcal backing gets a darker, recessed cortex tone in the Surgical palette too.
             let rgb = palette === 'surgical' && !flat ? (m.surgicalTint || surgicalRgb[m.group]) : m.rgb;
-            if (m.marker && m.id.endsWith('-incision') && ['orient', 'incision'].includes(steps[stage]?.id)) rgb = [.055, .045, .045];
+            gl.uniform1f(uniforms.InkProgress, m.group === 'skin' && !m.marker ? inkProgress : 0);
             if (see) {
                 gl.enable(gl.BLEND);
                 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);

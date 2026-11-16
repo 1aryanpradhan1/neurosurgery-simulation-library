@@ -253,7 +253,7 @@
         const s = steps[stage], side = meshSide(m), active = operativeSide();
         if (m.marker) {
             return procedure && (side === 'both' || side === active || m.bilateral)
-                && m.markerStages.includes(s.phase) && (!s.level || !m.level || m.level === s.level)
+                && !['Skin Landmark', 'Incision Line', 'Skin Closure'].includes(m.name) && m.markerStages.includes(s.phase) && (!s.level || !m.level || m.level === s.level)
                 && (!beforeCurrent || s.phase === 'orient');
         }
         if (m.instrument) {
@@ -652,8 +652,11 @@
     } }
     $$('[role=tab]').forEach(b => b.onclick = () => setTab(b.id.slice(4)));
     function setMode(next) { animationToken++; mode = next; $('#mode3d').setAttribute('aria-pressed', mode === '3d'); $('#mode2d').setAttribute('aria-pressed', mode === '2d'); for (const s of ['#canvas', '#viewinfo', '.floating', '#gesturehint', '.viewtools', '#mobileModelDock', '#stepLabels', '#labelLines', '#orientGizmo'])
-        $(s).hidden = mode !== '3d'; $('#figurepanel').hidden = mode === '3d'; $('#popup').hidden = true; if (mode === '2d')
+        $(s).toggleAttribute('hidden', mode !== '3d'); $('#figurepanel').hidden = mode === '3d'; $('#popup').hidden = true; if (mode === '2d') {
+        $('#labelLines').replaceChildren();
+        $('#stepLabels').replaceChildren();
         showSourceFigures();
+    }
     else
         render();
     updateChangeControls(); }
@@ -717,7 +720,6 @@
     } $('#paperEmpty').hidden = count > 0; $('#paperCount').textContent = papers.length; }
     $('#paperSearch').oninput = renderPapers;
     const studyGuide = {
-  "overview": "The anterior cervical corridor reaches the disc from the front, between the visceral structures medially and carotid sheath laterally. Study the exposure first, then follow how disc removal, neural decompression and interbody reconstruction change the same motion segment.",
   "overviewCitations": [
     "technique",
     "ao",
@@ -729,7 +731,7 @@
         "technique",
         "gajski"
       ],
-      "detail": "Identify the vertebral bodies, disc spaces and posterior canal before following the anterior operative corridor. Reorient when moving to a different level.",
+      "detail": "Anterior cervical discectomy and fusion approaches the cervical spine from the front of the neck. The disc lies between vertebral bodies, with the spinal canal immediately behind it and a nerve-root foramen on either side. Removing a compressive disc or bone spur can free a root or the spinal cord. A graft or cage then supports the space while bone grows across the treated level.",
       "figures": [
         {
           "paper": "ao",
@@ -746,7 +748,7 @@
         "technique",
         "ao"
       ],
-      "detail": "The supine setup provides a route to the ventral neck and access for level localization. The reference drawing relates the target to the anterior surface.",
+      "detail": "A supine position places the front of the neck where it can be approached without turning the patient over. The angle of the neck changes which vertebral levels are easiest to see on lateral imaging. Before the incision, imaging can relate a surface landmark to the target disc. The planned skin mark is a projection of that deeper target.",
       "figures": [
         {
           "paper": "ao",
@@ -762,7 +764,7 @@
         "ao",
         "technique"
       ],
-      "detail": "The ink line identifies the planned surface entry over the target level. Compare its orientation with the transverse neck crease or a longer multilevel corridor.",
+      "detail": "The skin mark defines the planned opening in the anterior neck. A transverse mark often follows a skin crease, while the exposure can vary with the number and location of levels. Identify the trachea near the midline and the sternocleidomastoid toward the side. The black line stays with the skin when the model separates the edges.",
       "figures": [
         {
           "paper": "ao",
@@ -778,7 +780,7 @@
         "ao",
         "technique"
       ],
-      "detail": "After surface entry, distinguish the skin and superficial tissues from the platysma beneath them.",
+      "detail": "The skin and subcutaneous fat lie superficial to the platysma. Opening the skin reveals this thin muscle and allows the superficial edges to move aside. The deeper interval to the spine is still covered by muscle and fascia. Watch the black mark separate with the upper and lower skin edges.",
       "figures": [
         {
           "paper": "ao",
@@ -794,7 +796,7 @@
         "ao",
         "technique"
       ],
-      "detail": "Dividing the platysma in line with the exposure reveals the deeper cervical fascial plane.",
+      "detail": "The platysma is a broad, thin sheet of muscle in the superficial fascia of the neck. It lies just beneath the subcutaneous fat and superficial to the larger sternocleidomastoid and the deep cervical fascia. Opening it exposes the deeper fascial layers that guide the anterior approach. Its edges are brought together during closure.",
       "figures": [
         {
           "paper": "ao",
@@ -810,7 +812,7 @@
         "ao",
         "gajski"
       ],
-      "detail": "Track the carotid sheath laterally and the tracheoesophageal complex medially. The narrow path between them leads to the prevertebral fascia.",
+      "detail": "The anterior corridor passes medial to the carotid sheath and lateral to the trachea and esophagus. The sheath contains the carotid artery, internal jugular vein and vagus nerve. The central airway and swallowing structures move medially as the corridor opens. Identify the new view of the prevertebral fascia at the bottom of this space.",
       "figures": [
         {
           "paper": "ao",
@@ -826,7 +828,7 @@
         "ao",
         "gajski"
       ],
-      "detail": "The prevertebral fascia overlies the longus colli and anterior column. Identify the midline before the deeper exposure.",
+      "detail": "Prevertebral fascia lies behind the trachea and esophagus and covers the muscles on the front of the spine. Opening it reveals the paired longus colli muscles and the vertebral bodies and discs between them. Their symmetry helps identify the midline. This layer is deeper than the superficial fascia opened above the platysma.",
       "figures": [
         {
           "paper": "ao",
@@ -842,7 +844,7 @@
         "technique",
         "ao"
       ],
-      "detail": "An imaging check relates the operative exposure to the correct disc. The superficial skin level and the deeper disc level can differ.",
+      "detail": "Adjacent cervical discs have a similar appearance in a narrow exposure. A radiopaque marker and lateral imaging relate the visible disc to the intended vertebral level. The surface skin crease alone cannot show this relationship. Follow the model’s anterior marker to the disc behind it.",
       "figures": [
         {
           "paper": "zhang",
@@ -861,7 +863,7 @@
         "yin",
         "ao"
       ],
-      "detail": "The longus colli borders the anterior vertebral column. Identify where the lateral dissection approaches the sympathetic trunk.",
+      "detail": "The longus colli muscles lie on either side of the anterior vertebral column and help flex the neck. Their medial margins frame the disc and can provide a seat for the retractor blades. The cervical sympathetic trunk lies farther laterally on the prevertebral fascia. Its position explains why lateral dissection and retraction are limited.",
       "figures": [
         {
           "paper": "ao",
@@ -877,7 +879,7 @@
         "gajski",
         "ao"
       ],
-      "detail": "The retractor blades maintain the soft-tissue corridor against the anterior column. Compare their seat with the edge of longus colli.",
+      "detail": "Retractor blades maintain the corridor by holding the displaced neck tissues away from the anterior spine. Their relationship to longus colli helps keep the field centered over the disc. The airway and esophagus remain medial, while the carotid sheath remains lateral. Compare the seated blades with the tissues that moved aside.",
       "figures": [
         {
           "paper": "ao",
@@ -893,7 +895,7 @@
         "technique",
         "gajski"
       ],
-      "detail": "Distraction opens the working disc space. Watch the change in disc height relative to the adjacent levels.",
+      "detail": "Distraction separates the adjacent vertebral bodies to increase the height of the working disc space. The disc sits between endplates, the bony surfaces on the top and bottom of each vertebral body. More room between them improves access to the back of the disc. Compare the change in height at the active level with its neighbors.",
       "figures": [
         {
           "paper": "ao",
@@ -910,7 +912,7 @@
         "technique",
         "gajski"
       ],
-      "detail": "The annular opening gives initial access to the disc space. Orient to the uncovertebral margins before following the disc posteriorly.",
+      "detail": "The annulus fibrosus is the fibrous outer ring of a disc. Its layers surround the softer nucleus pulposus. Opening the front of the annulus creates access to the disc material while the bony endplates remain above and below. The uncinate processes mark the lateral margins of the cervical disc space.",
       "figures": [
         {
           "paper": "valero",
@@ -929,7 +931,7 @@
         "technique",
         "gajski"
       ],
-      "detail": "Removal progresses within the disc space toward the posterior margin. Keep the endplates and the posterior canal boundary identifiable throughout.",
+      "detail": "Removing disc material from between the vertebral endplates opens the working space toward the back of the disc. The posterior margin is close to the spinal canal, where the dura encloses the cord. Material displaced posteriorly or laterally can narrow that space or the nerve-root foramen. Compare the emptied disc space with the neighboring intact disc.",
       "figures": [
         {
           "paper": "valero",
@@ -948,7 +950,7 @@
         "technique",
         "gajski"
       ],
-      "detail": "Posterior osteophytes project from the vertebral margins and can contribute to central or foraminal narrowing. Compare their position with the posterior disc and ligament.",
+      "detail": "An osteophyte is a bony spur that can develop along a degenerating joint or vertebral margin. Posterior spurs can project toward the spinal canal, and posterolateral spurs can narrow a root foramen. Removing the relevant spur can increase space for neural structures. Use the model to distinguish bone from the neighboring disc and ligament.",
       "figures": [
         {
           "paper": "valero",
@@ -967,7 +969,7 @@
         "technique",
         "gajski"
       ],
-      "detail": "The posterior longitudinal ligament lies between the posterior disc and the dura. Its treatment depends on which structures are responsible for compression.",
+      "detail": "The posterior longitudinal ligament runs along the back of the vertebral bodies and discs, inside the spinal canal but in front of the dura. It appears at the deepest part of the anterior discectomy. Compression can arise from disc material or bone close to this layer. The amount of ligament exposed or removed depends on the pathology.",
       "figures": [
         {
           "paper": "valero",
@@ -986,7 +988,7 @@
         "uncinate",
         "valero"
       ],
-      "detail": "Identify the uncinate process lateral to the disc and the exiting root in the foramen. Extent of bony decompression depends on the target and nearby vascular anatomy.",
+      "detail": "The neural foramen is the side opening through which a spinal nerve root exits. The uncinate process rises along the lateral edge of a cervical vertebral body and can contribute a spur that narrows this opening. The vertebral artery runs farther lateral within the transverse foramina at typical subaxial levels. Identify the root corridor and note how its boundaries differ from the central canal.",
       "figures": [
         {
           "paper": "valero",
@@ -1004,7 +1006,7 @@
         "technique",
         "gajski"
       ],
-      "detail": "The endplate is both an interface for graft contact and a structural support for the implant. Distinguish the cartilage surface from the underlying bony support.",
+      "detail": "Each vertebral endplate has a thin cartilage layer over a bony surface that supports the implant. Preparing the surface permits contact between graft and bone. The underlying bony plate carries the load and helps prevent the cage from sinking into the vertebral body. Compare the prepared contact surface with the intact level nearby.",
       "figures": [
         {
           "paper": "zhang",
@@ -1022,7 +1024,7 @@
         "technique",
         "gajski"
       ],
-      "detail": "Trial sizing relates the interbody height and footprint to both endplates. Compare the fit with the surrounding levels and posterior margin.",
+      "detail": "A trial spacer helps estimate the height and footprint that will fit between the prepared endplates. Its width and depth determine how much of the load-bearing surface it contacts. Judge its position relative to the front and back of the vertebral bodies and the restored height of the disc space. The permanent device will occupy this same compartment.",
       "figures": [
         {
           "paper": "zhang",
@@ -1040,7 +1042,7 @@
         "technique",
         "zhang"
       ],
-      "detail": "Assess how the interbody device rests on both endplates, then compare its location in the plated and integrated-anchor constructs.",
+      "detail": "An interbody cage sits where the disc was removed and bears against the two adjacent endplates. Its structure maintains spacing while bone grows through or around the graft. The plated and zero-profile variants both use an interbody implant, but their fixation attaches in different places. Look for the posterior margin of the cage relative to the canal.",
       "figures": [
         {
           "paper": "zhang",
@@ -1056,7 +1058,7 @@
       "citations": [
         "zhang"
       ],
-      "detail": "Integrated anchors secure the device within the disc-level construct. Trace the fixation points relative to the vertebral endplates.",
+      "detail": "A zero-profile device uses fixation integrated with the spacer. Anchors enter the adjacent vertebral bodies and help restrain the device within the disc space. Observe the direction of the anchors relative to the endplates and the location of their purchase in bone. This fixation occupies the disc-level construct.",
       "figures": [
         {
           "paper": "zhang",
@@ -1073,7 +1075,7 @@
         "technique",
         "zhang"
       ],
-      "detail": "The plate sits on the anterior vertebral bodies, outside the disc space. Compare its alignment with the cage and adjacent disc levels.",
+      "detail": "An anterior plate lies over the front surfaces of the vertebral bodies and spans the reconstructed level or levels. The cage remains between those bodies beneath it. Plate position is considered in relation to the midline and to the disc spaces above and below the construct. Compare the plate’s longer footprint with the integrated fixation option.",
       "figures": [
         {
           "paper": "zhang",
@@ -1090,7 +1092,7 @@
         "technique",
         "zhang"
       ],
-      "detail": "The plate screws engage the vertebral bodies. Review their relationship to endplates and how they stabilize the interbody reconstruction.",
+      "detail": "Plate screws secure the anterior plate by engaging the vertebral bodies. Their paths can be assessed relative to the endplates and the neighboring disc spaces. The screws and plate help stabilize the motion segment while fusion develops. Inspect how a construct spanning several levels uses the bodies at its ends and along its length.",
       "figures": [
         {
           "paper": "zhang",
@@ -1107,7 +1109,7 @@
         "technique",
         "zhang"
       ],
-      "detail": "Compare alignment, implant depth and disc height after reconstruction. Imaging is used to inspect level and hardware position.",
+      "detail": "Imaging can show the reconstructed disc height, hardware depth and alignment with adjacent levels. The lateral view helps distinguish the anterior plate, the interbody implant and the posterior vertebral margin. Comparing these relationships helps identify a device that sits too far forward or back. The relevant landmarks depend on the chosen fixation.",
       "figures": [
         {
           "paper": "zhang",
@@ -1124,7 +1126,7 @@
         "technique",
         "ao"
       ],
-      "detail": "Removing retraction allows the displaced soft tissues to return. The exposed field can then be inspected before layered closure.",
+      "detail": "The retractor held the carotid sheath laterally and the trachea and esophagus medially. When it is removed, the soft tissues return toward their original positions and the deeper implant becomes less visible. The field is reassessed for bleeding before the superficial layers are closed. Follow the same corridor in reverse to reorient to the neck surface.",
       "figures": [
         {
           "paper": "ao",
@@ -1141,7 +1143,7 @@
         "ao",
         "technique"
       ],
-      "detail": "Reapproximate the superficial muscle layer before returning to the skin margins.",
+      "detail": "The platysma is the thin muscle immediately deep to the skin and subcutaneous fat. Bringing its edges together restores the superficial muscle layer across the approach. The skin margins remain visible above it, including the original ink. Compare the muscle repair with the deeper structures that have already returned to position.",
       "figures": [
         {
           "paper": "ao",
@@ -1157,7 +1159,7 @@
         "ao",
         "technique"
       ],
-      "detail": "Compare the restored skin edges with the original surface line after the deeper layer has been reapproximated.",
+      "detail": "The last step brings the exterior skin margins back into alignment over the restored platysma. The surface mark still follows the incision and makes the edge relationship easy to see. Beneath it, the anterior neck tissues cover the reconstructed disc space. This view connects the final surface line with the much deeper level that was treated.",
       "figures": [
         {
           "paper": "ao",
@@ -1178,20 +1180,27 @@
         const variation = key === 'muscle' ? config.muscle : key === 'clinoid' ? config.clinoid : null;
         return studyGuide.steps[key + ':' + variation] || studyGuide.steps[key];
     }
-    function stepCitations(ids) {
-        const sources = [...new Set(ids)].map(paperById).filter(Boolean);
-        return sources.length ? `<ul class="study-citations">${sources.map(p =>
-            `<li>${sourceLink(p.url, p.citation || p.title)}</li>`).join('')}</ul>` : '';
+    function studyCitations(ids) {
+        return [...new Set(ids)].map(paperById).filter(Boolean);
     }
+
+    function stepCitations(ids) {
+        const sources = studyCitations(ids);
+        return sources.length ? `<ul class="study-citations">${sources.map(paper =>
+            `<li>${sourceLink(paper.url, paper.citation || paper.title)}</li>`).join('')}</ul>` : '';
+    }
+
     function studyNotes(step, index) {
         const entry = studyEntry(step);
-        const notes = entry ? `<details class="study-notes"><summary>Step notes &amp; sources</summary>
-            <p>${escape(entry.detail)}</p>${stepCitations(entry.citations)}</details>` : '';
-        if (index !== 0) return notes;
-        const reading = studyGuide.reading;
-        return notes + `<details class="study-notes"><summary>Approach background</summary>
-            <p>${escape(studyGuide.overview)}</p>${stepCitations(studyGuide.overviewCitations)}
-            ${reading ? sourceLink(reading.url, reading.label) : ''}</details>`;
+        if (!entry) return '';
+        const reading = index === 0 ? studyGuide.reading : null;
+        const citations = studyCitations(index === 0
+            ? [...entry.citations, ...studyGuide.overviewCitations] : entry.citations);
+        const links = citations.map((paper, i) =>
+            `<a href="${escape(paper.url)}" title="${escape(paper.citation || paper.title)}" aria-label="${escape(paper.citation || paper.title)}" target="_blank" rel="noopener noreferrer">[${i + 1}]</a>`);
+        if (reading) links.push(sourceLink(reading.url, 'Atlas'));
+        return `<details class="study-notes"><summary>Details</summary>
+            <p>${escape(entry.detail)}${links.length ? ` <span class="study-reference-links">${links.join(' ')}</span>` : ''}</p></details>`;
     }
 
     function stepFigures(step) {
@@ -1216,7 +1225,7 @@
                     <img src="${escape(figure.image)}" alt="${escape(figure.takeaway)}" loading="lazy">
                 </a>
                 <figcaption><strong>${escape(label)}</strong><p>${escape(figure.takeaway)}</p>
-                    <p>${escape(credit)}${license}</p>${url ? sourceLink(url, 'Open published source') : ''}
+                    <p class="figure-credit">${escape(credit)}${license}</p>${url ? sourceLink(url, 'Open published source') : ''}
                 </figcaption>
             </figure>`;
         }).join('');
@@ -1632,6 +1641,7 @@
     function shader(type, text) { const s = gl.createShader(type); gl.shaderSource(s, text); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
         throw Error(gl.getShaderInfoLog(s)); return s; }
     function initGL() {
+        skinInkMasks.clear();
         gl = canvas.getContext('webgl', { antialias: true, alpha: false, preserveDrawingBuffer: true });
         if (!gl)
             throw Error('WebGL is unavailable');
@@ -1675,6 +1685,7 @@ precision highp float;
 #else
 precision mediump float;
 #endif
+uniform sampler2D uInkMask;uniform vec4 uInkBounds;uniform float uInkProgress;
 uniform mediump float uLine;uniform vec4 uColor;uniform float uSelected,uPick,uRegion,uCut,uChange,uWindowAction,uBurrs,uIsMarker,uMarkKind,uMarkAxis,uMarkReveal,uMaterial,uSurgical,uQuality;uniform vec3 uMarkCenter;uniform vec2 uMarkRange,uViewport;uniform mediump float uAction;uniform vec4 uCervicalCut;uniform vec3 uCamPos;uniform float uFisVeil;uniform mediump float uSplitKind;uniform float uSplitPass;uniform vec4 uGroove;uniform vec3 uInner;varying mediump vec3 vNormal;varying vec3 vOriginal;varying vec3 vEye;varying mediump float vAO;varying mediump vec3 vObjN;varying float vSplit;varying float vIncT;
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 float hsh(vec3 p){p=fract(p*.1031);p+=dot(p,p.zyx+31.32);return fract((p.x+p.y)*p.z);}
@@ -1745,12 +1756,24 @@ if(tissue&&uSurgical>.5){
 float edge=uCervicalCut.x>.001 ? abs(vOriginal.z-uCervicalCut.y) : 1.;
 if(edge<.038)c=mix(c,vec3(.71,.49,.40),.4*(1.-edge/.038));
 if(uChange==5.)c=mix(c,vec3(1.,.65,.17)*(.6+.4*light),.14+.20*rim);
+if(uInkProgress>0.){
+  vec2 uv=(vOriginal.xy-uInkBounds.xy)/uInkBounds.zw;
+  vec4 ink=texture2D(uInkMask,uv);
+  float outer=smoothstep(.18,.55,vObjN.z);
+  c=mix(c,vec3(.052,.041,.038),ink.a*outer*step(ink.r,uInkProgress));
+}
 if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb,.8);gl_FragColor=vec4(c,alpha);}`));
         gl.linkProgram(program);
         if (!gl.getProgramParameter(program, gl.LINK_STATUS))
             throw Error(gl.getProgramInfoLog(program));
         gl.useProgram(program);
-        ['View', 'Gravity', 'Distance', 'Aspect', 'Scale', 'Pan', 'Color', 'Selected', 'Pick', 'Region', 'Target', 'Cut', 'Motion', 'Action', 'Offset', 'Change', 'WindowAction', 'FlapAngle', 'Side', 'Burrs', 'IsMarker', 'Line', 'LinePx', 'LineNudge', 'MarkKind', 'MarkAxis', 'MarkReveal', 'MarkCenter', 'MarkRange', 'Material', 'Surgical', 'Quality', 'Viewport', 'CervicalCut', 'FlapAxis', 'FlapPivot', 'CamPos', 'FisVeil', 'CurlOn', 'CurlIA', 'CurlPivot', 'CurlAxis', 'CurlAway', 'CurlLift', 'CurlP', 'CurlRow', 'DrapeW', 'DrapeP', 'Drape', 'PartOn', 'Part', 'Inc', 'IncReveal', 'SplitKind', 'SplitPlane', 'SplitInc', 'SplitPass', 'Groove', 'Inner'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
+        ['InkMask', 'InkBounds', 'InkProgress', 'View', 'Gravity', 'Distance', 'Aspect', 'Scale', 'Pan', 'Color', 'Selected', 'Pick', 'Region', 'Target', 'Cut', 'Motion', 'Action', 'Offset', 'Change', 'WindowAction', 'FlapAngle', 'Side', 'Burrs', 'IsMarker', 'Line', 'LinePx', 'LineNudge', 'MarkKind', 'MarkAxis', 'MarkReveal', 'MarkCenter', 'MarkRange', 'Material', 'Surgical', 'Quality', 'Viewport', 'CervicalCut', 'FlapAxis', 'FlapPivot', 'CamPos', 'FisVeil', 'CurlOn', 'CurlIA', 'CurlPivot', 'CurlAxis', 'CurlAway', 'CurlLift', 'CurlP', 'CurlRow', 'DrapeW', 'DrapeP', 'Drape', 'PartOn', 'Part', 'Inc', 'IncReveal', 'SplitKind', 'SplitPlane', 'SplitInc', 'SplitPass', 'Groove', 'Inner'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
+        gl.uniform1i(uniforms.InkMask, 1);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.activeTexture(gl.TEXTURE0);
         let vertexCount = 0;
         meshes.forEach((m, i) => { m.index = i; m.hidden = false; m.first = vertexCount; vertexCount += m.count; m.rgb = m.color.match(/\w\w/g).map(x => parseInt(x, 16) / 255); m.innerRgb = m.innerColor ? hexRgb(m.innerColor) : null; m.surgicalTint=null; });
         buffer = gl.createBuffer();
@@ -1790,6 +1813,75 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         const vp = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
         drawLimitCache = Math.max(256, Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || 4096, gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096, vp ? Math.min(vp[0], vp[1]) : 4096));
     } return drawLimitCache; }
+    function skinInkPath() {
+        const mark = meshes.find(m => m.marker && m.markerStages.includes('prepare')
+            && m.configuration === config.levels && meshSide(m) === operativeSide());
+        if (!mark) return null;
+        const [start, end] = mark.markerRange;
+        return [[-start, mark.anchor[1]], [-end, mark.anchor[1]]];
+    }
+
+    // Draw ink in the skin's rest coordinates. The same pixels then follow the
+    // parted edges, reflected flap and closure through the existing mesh transforms.
+    const skinInkMasks = new Map();
+    function skinInkTexture(points) {
+        const size = 512, radius = .065, padding = .12;
+        const left = Math.min(...points.map(([x]) => x)) - padding;
+        const bottom = Math.min(...points.map(([, y]) => y)) - padding;
+        const width = Math.max(...points.map(([x]) => x)) + padding - left;
+        const height = Math.max(...points.map(([, y]) => y)) + padding - bottom;
+        const pixels = new Uint8Array(size * size * 4);
+        const u = x => (x - left) / width * size;
+        const v = y => (y - bottom) / height * size;
+        const clampPixel = n => Math.min(size - 1, Math.max(0, Math.floor(n)));
+        for (let i = 1; i < points.length; i++) {
+            const [ax, ay] = points[i - 1], [bx, by] = points[i];
+            const dx = bx - ax, dy = by - ay, lengthSquared = dx * dx + dy * dy;
+            for (let py = clampPixel(v(Math.min(ay, by) - radius)); py <= clampPixel(v(Math.max(ay, by) + radius)); py++) {
+                for (let px = clampPixel(u(Math.min(ax, bx) - radius)); px <= clampPixel(u(Math.max(ax, bx) + radius)); px++) {
+                    const x = left + (px + .5) * width / size - ax;
+                    const y = bottom + (py + .5) * height / size - ay;
+                    const t = Math.max(0, Math.min(1, (x * dx + y * dy) / (lengthSquared || 1)));
+                    const alpha = Math.round(255 * Math.max(0, Math.min(1, (radius - Math.hypot(x - dx * t, y - dy * t)) / .02)));
+                    const index = 4 * (py * size + px);
+                    if (alpha <= pixels[index + 3]) continue;
+                    pixels[index] = Math.round(255 * (i - 1 + t) / (points.length - 1));
+                    pixels[index + 3] = alpha;
+                }
+            }
+        }
+        const texture = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.activeTexture(gl.TEXTURE0);
+        return { texture, bounds: [left, bottom, width, height] };
+    }
+
+    function prepareSkinInk(picking) {
+        if (picking || !procedure) return 0;
+        const marking = steps.findIndex(step => step.phase === 'prepare');
+        if (marking < 0 || stage < marking || stage === marking && beforeCurrent) return 0;
+        const progress = stage === marking ? opening : 1;
+        if (progress <= 0) return 0;
+        const key = config.levels + ':' + operativeSide();
+        if (!skinInkMasks.has(key)) {
+            const points = skinInkPath();
+            if (!points?.length) return 0;
+            skinInkMasks.set(key, skinInkTexture(points));
+        }
+        const { texture, bounds } = skinInkMasks.get(key);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.uniform4fv(uniforms.InkBounds, bounds);
+        return progress;
+    }
+
     function draw(picking = false) {
         if (!available)
             return;
@@ -1828,12 +1920,14 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         gl.disable(gl.BLEND);
         gl.depthFunc(gl.LEQUAL);
         gl.depthMask(true);
+        gl.uniform1f(uniforms.InkProgress, 0);
         drawProps(picking); // schematic head holder and table (room views only); restores the anatomy buffer
+        const inkProgress = prepareSkinInk(picking);
         for (const m of list) {
             ensureGeometry(m);
             const flat=!(m.group in materialIds);
             let rgb=palette==='surgical' && !flat ? surgicalRgb[m.group] : m.rgb;
-            if (m.marker && steps[stage]?.phase === 'prepare' && m.markerStages.includes('prepare')) rgb = [.055, .045, .045];
+            gl.uniform1f(uniforms.InkProgress, m.group === 'skin' && meshSide(m) === operativeSide() ? inkProgress : 0);
             if(picking) {
                 const id=m.index+1; rgb=[(id&255)/255,((id>>8)&255)/255,((id>>16)&255)/255];
             }
