@@ -1,0 +1,24 @@
+.case-header-heading {
+    display: flex;
+    align-items: center;
+    gap: .65rem 1rem;
+    min-width: 0;
+}
+
+.case-back {
+    display: inline-block;
+    flex: none;
+    padding: .45rem .7rem;
+    border: 0;
+    border-radius: .35rem;
+    background: #315a40;
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.case-back:hover, .case-back:focus-visible {
+    background: #244832;
+}

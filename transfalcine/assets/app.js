@@ -11,7 +11,7 @@
     const escape = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const mobileQuery = matchMedia('(max-width:760px)');
     let isMobile = mobileQuery.matches, desktopLabelPreference = true, mobileLabelPreference = false, viewZoom = 1;
-    let config = { region: 'anterior' }, steps = [], stage = 0, mode = '3d', selected = -1, contextAlpha = 1, contextSide = 'right', procedure = true, prelabelsOn = !isMobile, opening = 1, animationToken = 0, separateLayers = false, instrumentsOn = true, capturing = false, beforeCurrent = false, regionalContext = true, contextLayerSnapshot = null;
+    let config = { region: 'anterior' }, steps = [], stage = 0, mode = '3d', selected = -1, contextAlpha = 1, contextSide = 'right', procedure = true, prelabelsOn = !isMobile, opening = 1, animationToken = 0, separateLayers = false, instrumentsOn = true, beforeCurrent = false, regionalContext = true, contextLayerSnapshot = null;
     const enabled = { skin: true, galea: true, pericranium: true, bone: true, brain: true, arteries: true, veins: true, dura: true, arachnoid: true };
     // Surgical palette: approximate unlit tissue albedo (sRGB) used by the material shader; Atlas keeps the manifest colours.
     const palettes = { atlas: { skin: '#d9a184', galea: '#d8dad3', pericranium: '#dcd6e4', bone: '#e2d5b8', brain: '#bca99d', muscle: '#b87367', fascia: '#a4c7ba', deepfascia: '#75a99a', fat: '#debd69', arteries: '#dd6268', veins: '#5f6fae', nerves: '#f2d776', dura: '#95b7bb', arachnoid: '#cfe3ea' }, surgical: { skin: '#cf9a7f', galea: '#dcdbd3', pericranium: '#d8d9e0', bone: '#dccdb0', brain: '#d4aa9c', muscle: '#82302a', fascia: '#e2ddd1', deepfascia: '#d9dcd8', fat: '#e3c677', arteries: '#c4423d', veins: '#5e3e66', nerves: '#ede3c6', dura: '#c4bcb5', arachnoid: '#e6eef1' } };
@@ -175,9 +175,9 @@
     function poseMatrix(p) { const s = sideSign(), r = Math.PI / 180; return qMat(qMul(qAxis([1, 0, 0], -p.extension * r), qMul(qAxis([0, 0, 1], -s * p.lateral * r), qAxis([0, 1, 0], -s * p.rotation * r)))); }
     // Advance the displayed pose; called at the start of every draw. Step changes and the Anatomical/Operative toggle
     // glide over 0.65 s (poseBlend, timed by poseClock = the render frame time); slider input and the 'position' step
-    // progress apply directly. Study-plate captures always use the requested pose.
+    // progress apply directly.
     function updatePose() { const want = requestedPose(); let shown = want; if (poseBlend && POSE_KEYS.every(k => Math.abs(poseBlend.from[k] - want[k]) < 1e-3))
-        poseBlend = null; if (poseBlend && !capturing) {
+        poseBlend = null; if (poseBlend) {
         const t = Math.max(0, Math.min(1, (poseClock - poseBlend.start) / poseBlend.duration)), e = smoothstep01(t);
         shown = Object.fromEntries(POSE_KEYS.map(k => [k, poseBlend.from[k] + (want[k] - poseBlend.from[k]) * e]));
         if (t >= 1)
@@ -243,7 +243,7 @@
         return; interactionActive = false; render(true); }, 140); }
     // Camera glide: slerp the orientation and ease distance and zoom to a preset (same frame) over
     // `duration` ms, timed by poseClock like the pose blend. Used when the 'position' step frames the room; any user
-    // camera input or preset cancels it (stopGlide). Study-plate captures ignore it.
+    // camera input or preset cancels it (stopGlide).
     function qSlerp(a, b, t) { let d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]; if (d < 0) {
         b = b.map(x => -x);
         d = -d;
@@ -265,7 +265,7 @@
     let roomCameraAuto = false, cameraExplicit = false;
     function stopGlide(user = true) { camGlide = null; if (user)
         roomCameraAuto = false; }
-    function updateGlide() { if (!camGlide || capturing)
+    function updateGlide() { if (!camGlide)
         return; const { from, to } = camGlide, t = Math.max(0, Math.min(1, (poseClock - camGlide.start) / camGlide.duration)), e = smoothstep01(t), mix = (a, b) => a + (b - a) * e; viewQ = qSlerp(from.q, to.q, e); distance = mix(from.distance, to.distance); viewZoom = mix(from.zoom, to.zoom); viewChanged(); if (t >= 1)
         camGlide = null;
     else
@@ -289,7 +289,7 @@
     function stepView(s) { const sign = sideSign(), v = s.view, mx = p => p && [p[0] * sign, p[1], p[2]]; return { ...v, frame: v.frame || 'head', yaw: v.yaw * sign, roll: (v.roll || 0) * sign, eye: mx(v.eye), up: mx(v.up) }; }
     function setProcedureSide(side) { if (!['right', 'left', 'both'].includes(side))
         return; contextSide = side; clearSelection(); syncControls(); updateChangeControls(); if (mode === '2d')
-        showDiagram();
+        showSourceFigures();
     else
         render(); }
     function setPalette(next) { if (!palettes[next])
@@ -297,7 +297,7 @@
         localStorage.setItem('transfalcine-palette', next);
     }
     catch (error) { } syncControls(); if (mode === '2d')
-        showDiagram();
+        showSourceFigures();
     else
         render(); }
     function toggleFullContext() { const expanded = Object.keys(enabled).filter(k => enabled[k]).every(k => allEnabled[k]); if (!expanded) {
@@ -313,7 +313,7 @@
         Object.assign(allEnabled, contextLayerSnapshot || Object.fromEntries(Object.keys(allEnabled).map(k => [k, false])));
         regionalContext = true;
     } syncControls(); clearSelection(); updateChangeControls(); if (mode === '2d')
-        showDiagram();
+        showSourceFigures();
     else
         render(); }
     function chooseIndication(region, side = contextSide) {
@@ -370,8 +370,11 @@
     } }
     $$('[role=tab]').forEach(b => b.onclick = () => setTab(b.id.slice(4)));
     function setMode(next) { animationToken++; mode = next; $('#mode3d').setAttribute('aria-pressed', mode === '3d'); $('#mode2d').setAttribute('aria-pressed', mode === '2d'); for (const s of ['#canvas', '#viewinfo', '.floating', '#gesturehint', '.viewtools', '#mobileModelDock', '#stepLabels', '#labelLines', '#orientGizmo'])
-        $(s).hidden = mode !== '3d'; $('#figurepanel').hidden = mode === '3d'; $('#popup').hidden = true; if (mode === '2d')
-        showDiagram();
+        $(s).toggleAttribute('hidden', mode !== '3d'); $('#figurepanel').hidden = mode === '3d'; $('#popup').hidden = true; if (mode === '2d') {
+        $('#labelLines').replaceChildren();
+        $('#stepLabels').replaceChildren();
+        showSourceFigures();
+    }
     else {
         playStepAnimation();
         render();
@@ -419,58 +422,496 @@
         $('#papers').append(card);
     } $('#paperEmpty').hidden = count > 0; $('#paperCount').textContent = papers.length; }
     $('#paperSearch').oninput = renderPapers;
-    function captureStepImages() { if (!available || typeof canvas.toDataURL !== 'function')
-        return manifest.study_plates || []; const saved = { viewQ, camFrame, poseOverride, distance, viewZoom, pan: [...pan], selected, opening, procedure, contextSide, separateLayers, enabled: { ...enabled }, allEnabled: { ...allEnabled }, beforeCurrent, regionalContext, hidden: meshes.map(m => m.hidden) }; const s = steps[stage], vside = stepView(s), images = []; capturing = true; try {
-        viewZoom = 1;
-        regionalContext = saved.regionalContext;
-        selected = -1;
-        opening = 1;
-        procedure = true;
-        for (const k in enabled)
-            enabled[k] = persistentLayers.has(k) || s.groups.includes(k);
-        meshes.forEach(m => m.hidden = false);
-        poseOverride = null; // plates show the pose the step itself requests
-        // Plate cameras: the step's recommended camera (head-framed, except the world-framed 'position' view) and,
-        // without a stage change, a second head-framed oblique view.
-        const views = hasStageChange() ? [{ ...vside, title: 'Before this step', before: true }, { ...vside, title: 'After this step', before: false }] : [{ ...vside, title: 'Approach view' }, { title: 'Superior oblique view', frame: 'head', yaw: .8 * sideSign(), pitch: s.id === 'muscle' ? .12 : 1.02, distance: s.id === 'muscle' ? 15 : s.view.distance + 1, target: vside.target }];
-        for (const v of views) {
-            beforeCurrent = v.before ?? saved.beforeCurrent;
-            updatePose(); // Render the plate with its own patient pose.
-            applyCamera(v);
-            viewZoom = v.zoom ?? 1;
-            pan = [0, 0];
-            separateLayers = false;
-            draw(false);
-            images.push({ image: canvas.toDataURL('image/png'), alt: v.title + ' for ' + s.title, caption: v.title + ' · ' + operativeSide() + (s.isolateBone ? (!allEnabled.bone ? ' · isolated skull-base context' : ' · expanded bone context') : '') });
+    const studyGuide = {
+  "overviewCitations": [
+    "alexander"
+  ],
+  "steps": {
+    "orient": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "A contralateral transfalcine approach reaches the medial surface of one cerebral hemisphere from the opposite side. The interhemispheric fissure is the cleft between the hemispheres, and the falx is the vertical fold of dura within it. A window in that fold provides a view across the midline. Compare the anterior, middle and posterior corridors to see how the entry aligns with a different part of the corpus callosum.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Surface landmarks and the position of the bone window.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1A–B"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2A–B"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3A–B"
+            }
+          },
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "position": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The specimens were positioned with the target side uppermost so gravity could help the approach hemisphere fall away from the falx. The anterior and middle exposures used a lateral setup with the vertex elevated. The posterior exposure used a three-quarter prone position. The purpose of these positions is to improve the natural space between the medial cortex and the falx.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Head position in the corresponding cadaveric setup.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1A"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2A"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3A"
+            }
+          },
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "incision": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The anterior dissection used a broad bicoronal incision behind the hairline to expose the frontal vault. The other two corridors used a linear incision over a smaller target region. Relate the black mark to the sagittal suture and the intended bone opening beneath it. The mark travels with the scalp surface as the soft tissues are reflected.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Skin marking and incision course.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1A"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2A"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3A"
+            }
+          },
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "reflect": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The scalp and galea lift over the calvarium, the bony vault of the skull. The pericranium lies deeper against the outer table and is cleared from the planned bone opening. The sagittal suture marks where the two parietal bones meet. Comparing it with the transverse sutures helps localize the intended corridor.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Compare the initial surface exposure with the exposed bone.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1A–B"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2A–B"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3A–B"
+            }
+          },
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "burr": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The central burr hole is positioned in relation to the superior sagittal sinus, a large venous channel beneath the midline. The paired holes on either side frame the edges of the rectangular opening. Their arrangement allows a view of the entry-side dura and the sinus region after the bone flap lifts. Follow the relationship between the visible sutures and the venous channel beneath them.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Burr holes and parasagittal craniotomy.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1B"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2B"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3B"
+            }
+          },
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "separate": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The inner table is the compact inner layer of the skull. The underlying dura can adhere to it, especially near the midline and the superior sagittal sinus. Releasing this interface lets the bone flap lift while the dura remains below. The illustrated plane is extradural, between the bone and the outer dural surface.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Transition from bone work to dural exposure.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1B–C"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2B–C"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3B–C"
+            }
+          },
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "elevate": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The raised bone flap exposes dura on the entry side and across a narrow strip of the opposite side. The superior sagittal sinus runs in the attached edge of the falx under the sagittal suture. Exposing its width helps establish where the dural opening and interhemispheric corridor will sit. Compare the bone window with the midline and the selected third.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Dural exposure following elevation of the bone flap.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1C"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2C"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3C"
+            }
+          },
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "dura": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The dural flap is based medially near the superior sagittal sinus. Reflecting it exposes the entry-side medial brain surface while keeping the venous channel in view. Branches draining the brain can enter the sinus near this edge. The dural opening is the surface entrance to the deeper space between the hemispheres.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Sinus-based dural opening and reflection.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1D"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2D"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3D"
+            }
+          },
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "interhemispheric": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The arachnoid spans the interhemispheric fissure, and bridging veins travel from the cortical surface to the superior sagittal sinus. The corridor follows the medial hemisphere toward the genu, body or splenium of the corpus callosum, depending on its level. These are the front bend, central portion and thick posterior end of the fiber bundle joining the hemispheres. Identify the veins that can limit the working angle.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Interhemispheric exposure near the corpus callosum.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1E"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2E"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3E"
+            }
+          },
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "falx": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The falx is a sagittal sheet of dura separating the hemispheres. The study’s window accesses the opposite side through this sheet while remaining below the superior sagittal sinus. The straight sinus, where the falx meets the tentorium posteriorly, is an additional posterior landmark. Compare the location of the window with both the venous boundaries and the original bone opening.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Falcine opening and the revealed contralateral hemisphere.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1F"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2F"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3F"
+            }
+          },
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "limits": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The study measured how far upward and laterally the opposite hemisphere could be seen through the falcine opening. The upper reach was farther below the cortical surface in more posterior exposures. The lateral field also varied with depth within the fissure. These measurements describe the cadaveric specimens and help explain why an opening at one level gives a different view from an opening at another.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "label": "Figure 4",
+          "takeaway": "Comparison of the superior and lateral exposure limits in all three thirds.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "image": "../assets/source-figures/transfalcine/figure-4.jpg",
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "release": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The model lets the medial hemisphere return toward the falx after the working corridor is released. Bridging veins connect the moving brain surface with fixed dural venous channels, so their position can change as the space closes. Follow their path back toward the superior sagittal sinus. This step illustrates the return from the working position.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Interhemispheric exposure near the corpus callosum.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1E"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2E"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3E"
+            }
+          },
+          "related": true,
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "dura-close": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The dural leaflet returns toward the margins of its earlier opening. Its base stays adjacent to the superior sagittal sinus, the landmark that oriented the opening from the start. Watch which surface is covered as the leaflet returns. The related paper figure shows the open stage that the model reverses here.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Sinus-based dural opening and reflection.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1D"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2D"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3D"
+            }
+          },
+          "related": true,
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "bone-replace": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The rectangular calvarial flap returns to its original position after the dura has been reapproximated. Its edges line up with the surrounding skull, and the original relationship to the sagittal suture becomes visible again. This step illustrates how the bony covering is restored. The related paper figure shows the original exposure.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Dural exposure following elevation of the bone flap.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1C"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2C"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3C"
+            }
+          },
+          "related": true,
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    },
+    "close": {
+      "citations": [
+        "alexander"
+      ],
+      "detail": "The pericranium, galea and skin return above the replaced bone. The pericranium coats the skull, the galea forms the strong fibrous layer of the scalp, and the skin lies outermost. The black line helps trace the original planned opening after these layers come together. The model illustrates closure by reversing the earlier exposure.",
+      "figures": [
+        {
+          "paper": "alexander",
+          "takeaway": "Skin marking and incision course.",
+          "url": "https://doi.org/10.1227/ons.0000000000002057",
+          "byRegion": {
+            "anterior": {
+              "image": "../assets/source-figures/transfalcine/figure-1.jpg",
+              "label": "Figure 1A"
+            },
+            "middle": {
+              "image": "../assets/source-figures/transfalcine/figure-2.jpg",
+              "label": "Figure 2A"
+            },
+            "posterior": {
+              "image": "../assets/source-figures/transfalcine/figure-3.jpg",
+              "label": "Figure 3A"
+            }
+          },
+          "related": true,
+          "credit": "Alexander AY, Graepel S, Peris-Celda M, Lanzino G. Operative Neurosurgery. 2026. doi:10.1227/ons.0000000000002057. © Congress of Neurological Surgeons."
+        }
+      ]
+    }
+  }
+};
+    const paperById = id => papers.find(paper => paper.id === id);
+    const sourceLink = (url, text) => `<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${escape(text)}</a>`;
+
+    function studyEntry(step) {
+        const key = step.phase || step.id;
+        const variation = key === 'muscle' ? config.muscle : key === 'clinoid' ? config.clinoid : null;
+        return studyGuide.steps[key + ':' + variation] || studyGuide.steps[key];
+    }
+    function studyCitations(ids) {
+        return [...new Set(ids)].map(paperById).filter(Boolean);
+    }
+
+    function stepCitations(ids) {
+        const sources = studyCitations(ids);
+        return sources.length ? `<ul class="study-citations">${sources.map(paper =>
+            `<li>${sourceLink(paper.url, paper.citation || paper.title)}</li>`).join('')}</ul>` : '';
+    }
+
+    function studyNotes(step, index) {
+        const entry = studyEntry(step);
+        if (!entry) return '';
+        const reading = index === 0 ? studyGuide.reading : null;
+        const citations = studyCitations(index === 0
+            ? [...entry.citations, ...studyGuide.overviewCitations] : entry.citations);
+        const links = citations.map((paper, i) =>
+            `<a href="${escape(paper.url)}" title="${escape(paper.citation || paper.title)}" aria-label="${escape(paper.citation || paper.title)}" target="_blank" rel="noopener noreferrer">[${i + 1}]</a>`);
+        if (reading) links.push(sourceLink(reading.url, 'Atlas'));
+        return `<details class="study-notes"><summary>Details</summary>
+            <p>${escape(entry.detail)}${links.length ? ` <span class="study-reference-links">${links.join(' ')}</span>` : ''}</p>
+            ${citations.length || reading ? `<h4>Sources for this step</h4><ul class="study-citations">${citations.map(paper => `<li>${sourceLink(paper.url, paper.citation || paper.title)}</li>`).join('')}${reading ? `<li>${sourceLink(reading.url, reading.label || 'Atlas')}</li>` : ''}</ul>` : ''}</details>`;
+    }
+
+    function stepFigures(step) {
+        return (studyEntry(step)?.figures || []).map(figure =>
+            figure.byRegion ? { ...figure, ...figure.byRegion[config.region] } : figure);
+    }
+
+    function showSourceFigures() {
+        const panel = $('#figurepanel');
+        const step = steps[stage];
+        const figures = stepFigures(step);
+        const images = figures.map(figure => {
+            const paper = paperById(figure.paper);
+            const url = figure.url || paper?.url;
+            const credit = figure.credit || paper?.citation || paper?.title || '';
+            const label = figure.related ? 'Related figure · ' + figure.label : figure.label;
+            const license = figure.licenseUrl
+                ? ' · ' + sourceLink(figure.licenseUrl, figure.license)
+                : '';
+            return `<figure class="source-figure">
+                <a class="source-figure-image" href="${escape(figure.image)}" target="_blank" rel="noopener noreferrer">
+                    <img src="${escape(figure.image)}" alt="${escape(figure.takeaway)}" loading="lazy">
+                </a>
+                <figcaption><strong>${escape(label)}</strong><p>${escape(figure.takeaway)}</p>
+                    <p class="figure-credit">${escape(credit)}${license}</p>${url ? sourceLink(url, 'Open published source') : ''}
+                </figcaption>
+            </figure>`;
+        }).join('');
+        panel.innerHTML = `<section class="diagram source-figure-panel">
+            <h2>${escape(titleCase(step.title))}</h2>
+            ${images || `<p>See the cited sources for this step.</p>${stepCitations(step.sources || [])}`}
+        </section>`;
+        for (const image of panel.querySelectorAll('.source-figure-image img')) {
+            image.addEventListener('error', () => {
+                const message = document.createElement('p');
+                message.textContent = 'The bundled figure could not load. Open the published source below.';
+                image.closest('a').replaceWith(message);
+            }, { once: true });
         }
     }
-    catch (error) {
-        console.warn('2D snapshot unavailable', error);
-        return manifest.study_plates || [];
-    }
-    finally {
-        viewQ = saved.viewQ;
-        camFrame = saved.camFrame;
-        poseOverride = saved.poseOverride;
-        distance = saved.distance;
-        viewZoom = saved.viewZoom;
-        viewChanged();
-        pan = saved.pan;
-        selected = saved.selected;
-        opening = saved.opening;
-        procedure = saved.procedure;
-        contextSide = saved.contextSide;
-        separateLayers = saved.separateLayers;
-        beforeCurrent = saved.beforeCurrent;
-        regionalContext = saved.regionalContext;
-        Object.assign(enabled, saved.enabled);
-        Object.assign(allEnabled, saved.allEnabled);
-        meshes.forEach((m, i) => m.hidden = saved.hidden[i]);
-        capturing = false;
-        draw(false);
-    } return images; }
-    function showDiagram() { const p = $('#figurepanel'), images = captureStepImages(); p.innerHTML = `<div class="diagram"><h2>${escape(titleCase(steps[stage].title))}</h2><div class="reference-plates">${images.map((im, i) => `<figure><img src="${im.image}" alt="${escape(im.alt)}" data-expand="${i}"><figcaption>${escape(im.caption)}</figcaption><button class="image-save" data-save="${i}">Save PNG</button></figure>`).join('')}</div><details class="plane-details"><summary>Interhemispheric Tissue Planes</summary><p>Vault skin and galea → pericranium → calvarium → outer dura → interhemispheric arachnoid → falx.</p><p>The sagittal sinus and bridging veins remain as landmarks while the dural and falcine windows change.</p></details></div>`; p.querySelectorAll('[data-expand]').forEach(img => img.onclick = () => img.parentElement.classList.toggle('expanded', !img.parentElement.classList.contains('expanded'))); p.querySelectorAll('[data-save]').forEach(b => b.onclick = () => { const im = images[+b.dataset.save]; downloadBlob(new Blob([decode64(im.image.split(',')[1])], { type: 'image/png' }), 'transfalcine-' + steps[stage].id + '-' + (+b.dataset.save + 1) + '.png'); }); }
-    function rebuild({ reset = false } = {}) { animationToken++; const old = steps[stage]?.id; steps = buildSteps(); $('#steps').replaceChildren(); steps.forEach((s, i) => { const card = document.createElement('article'); card.className = 'step'; card.tabIndex = 0; card.innerHTML = `<div class="step-heading"><span class="step-number">${String(i + 1).padStart(2, '0')}</span><div class="step-heading-text"><h2>${escape(titleCase(s.title))}</h2></div></div><p>${escape(s.body)}</p>`; card.onclick = () => activate(i); card.onkeydown = e => { if (e.target === card && ['Enter', ' '].includes(e.key)) {
+    function rebuild({ reset = false } = {}) { animationToken++; const old = steps[stage]?.id; steps = buildSteps(); $('#steps').replaceChildren(); steps.forEach((s, i) => { const card = document.createElement('article'); card.className = 'step'; card.tabIndex = 0; card.innerHTML = `<div class="step-heading"><span class="step-number">${String(i + 1).padStart(2, '0')}</span><div class="step-heading-text"><h2>${escape(titleCase(s.title))}</h2></div></div><p>${escape(s.body)}</p>${studyNotes(s, i)}`; card.onclick = event => { if (!event.target.closest('details, a, button')) activate(i); }; card.onkeydown = e => { if (e.target === card && ['Enter', ' '].includes(e.key)) {
         e.preventDefault();
         activate(i);
     } }; $('#steps').append(card); });  renderPapers(); renderIndications(); activate(reset ? 0 : Math.max(0, steps.findIndex(s => s.id === old))); $('#planLive').textContent = steps.length + ' guide steps. Configuration updated.'; }
@@ -519,7 +960,7 @@
         roomCameraAuto = false;
     }
     activeStepId = steps[stage].id; applyRecommendedView({ preserveCamera: true }); updateChangeControls(); updateMobileReaderHeight(); alignActiveStep(); if (mode === '2d')
-        showDiagram(); }
+        showSourceFigures(); }
     $('#previous').onclick = () => { setTab('steps'); activate(stage - 1); };
     $('#next').onclick = () => { setTab('steps'); activate(stage + 1); };
     $('#recommendedView').onclick = () => applyRecommendedView();
@@ -530,13 +971,13 @@
     $('#procedure').onchange = e => { procedure = e.target.checked; playStepAnimation(); render(); };
     $('#prelabels').onchange = e => { prelabelsOn = e.target.checked; render(); };
     $('#instruments').onchange = e => { instrumentsOn = e.target.checked; syncControls(); updateChangeControls(); if (mode === '2d')
-        showDiagram();
+        showSourceFigures();
     else
         render(); };
     $('#focusChange').onclick = () => applyRecommendedView();
     $('#regionalContext').onclick = toggleFullContext;
     $('#compareChange').onclick = () => { startPoseBlend(); beforeCurrent = !beforeCurrent; animationToken++; opening = 1; $('#compareChange').setAttribute('aria-pressed', beforeCurrent); $('#compareChange').textContent = beforeCurrent ? 'After' : 'Before'; if (mode === '2d')
-        showDiagram();
+        showSourceFigures();
     else
         render(); };
     function playStepAnimation() { const token = ++animationToken; opening = 1; if (mode !== '3d' || !procedure || !hasStageChange() || matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -571,7 +1012,7 @@
         if (!m || m.hidden || m.region && (m.region !== config.region || m.entrySide !== operativeSide())) return false;
         const step = steps[stage];
         if (m.marker)
-            return procedure && m.markerStages.includes(step.id) && (wholeStep || (!beforeCurrent || m.markerAt == null) && opening >= (m.markerAt ?? 0) && opening <= (m.markerUntil ?? 1));
+            return procedure && (step.id === 'orient' || !m.id.endsWith('-incision')) && m.markerStages.includes(step.id) && (wholeStep || (!beforeCurrent || m.markerAt == null) && opening >= (m.markerAt ?? 0) && opening <= (m.markerUntil ?? 1));
         if (m.instrument)
             return procedure && instrumentsOn && m.instrumentStage === step.id &&
                 (wholeStep || !beforeCurrent && opening >= (m.fromProgress ?? 0) && opening <= (m.to ?? 1));
@@ -1022,7 +1463,7 @@
     const TABLE = { topZ: -6.4, headY: -10, halfWidth: 11, footY: -15, mount: [0, -10, -7.2] };
     const PROP_COLORS = { holder: hexRgb('#7fd6e8'), table: hexRgb('#8aa4ae') };
     let propBuffer = null, propCache = null;
-    function propsVisible() { return propsOn && (mode === '3d' || capturing) && camFrame === 'world' && headFixed(); }
+    function propsVisible() { return propsOn && mode === '3d' && camFrame === 'world' && headFixed(); }
     // Append an unindexed tube (position + unit normal per vertex) along a polyline; parallel-transport frames.
     function tubeInto(out, pts, r, caps = false, sides = 10) { const n = pts.length; if (n < 2)
         return; const T = pts.map((p, i) => vNorm(vSub(pts[Math.min(n - 1, i + 1)], pts[Math.max(0, i - 1)]))), rings = []; let u = vNorm(vCross(T[0], Math.abs(T[0][1]) < .9 ? [0, 1, 0] : [1, 0, 0])); for (let i = 0; i < n; i++) {
@@ -1097,6 +1538,7 @@
     function shader(type, text) { const s = gl.createShader(type); gl.shaderSource(s, text); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
         throw Error(gl.getShaderInfoLog(s)); return s; }
     function initGL() {
+        skinInkMasks.clear();
         gl = canvas.getContext('webgl', { antialias: true, alpha: false, preserveDrawingBuffer: true });
         if (!gl)
             throw Error('WebGL is unavailable');
@@ -1137,6 +1579,7 @@ precision highp float;
 precision mediump float;
 #endif
 #define FISSURE_N ${fissureN}
+uniform sampler2D uInkMask;uniform vec4 uInkBounds;uniform float uInkProgress;
 uniform mediump float uLine;uniform vec4 uColor;uniform float uSelected,uPick,uIsMarker,uMarkKind,uMarkAxis,uMarkReveal,uMaterial,uSurgical,uQuality;uniform vec3 uMarkCenter;uniform vec2 uMarkRange,uViewport;uniform vec3 uFissure[FISSURE_N];uniform float uFisVeil;uniform vec3 uInner;varying mediump vec3 vNormal;varying vec3 vOriginal;varying vec3 vEye;varying mediump float vAO;varying mediump vec3 vObjN;varying float vIncT;
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 float hsh(vec3 p){p=fract(p*.1031);p+=dot(p,p.zyx+31.32);return fract((p.x+p.y)*p.z);}
@@ -1212,12 +1655,24 @@ if(tissue&&uSurgical>.5){
  if(arach)alpha=clamp(alpha*(.55+1.3*pow(1.-nv,2.))+specI*(s1+s2)*.5,0.,.92);
 }
 if(arach&&veil>0.){c=mix(c,vec3(.92,.94,.95),.4*veil);alpha=max(alpha,.62*veil);}
+if(uInkProgress>0.){
+  vec2 uv=(vOriginal.xz-uInkBounds.xy)/uInkBounds.zw;
+  vec4 ink=texture2D(uInkMask,uv);
+  float outer=smoothstep(.18,.55,vObjN.y);
+  c=mix(c,vec3(.052,.041,.038),ink.a*outer*step(ink.r,uInkProgress));
+}
 if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb,.8);gl_FragColor=vec4(c,alpha);}`));
         gl.linkProgram(program);
         if (!gl.getProgramParameter(program, gl.LINK_STATUS))
             throw Error(gl.getProgramInfoLog(program));
         gl.useProgram(program);
-        ['View', 'StudyShift', 'StudyBurr', 'BoneSection', 'Distance', 'Aspect', 'Scale', 'Pan', 'Color', 'Selected', 'Pick', 'Target', 'Offset', 'FlapAngle', 'Side', 'IsMarker', 'Line', 'LinePx', 'LineNudge', 'MarkKind', 'MarkAxis', 'MarkReveal', 'MarkCenter', 'MarkRange', 'Material', 'Surgical', 'Quality', 'Viewport', 'Fissure', 'FlapAxis', 'FlapPivot', 'FisVeil', 'CurlOn', 'CurlIA', 'CurlPivot', 'CurlAxis', 'CurlAway', 'CurlLift', 'CurlP', 'CurlRow', 'Inc', 'IncReveal', 'Inner'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
+        ['InkMask', 'InkBounds', 'InkProgress', 'View', 'StudyShift', 'StudyBurr', 'BoneSection', 'Distance', 'Aspect', 'Scale', 'Pan', 'Color', 'Selected', 'Pick', 'Target', 'Offset', 'FlapAngle', 'Side', 'IsMarker', 'Line', 'LinePx', 'LineNudge', 'MarkKind', 'MarkAxis', 'MarkReveal', 'MarkCenter', 'MarkRange', 'Material', 'Surgical', 'Quality', 'Viewport', 'Fissure', 'FlapAxis', 'FlapPivot', 'FisVeil', 'CurlOn', 'CurlIA', 'CurlPivot', 'CurlAxis', 'CurlAway', 'CurlLift', 'CurlP', 'CurlRow', 'Inc', 'IncReveal', 'Inner'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
+        gl.uniform1i(uniforms.InkMask, 1);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.activeTexture(gl.TEXTURE0);
         let vertexCount = 0;
         meshes.forEach((m, i) => { m.index = i; m.hidden = false; m.first = vertexCount; vertexCount += m.count; m.rgb = m.color.match(/\w\w/g).map(x => parseInt(x, 16) / 255); m.innerRgb = m.innerColor ? hexRgb(m.innerColor) : null; m.surgicalTint = /^ILL-sulcal-backing/.test(m.id) ? surgicalRgb.brain.map(x => x * .62) : surgicalLayerTints[baseId(m)] ? hexRgb(surgicalLayerTints[baseId(m)]) : null; });
         buffer = gl.createBuffer();
@@ -1287,6 +1742,76 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         const vp = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
         drawLimitCache = Math.max(256, Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || 4096, gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096, vp ? Math.min(vp[0], vp[1]) : 4096));
     } return drawLimitCache; }
+    function skinInkPath() {
+        const mark = clearanceMeshById.get(config.region + '-' + operativeSide() + '-incision');
+        if (!mark) return null;
+        const [start, end] = mark.markerRange;
+        return mark.markerAxis === 0
+            ? [[start, mark.anchor[2]], [end, mark.anchor[2]]]
+            : [[mark.anchor[0] * sideSign(), start], [mark.anchor[0] * sideSign(), end]];
+    }
+
+    // Draw ink in the skin's rest coordinates. The same pixels then follow the
+    // parted edges, reflected flap and closure through the existing mesh transforms.
+    const skinInkMasks = new Map();
+    function skinInkTexture(points) {
+        const size = 512, radius = .065, padding = .12;
+        const left = Math.min(...points.map(([x]) => x)) - padding;
+        const bottom = Math.min(...points.map(([, y]) => y)) - padding;
+        const width = Math.max(...points.map(([x]) => x)) + padding - left;
+        const height = Math.max(...points.map(([, y]) => y)) + padding - bottom;
+        const pixels = new Uint8Array(size * size * 4);
+        const u = x => (x - left) / width * size;
+        const v = y => (y - bottom) / height * size;
+        const clampPixel = n => Math.min(size - 1, Math.max(0, Math.floor(n)));
+        for (let i = 1; i < points.length; i++) {
+            const [ax, ay] = points[i - 1], [bx, by] = points[i];
+            const dx = bx - ax, dy = by - ay, lengthSquared = dx * dx + dy * dy;
+            for (let py = clampPixel(v(Math.min(ay, by) - radius)); py <= clampPixel(v(Math.max(ay, by) + radius)); py++) {
+                for (let px = clampPixel(u(Math.min(ax, bx) - radius)); px <= clampPixel(u(Math.max(ax, bx) + radius)); px++) {
+                    const x = left + (px + .5) * width / size - ax;
+                    const y = bottom + (py + .5) * height / size - ay;
+                    const t = Math.max(0, Math.min(1, (x * dx + y * dy) / (lengthSquared || 1)));
+                    const alpha = Math.round(255 * Math.max(0, Math.min(1, (radius - Math.hypot(x - dx * t, y - dy * t)) / .02)));
+                    const index = 4 * (py * size + px);
+                    if (alpha <= pixels[index + 3]) continue;
+                    pixels[index] = Math.round(255 * (i - 1 + t) / (points.length - 1));
+                    pixels[index + 3] = alpha;
+                }
+            }
+        }
+        const texture = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.activeTexture(gl.TEXTURE0);
+        return { texture, bounds: [left, bottom, width, height] };
+    }
+
+    function prepareSkinInk(picking) {
+        if (picking || !procedure) return 0;
+        const marking = steps.findIndex(step => step.id === 'incision');
+        if (marking < 0 || stage < marking || stage === marking && beforeCurrent) return 0;
+        const progress = stage === marking ? opening : 1;
+        if (progress <= 0) return 0;
+        const key = config.region + ':' + operativeSide();
+        if (!skinInkMasks.has(key)) {
+            const points = skinInkPath();
+            if (!points?.length) return 0;
+            skinInkMasks.set(key, skinInkTexture(points));
+        }
+        const { texture, bounds } = skinInkMasks.get(key);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.uniform4fv(uniforms.InkBounds, bounds);
+        return progress;
+    }
+
     function draw(picking = false) {
         if (!available)
             return;
@@ -1330,12 +1855,15 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         gl.depthMask(true);
         gl.uniform4fv(uniforms.StudyShift,[0,0,0,0]);
         gl.uniform4fv(uniforms.StudyBurr,[0,0,0,0]);
+        gl.uniform1f(uniforms.InkProgress, 0);
         drawProps(picking); // schematic head holder and table (room views only); restores the anatomy buffer
+        const inkProgress = prepareSkinInk(picking);
         for (const m of list) {
             ensureGeometry(m);
             const flat = m.marker || m.instrument || !(m.group in materialIds), see = !picking && opacity(m) < 1;
             // The illustrative sulcal backing gets a darker, recessed cortex tone in the Surgical palette too.
             let rgb = palette === 'surgical' && !flat ? (m.surgicalTint || surgicalRgb[m.group]) : m.rgb;
+            gl.uniform1f(uniforms.InkProgress, m.group === 'skin' && !m.marker ? inkProgress : 0);
             if (see) {
                 gl.enable(gl.BLEND);
                 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -1380,7 +1908,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         }
         gl.disable(gl.BLEND);
         gl.depthMask(true);
-        if (!picking && !capturing) {
+        if (!picking) {
             updateStepLabels();
             updateGizmo();
             syncPoseControls();
