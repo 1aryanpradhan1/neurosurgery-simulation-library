@@ -27,7 +27,7 @@
 
         window.__GUIDE_DATA__ = data;
         const script = document.createElement('script');
-        script.src = 'assets/app.js';
+        script.src = 'assets/app.js?v=bundled-figures';
         script.onload = () => document.getElementById('guide-loading')?.remove();
         script.onerror = () => { message.textContent = 'The guide could not be loaded. Please refresh the page.'; };
         document.body.append(script);
