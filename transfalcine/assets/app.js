@@ -361,7 +361,7 @@
     function downloadBlob(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 10000); }
     function decode64(s) { const str = atob(s), bytes = new Uint8Array(str.length); for (let i = 0; i < str.length; i++)
         bytes[i] = str.charCodeAt(i); return bytes; }
-    function setTab(t) { for (const k of ['steps', 'indications', 'papers']) {
+    function setTab(t) { for (const k of ['overview', 'steps', 'indications', 'papers']) {
         $('#tab-' + k).setAttribute('aria-selected', k === t);
         $('#' + k + '-panel').hidden = k !== t;
     } if (t === 'steps') {
