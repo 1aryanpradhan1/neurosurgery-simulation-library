@@ -9,4 +9,4 @@
 
 Open the standalone HTML in a browser for offline use. To preview the extracted site folder, open the folder in VS Code, start `python3 -m http.server 8000` there, and visit `http://localhost:8000/`. The guide page is `index.html` and the viewer code is `assets/app.js`. The compressed assets contain the atlas geometry and case data.
 
-The hosted version can load the recording with **About → Load MP4**. The file remains in the browser. The timestamps correspond to the 11-minute 6-second recording. Steps outside the microscope footage may include a contextual source frame.
+The hosted version looks for the recording at `neonatal-mca/assets/operative-video.mp4`. No video is included at that placeholder path. Alternatively, load the recording with **About → Load MP4**. The file remains in the browser. The timestamps correspond to the 11-minute 6-second recording. Steps outside the microscope footage may include a contextual source frame.

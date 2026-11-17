@@ -359,7 +359,7 @@
 
     function attachVideo(file) {
         if (!file) return;
-        if (videoUrl) URL.revokeObjectURL(videoUrl);
+        if (videoUrl.startsWith('blob:')) URL.revokeObjectURL(videoUrl);
         videoUrl = URL.createObjectURL(file);
         videoFailed = false;
         $('#caseVideoPlayer').hidden = false;
@@ -555,7 +555,17 @@
                 $('#caseVideoStatus').textContent = 'The video could not load. Load an MP4 from About.';
             }
             privateVideo.remove();
-        } else $('#caseVideoImport').hidden = false;
+        } else {
+            // Add the authorized video at this repository-relative path.
+            videoUrl = 'assets/operative-video.mp4';
+            video.src = videoUrl;
+            figureVideo.src = videoUrl;
+            $('#caseVideoPlayer').hidden = false;
+            $('#caseVideoImport').hidden = false;
+            video.load();
+            figureVideo.load();
+            syncVideoStep();
+        }
     }
 
     function hasStageChange() {
