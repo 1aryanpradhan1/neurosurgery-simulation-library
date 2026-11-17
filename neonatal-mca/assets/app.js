@@ -326,12 +326,13 @@
     function syncVideoStep() {
         const step = steps[stage];
         if (!step) return;
+        const displayTime = step.videoTime === null ? '' : ' · ' + (step.time === null ? '~' : '') + formatTime(step.videoTime);
         if (followingVideo) {
-            $('#caseVideoTime').textContent = step.time === null ? '' : ' · ' + formatTime(step.time);
+            $('#caseVideoTime').textContent = displayTime;
             return;
         }
-        pendingSeek = step.time;
-        $('#caseVideoTime').textContent = step.time === null ? '' : ' · ' + formatTime(step.time);
+        pendingSeek = step.videoTime;
+        $('#caseVideoTime').textContent = displayTime;
         seekPendingVideo();
     }
 
@@ -380,7 +381,7 @@
         if (!video.seeking && !video.paused && previousVideoTime !== null && now >= previousVideoTime) {
             let next = -1;
             for (let i = 0; i < steps.length; i++) {
-                const time = steps[i].time;
+                const time = steps[i].videoTime;
                 if (time !== null && time > previousVideoTime && time <= now) next = i;
             }
             if (next >= 0 && next !== stage) {
@@ -525,6 +526,19 @@
             return { ...record, state, beforeState, groups, contextLayers: surface, view,
                 change: record.changes.position ? 'position' : Object.keys(record.changes)[0] };
         });
+        // Interpolate only between recorded timestamps; preserve original times for source captions.
+        steps.forEach(step => { step.videoTime = step.time; });
+        let previous = -1;
+        for (let i = 0; i < steps.length; i++) {
+            if (steps[i].time == null) continue;
+            if (previous >= 0 && steps[i].time >= steps[previous].time) {
+                for (let j = previous + 1; j < i; j++) {
+                    steps[j].videoTime = steps[previous].time +
+                        (steps[i].time - steps[previous].time) * (j - previous) / (i - previous);
+                }
+            }
+            previous = i;
+        }
         const panel = $('#steps');
         steps.forEach((step, i) => {
             const card = document.createElement('article');
