@@ -13,7 +13,7 @@
     const mobileQuery = matchMedia('(max-width:760px)');
     let isMobile = mobileQuery.matches, desktopLabelPreference = true, mobileLabelPreference = false, viewZoom = 1;
     let steps = [], stage = 0, mode = '3d', selected = -1, contextAlpha = 1, contextSide = 'both', procedure = true, prelabelsOn = !isMobile, opening = 1, animationToken = 0, instrumentsOn = true, beforeCurrent = false, regionalContext = true, contextLayerSnapshot = null;
-    const enabled = { skin: true, galea: true, pericranium: true, bone: true, brain: true, fascia: true, arteries: true, veins: true, dura: true, arachnoid: true, clot: true };
+    const enabled = { skin: true, galea: true, pericranium: true, bone: true, brain: true, muscle: true, fascia: true, deepfascia: true, fat: true, arteries: true, veins: true, nerves: true, dura: true, arachnoid: true, clot: true };
     // Surgical palette: approximate unlit tissue albedo (sRGB) used by the material shader; Atlas keeps the manifest colours.
     const palettes = { atlas: { skin: '#d9a184', galea: '#d8dad3', pericranium: '#dcd6e4', bone: '#e2d5b8', brain: '#bca99d', muscle: '#b87367', fascia: '#a4c7ba', deepfascia: '#75a99a', fat: '#debd69', arteries: '#dd6268', veins: '#5f6fae', nerves: '#f2d776', dura: '#95b7bb', arachnoid: '#cfe3ea', clot: '#631b29' }, surgical: { skin: '#cf9a7f', galea: '#dcdbd3', pericranium: '#d8d9e0', bone: '#dccdb0', brain: '#d4aa9c', muscle: '#82302a', fascia: '#e2ddd1', deepfascia: '#d9dcd8', fat: '#e3c677', arteries: '#c4423d', veins: '#5e3e66', nerves: '#ede3c6', dura: '#c4bcb5', arachnoid: '#e6eef1', clot: '#631b29' } };
     const materialIds = { bone: 0, brain: 1, muscle: 2, fascia: 3, deepfascia: 3, fat: 4, arteries: 5, nerves: 6, dura: 7, veins: 8, arachnoid: 9, skin: 10, galea: 11, pericranium: 12, clot: 1 };
@@ -410,12 +410,12 @@
 
     function showSourceFigures() {
         const step = steps[stage], panel = $('#figurepanel');
-        figureSeek = step.still;
+        figureSeek = step.still ?? step.context;
         const related = step.time === null;
-        const frame = step.still === null ? '' : `<figure class="source-figure">
+        const frame = figureSeek === null ? '' : `<figure class="source-figure">
             <canvas hidden id="caseStill" role="img" aria-label="${escape(step.caption)}"></canvas>
             <p id="caseStillStatus">${videoUrl ? 'Loading local frame…' : 'Load the recording from About to see this frame.'}</p>
-            <figcaption><strong>${related ? 'Related frame' : 'Operative video'} · ${formatTime(step.still)}</strong>
+            <figcaption><strong>${related ? 'Related frame' : 'Operative video'} · ${formatTime(figureSeek)}</strong>
                 <p>${escape(step.caption)}</p>
                 <p class="figure-credit">${escape(caseSource.citation)} © Congress of Neurological Surgeons 2026.</p>
                 ${sourceLink(caseSource.url, 'Open published source')}</figcaption></figure>`;
@@ -475,8 +475,10 @@
 
     $('#paperSearch').oninput = renderPapers;
 
-    const surface = ['skin', 'galea', 'pericranium', 'bone', 'fascia', 'dura'];
-    const oblique = { yaw: -1.0, pitch: .25, distance: 15, zoom: 1.20 };
+    const surface = ['skin', 'galea', 'pericranium', 'bone', 'muscle', 'fascia', 'deepfascia', 'fat', 'dura'];
+    const boneExposure = ['bone', 'dura'];
+    const deepScalp = ['galea', 'pericranium', 'bone', 'muscle', 'fascia', 'deepfascia', 'fat', 'dura'];
+    const oblique = { yaw: -1.02, pitch: .28, distance: 17, zoom: 1.0 };
     function rebuild() {
         let state = {};
         steps = manifest.stepData.map(record => {
@@ -485,18 +487,19 @@
             let groups = surface;
             let view = oblique;
             if (record.phase === 'exposure') {
-                groups = record.id === 'scalp' ? surface : ['bone', 'fascia', 'dura'];
-                view = { yaw: -1.48, pitch: .04, distance: 15, zoom: 1.58 };
+                groups = ['scalp','expose-bone'].includes(record.id) ? surface : boneExposure;
+                view = { yaw: -1.27, pitch: .18, distance: 16, zoom: 1.44 };
             }
             if (record.phase === 'deep' || record.phase === 'vascular-map') {
                 groups = record.phase === 'deep' ? ['bone', 'dura'] : [];
-                view = { yaw: -1.52, pitch: .02, distance: 14, zoom: 2.28 };
+                view = { yaw: -1.18, pitch: .12, distance: 14, zoom: 2.14 };
             }
-            if (record.id === 'ct') groups = [];
+            if (record.id === 'ct') groups = ['bone'];
+            if (record.phase === 'galeal') groups = deepScalp;
             if (record.id === 'position') {
                 view = { frame: 'world', eye: [.16, .76, .62], up: [0, 0, 1], distance: 17, zoom: 1.05 };
             }
-            if (record.id === 'close-dura') groups = ['bone', 'fascia', 'dura'];
+            if (record.id === 'close-dura') groups = boneExposure;
             return { ...record, state, beforeState, groups, contextLayers: surface, view,
                 change: record.changes.position ? 'position' : Object.keys(record.changes)[0] };
         });
@@ -541,6 +544,7 @@
         const keys = Object.keys(enabled).filter(k => enabled[k]);
         const expanded = keys.every(k => allEnabled[k]), partial = Object.values(allEnabled).some(Boolean);
         regionalContext = !expanded;
+        $('#regionalContext').hidden = mode !== '3d';
         $('#regionalContext').setAttribute('aria-pressed', expanded ? 'true' : partial ? 'mixed' : 'false');
         $('#sideCaption').textContent = contextSide === 'both' ? 'Both Hemispheres · Left Operative Side' : 'Left Operative Side';
         $('#focusChange').hidden = mode !== '3d';
@@ -551,7 +555,7 @@
     }
     function syncControls() { $$('[data-layer]').forEach(e => e.checked = enabled[e.dataset.layer]); $$('[data-swatch]').forEach(e => e.style.background = palettes[palette][e.dataset.swatch]); if ($('#palette'))
         $('#palette').value = palette; $$('[data-all-layer]').forEach(e => e.checked = allEnabled[e.dataset.allLayer]); $('#side').value = contextSide; $('#procedure').checked = procedure; $('#prelabels').checked = prelabelsOn; $('#instruments').checked = instrumentsOn; }
-    const persistentLayers = new Set(['brain', 'arteries', 'veins', 'arachnoid', 'clot']);
+    const persistentLayers = new Set(['brain', 'arteries', 'veins', 'nerves', 'arachnoid', 'clot']);
     function applyRecommendedView({ preserveCamera = false } = {}) { const s = steps[stage]; for (const k in enabled)
         enabled[k] = persistentLayers.has(k) || s.groups.includes(k); contextAlpha = 1; procedure = true; meshes.forEach(m => m.hidden = false); if (!preserveCamera) {
         cameraExplicit = false;
@@ -619,13 +623,16 @@
             opening > (m.finish ? .88 : .06);
         if (m.instrument) return procedure && !beforeCurrent && instrumentsOn &&
             step.id === m.instrumentStage && opening > .08;
-        const preview = step.id === 'scan' && (m.preview || m.group === 'arteries') || step.id === 'ct' && m.id === 'subdural';
-        const inLayer = m.clip ? enabled.arteries || allEnabled.arteries : enabled[m.group] || allEnabled[m.group];
+        const preview = step.id === 'scan' && m.preview;
+        const relevant = !m.contextOnly || step.phase === 'overview' && m.overview;
+        const inLayer = m.clip ? enabled.arteries || allEnabled.arteries :
+            allEnabled[m.group] || enabled[m.group] && relevant;
         if (!inLayer) return false;
         if (!procedure) return !m.show || m.show === 'dura' && m.group === 'arachnoid';
+        if (m.afterBone && stateProgress(m.afterBone) <= .015) return false;
         if (m.show && !preview && stateProgress(m.show) <= .03) return false;
         if (m.hide && stateProgress(m.hide) >= (m.move ? .985 : m.group === 'arachnoid' ? .94 : .55)) return false;
-        if (m.id === 'bone-posterior' && stateProgress('posteriorBone') >= .995) return false;
+        if (m.move === 'posteriorBone' && stateProgress('posteriorBone') >= .995) return false;
         return true;
     }
 
@@ -640,7 +647,7 @@
     function project(p) { const t = transform(p), w = distance - t[2]; return [(t[0] + pan[0]) * projectionScale() / aspect / w * host.clientWidth / 2 + host.clientWidth / 2, host.clientHeight / 2 - (t[1] + pan[1]) * projectionScale() / w * host.clientHeight / 2]; }
     const smoothstep01 = t => t * t * (3 - 2 * t);
     // Retained pterional curl/peel with case-fitted hinge frames and a hinge-height table.
-    const SHELL_C = anatomyCenter, CURL_NA = 16, CURL_ND = 24;
+    const SHELL_C = manifest.shellCenter, CURL_NA = 16, CURL_ND = 24, INC_N = 24;
     const clamp01 = x => Math.max(0, Math.min(1, x));
     function gatherPoints(list, keep = () => true) { const out = []; for (const m of list) {
         ensureGeometry(m);
@@ -678,14 +685,63 @@
         const c = Array.from(r);
         for (let i = 1; i < CURL_NA - 1; i++) r[i] = (c[i - 1] + 2 * c[i] + c[i + 1]) / 4;
     } return { a0, ia: 1 / da, dmax, rows }; }
+    const DRAPE_NA = 12, DRAPE_NE = 8, DRAPE_ALLOW = .45, DRAPE_ALLOW_DURA = .065, DRAPE_BLEND = .4, DRAPE_DEEP = .25, DRAPE_KEYS = new Set(['scalp', 'myo', 'fascia', 'pericranium', 'dura-wide', 'dura-low']), SMALL_BONE = /incus|malleus|stapes|concha|ethmoid|hyoid|vomer|palatine|sinus/i;
+    const drapeCache = {};
+    function drapeTable(m, mo) {
+        const dura = mo.key === 'dura';
+        const skinFlap = meshes.find(x => x.id === 'scalp-leaf');
+        if (!dura && !skinFlap) return null;
+        const allow = dura ? DRAPE_ALLOW_DURA : DRAPE_ALLOW, ck = m.id + '|' + [...mo.pivot, ...mo.axis, ...mo.away, ...mo.lift, mo.R, mo.Tf].map(x => x.toFixed(5)).join(','); if (ck in drapeCache)
+        return drapeCache[ck]; const NA = DRAPE_NA, NE = DRAPE_NE, R = mo.R, T = mo.Tf, RT = R * T, c = Math.cos(T), sn = Math.sin(T), awf = vAdd(vScale(mo.away, c), vScale(mo.lift, sn)), lif = vSub(vScale(mo.lift, c), vScale(mo.away, sn)), row0 = mo.prof.rows.subarray(0, CURL_NA), hpAt = a => { const fi = Math.max(0, Math.min(CURL_NA - 1, (a - mo.prof.a0) * mo.prof.ia)), i0 = Math.floor(fi), i1 = Math.min(i0 + 1, CURL_NA - 1); return row0[i0] + (row0[i1] - row0[i0]) * (fi - i0); };
+        // skin-top samples of the flap in (a, e, t): t is the height above the rigidly folded plane along li
+        const ref = dura ? gatherPoints([m]) : gatherPoints([skinFlap], outerOnShell), A = [], E = [], H = []; let a0 = Infinity, a1 = -Infinity, em = .1; for (let i = 0; i < ref.length; i += 3) {
+            const v = [ref[i] - mo.pivot[0], ref[i + 1] - mo.pivot[1], ref[i + 2] - mo.pivot[2]], a = vDot(v, mo.axis), e = vDot(v, mo.away) - RT;
+            if (e <= -.2) continue;
+            A.push(a); E.push(e); H.push(vDot(v, mo.lift) - hpAt(a)); a0 = Math.min(a0, a); a1 = Math.max(a1, a); em = Math.max(em, e);
+        } if (!A.length)
+        return drapeCache[ck] = null; const da = Math.max(1e-3, (a1 - a0) / (NA - 1)), de = em / (NE - 1), sum = new Float64Array(NA * NE), cnt = new Float64Array(NA * NE); for (let k = 0; k < A.length; k++) {
+            const i = Math.round((A[k] - a0) / da), j = Math.round(E[k] / de);
+            if (i >= 0 && i < NA && j >= 0 && j < NE) { sum[j * NA + i] += H[k]; cnt[j * NA + i]++; }
+        } const top = Array.from(sum, (x, k) => cnt[k] ? x / cnt[k] : NaN), gf = new Float64Array(NA * NE).fill(Infinity), gc = new Float64Array(NA * NE).fill(Infinity);
+        // support: bone (without the small internal bones) and every other skin record, every 2nd vertex
+        for (const m of meshes) {
+            if (m.marker || m.instrument || m.move || m.cutEdge || !(m.group === 'bone' && !SMALL_BONE.test(m.name) || !dura && m.group === 'skin' && !m.flap)) continue;
+            ensureGeometry(m);
+            const f = m.vertexData;
+            for (let p = 0; p < f.length; p += dura ? 6 : 12) {
+                const w = [f[p] - mo.pivot[0], f[p + 1] - mo.pivot[1], f[p + 2] - mo.pivot[2]], a = vDot(w, mo.axis), fa = (a - a0) / da;
+                if (fa < -2 || fa > NA + 1) continue;
+                const hb = hpAt(a) + R * (1 - c), fe = (vDot(w, awf) - R * sn * c - hb * sn) / de;
+                if (fe < -2 || fe > NE + 1) continue;
+                const t = vDot(w, lif) + R * sn * sn - hb * c;
+                for (let j = Math.max(0, Math.ceil(fe - 2)); j <= Math.min(NE - 1, Math.floor(fe + 2)); j++)
+                    for (let i = Math.max(0, Math.ceil(fa - 2)); i <= Math.min(NA - 1, Math.floor(fa + 2)); i++) {
+                        const k = j * NA + i;
+                        if (!(t > top[k] - (dura ? .1 : .5))) continue;
+                        if (t < gc[k]) gc[k] = t;
+                        if (Math.abs(fa - i) <= .75 && Math.abs(fe - j) <= .75 && t < gf[k]) gf[k] = t;
+                    }
+            }
+        } const raw = top.map((x, k) => { const g = Math.min(gf[k], gc[k] + DRAPE_DEEP); return Number.isFinite(x) && Number.isFinite(g) ? g - allow - x : dura ? 0 : NaN; }), ok = []; raw.forEach((x, k) => { if (Number.isFinite(x)) ok.push(k); }); if (!ok.length)
+        return drapeCache[ck] = null; const full = raw.map((x, k) => { if (Number.isFinite(x)) return x; const j = Math.floor(k / NA), i = k % NA; let best = Infinity, acc = 0, n = 0; for (const q of ok) { const dd = (Math.floor(q / NA) - j) ** 2 + (q % NA - i) ** 2; if (dd < best) { best = dd; acc = 0; n = 0; } if (dd === best) { acc += raw[q]; n++; } } return acc / n; }), tab = new Float32Array(NA * NE), K = [.25, .5, .25];
+        for (let j = 0; j < NE; j++)
+            for (let i = 0; i < NA; i++) {
+                let v = 0;
+                for (let y = -1; y <= 1; y++) for (let x = -1; x <= 1; x++) v += K[y + 1] * K[x + 1] * full[Math.max(0, Math.min(NE - 1, j + y)) * NA + Math.max(0, Math.min(NA - 1, i + x))];
+                tab[j * NA + i] = v;
+            }
+        return drapeCache[ck] = { a0, ia: 1 / da, ie: 1 / de, RT, tab }; }
+    function drapeAt(dr, a, d) { const fa = Math.max(0, Math.min(DRAPE_NA - 1, (a - dr.a0) * dr.ia)), fe = Math.max(0, Math.min(DRAPE_NE - 1, (d - dr.RT) * dr.ie)), i0 = Math.floor(fa), j0 = Math.floor(fe), i1 = Math.min(i0 + 1, DRAPE_NA - 1), j1 = Math.min(j0 + 1, DRAPE_NE - 1), u = fa - i0, w = fe - j0, t = dr.tab; return (t[j0 * DRAPE_NA + i0] * (1 - u) + t[j0 * DRAPE_NA + i1] * u) * (1 - w) + (t[j1 * DRAPE_NA + i0] * (1 - u) + t[j1 * DRAPE_NA + i1] * u) * w; }
     const motionCache = new Map();
     function motionFor(m) {
         if (!motionCache.has(m.id)) {
             const fr = m.flap;
             const profile = curlProfile(fr, gatherPoints([m], outerOnShell));
             if (!profile || profile.dmax <= 0) return null;
-            motionCache.set(m.id, { ...fr, R: fr.radius, Tf: fr.angle,
-                thetaS: fr.angle * .76, P1: .8, prof: profile, dmax: profile.dmax });
+            const motion = { ...fr, R: fr.radius, Tf: fr.angle, thetaS: fr.angle * .76,
+                P1: .8, prof: profile, dmax: profile.dmax };
+            if (['skin','galea','pericranium','fascia','dura'].includes(fr.key)) motion.drape = drapeTable(m,motion);
+            motionCache.set(m.id, motion);
         }
         return motionCache.get(m.id);
     }
@@ -702,29 +758,63 @@
         for (let i = 0; i < CURL_NA; i++) {
             row[i] = mo.prof.rows[i0 * CURL_NA + i] * (1 - w) + mo.prof.rows[i1 * CURL_NA + i] * w;
         }
-        return { mo, dh, T, row };
+        return { mo, dh, T, row, wD: mo.drape ? smoothstep01(clamp01((T - mo.thetaS) / Math.max(.001, mo.Tf - mo.thetaS))) : 0 };
     }
     // Curl one point (and optionally its normal, rotated with the roll only: the vertex shader instead differentiates the
     // whole map, including the hinge-height shear and the drape). Mirrors the vertex shader's curlF.
     function curlPoint(cs, p, n) { const { mo, dh, T, row } = cs, v = vSub(p, mo.pivot), d = vDot(v, mo.away), dd = d - dh; if (dd <= 0)
-        return n ? [p, n] : p; const fi = Math.max(0, Math.min(CURL_NA - 1, (vDot(v, mo.axis) - mo.prof.a0) * mo.prof.ia)), i0 = Math.floor(fi), i1 = Math.min(i0 + 1, CURL_NA - 1), hp = row[i0] + (row[i1] - row[i0]) * (fi - i0), hh = vDot(v, mo.lift), R = mo.R, s = Math.min(dd, R * T), ph = s / R, c = Math.cos(ph), sn = Math.sin(ph), aw = vAdd(vScale(mo.away, c), vScale(mo.lift, sn)), li = vSub(vScale(mo.lift, c), vScale(mo.away, sn)), rest = vSub(v, vAdd(vScale(mo.away, d), vScale(mo.lift, hh))); const q = [mo.pivot, vScale(mo.away, dh + R * sn), vScale(mo.lift, hp + R * (1 - c)), rest, vScale(aw, dd - s), vScale(li, hh - hp)].reduce(vAdd); if (!n)
+        return n ? [p, n] : p; const fi = Math.max(0, Math.min(CURL_NA - 1, (vDot(v, mo.axis) - mo.prof.a0) * mo.prof.ia)), i0 = Math.floor(fi), i1 = Math.min(i0 + 1, CURL_NA - 1), hp = row[i0] + (row[i1] - row[i0]) * (fi - i0), hh = vDot(v, mo.lift), R = mo.R, s = Math.min(dd, R * T), ph = s / R, c = Math.cos(ph), sn = Math.sin(ph), aw = vAdd(vScale(mo.away, c), vScale(mo.lift, sn)), li = vSub(vScale(mo.lift, c), vScale(mo.away, sn)), rest = vSub(v, vAdd(vScale(mo.away, d), vScale(mo.lift, hh))); let q = [mo.pivot, vScale(mo.away, dh + R * sn), vScale(mo.lift, hp + R * (1 - c)), rest, vScale(aw, dd - s), vScale(li, hh - hp)].reduce(vAdd); if (cs.wD > 0 && dd > s)
+        q = vAdd(q, vScale(li, cs.wD * smoothstep01(clamp01((dd - s) / DRAPE_BLEND)) * drapeAt(mo.drape, vDot(v, mo.axis), d))); if (!n)
         return q; const na = vDot(n, mo.away), nl = vDot(n, mo.lift); return [q, vAdd(n, vAdd(vScale(vSub(aw, mo.away), na), vScale(vSub(li, mo.lift), nl)))]; }
+    function incisionCoords(inc, p) { const rad = vNorm(vSub(p, SHELL_C)); let best = Infinity, bt = 0, tan = [0, 1, 0], be = [0, 0, 0]; for (let i = 0; i < INC_N - 1; i++) {
+        const a = inc.pts[i], ab = vSub(inc.pts[i + 1], a), t = clamp01(vDot(vSub(p, a), ab) / Math.max(vDot(ab, ab), 1e-8));
+        let e = vSub(p, vAdd(a, vScale(ab, t)));
+        e = vSub(e, vScale(rad, vDot(e, rad)));
+        const d = Math.hypot(e[0], e[1], e[2]);
+        if (d < best) { best = d; bt = (i + t) / (INC_N - 1); tan = ab; be = e; }
+    } const perp = vNorm(vCross(vNorm(tan), rad)); return { side: vDot(be, perp), t: bt, dist: best, perp }; }
+    // Motions per side and key, built lazily from the data: frame, tuning, hinge-height table and hinge travel.
+    function partPoint(pt, p) { const c = incisionCoords(pt.inc, p), open = smoothstep01(clamp01((pt.reveal * 1.05 - c.t) / .05)) * (1 - smoothstep01(clamp01((c.t - .94) / .06))), fall = 1 - smoothstep01(clamp01(c.dist / PART_FALLOFF)); return vAdd(p, vScale(c.perp, pt.sign * pt.gap * fall * open)); }
+
+    const PART_FALLOFF = .30;
+    function sampleIncision(points) {
+        const length = [0];
+        for (let i = 1; i < points.length; i++) {
+            length.push(length[i-1] + Math.hypot(...vSub(points[i], points[i-1])));
+        }
+        const samples = [];
+        for (let i = 0, index = 1; i < INC_N; i++) {
+            const d = length.at(-1) * i / (INC_N - 1);
+            while (index < length.length - 1 && length[index] < d) index++;
+            const fraction = (d - length[index-1]) / Math.max(1e-5,length[index]-length[index-1]);
+            samples.push(vAdd(points[index-1],vScale(vSub(points[index],points[index-1]),fraction)));
+        }
+        return { pts: samples, flat: samples.flat() };
+    }
+    const incision = sampleIncision(manifest.ink);
+    function incisionState(m) {
+        if (!m.incisionPart) return null;
+        const reveal = stateProgress('incision');
+        if (reveal <= 0) return null;
+        return { inc: incision, reveal, gap: .065, sign: m.incisionPart === 'flap' ? -1 : 1 };
+    }
     function flapState(m) {
         if (!m.flap) return null;
-        const progress = stateProgress(m.flap.key);
+        let progress = stateProgress(m.flap.key);
+        if (m.flap.key === 'dura') progress = clamp01((progress - .20) / .80);
         return progress > 0 ? curlState(motionFor(m), progress) : null;
     }
 
     const flapAxis = [0, 1, 0];
-    const flapPivot = [2.88, -.23, 2.70];
+    const flapPivot = [2.62, -.37, 2.44];
     function boneAngle(m) {
         if (m.move !== 'anteriorBone') return 0;
-        return -1.52 * smoothstep01(clamp01((stateProgress('anteriorBone') - .08) / .92));
+        return -1.46 * smoothstep01(clamp01((stateProgress('anteriorBone') - .08) / .92));
     }
 
     function meshOffset(m) {
         const progress = m.move ? stateProgress(m.move) : 0;
-        if (m.move === 'anteriorBone') return [.28 * smoothstep01(clamp01(progress / .2)), .04 * progress, .05 * progress];
+        if (m.move === 'anteriorBone') return [.48 * smoothstep01(clamp01(progress / .19)) + .25 * progress, .02 * progress, .22 * progress];
         if (m.move === 'posteriorBone') {
             const lift = smoothstep01(Math.min(1, progress / .38));
             const travel = smoothstep01(clamp01((progress - .38) / .62));
@@ -739,19 +829,19 @@
 
     const stepSmooth = (a, b, t) => smoothstep01(clamp01((t - a) / (b - a)));
     function retractionFactor(p) {
-        const z = p[2], x = p[0], y = p[1], base = -.16 - .42 * z + .035 * z * z;
-        const region = stepSmooth(1, 2.15, x) * (1 - stepSmooth(.02, 1.45, Math.abs(y - base))) *
-            stepSmooth(-1.85, -1.0, z) * (1 - stepSmooth(2.16, 2.73, z));
-        const split = stateProgress('proximal') * stepSmooth(.40, 1.62, z) +
-            stateProgress('distal') * (1 - stepSmooth(.4, 1.62, z));
-        return .76 * Math.tanh(9 * (y - base)) * region * split;
+        const [x,y,z] = p, base = -.55 - .20 * z;
+        const region = stepSmooth(.78, 2.35, x) * (1 - stepSmooth(.24, 1.48, Math.abs(y - base))) *
+            stepSmooth(-1.9,-1.08,z) * (1 - stepSmooth(2.0,2.62,z));
+        const blend = stepSmooth(.23,1.12,z), proximal = stateProgress('proximal'), distal = stateProgress('distal');
+        return .48 * region * (proximal * (blend + (1-blend) * .50) + distal * .50 * (1-blend));
     }
 
     function movePoint(m, p) {
-        let q = p;
+        const part = incisionState(m);
+        let q = part ? partPoint(part,p) : p;
         const curl = flapState(m);
         if (curl) q = curlPoint(curl, q);
-        if (m.retract || m.retractVein) q = vAdd(q, [0, retractionFactor(p), 0]);
+        if (m.retract) q = vAdd(q, [0, m.retract * retractionFactor(p), 0]);
         const angle = boneAngle(m);
         if (angle) q = vAdd(flapPivot, mApply(qMat(qAxis(flapAxis, angle)), vSub(q, flapPivot)));
         return vAdd(q, meshOffset(m));
@@ -803,7 +893,6 @@
         } return best; }
     const procedureLabelRegion = m => ({ target: m.anchor, radius: m.group === 'brain' ? 1.4 : 1.0 });
     function pointRetained(m, p) {
-        if (m.fontanelMask && p[1] > 0 && Math.abs(p[0]) / .39 + Math.abs(p[2] - .78) / .54 < 1) return false;
         const open = stateProgress('sacOpen');
         if (m.sacMask && open > 0 && p[0] > m.anchor[0] + .096 + .23 * (1 - open)) return false;
         return true;
@@ -1011,8 +1100,8 @@
         propBuffer = gl.createBuffer(); bindVertexBuffer(propBuffer); if (!geo.uploaded) {
         gl.bufferData(gl.ARRAY_BUFFER, geo.data, gl.DYNAMIC_DRAW);
         geo.uploaded = true;
-    } for (const [n, v] of [['Material', -1], ['IsMarker', 1], ['Line', 0], ['Change', 0], ['FlapAngle', 0], ['Selected', 0], ['CurlOn', 0], ['Retract', 0], ['Fontanel', 0], ['OpenSac', 0], ['BonePiece', 0]])
-        gl.uniform1f(uniforms[n], v); gl.uniform3fv(uniforms.Offset, [0, 0, 0]); for (const part of geo.parts) {
+    } for (const [n, v] of [['Material', -1], ['IsMarker', 1], ['Line', 0], ['Change', 0], ['FlapAngle', 0], ['Selected', 0], ['CurlOn', 0], ['PartOn', 0], ['Groove', 0], ['OpenSac', 0], ['BonePiece', 0]])
+        gl.uniform1f(uniforms[n], v); gl.uniform3fv(uniforms.Offset, [0, 0, 0]); gl.uniform3fv(uniforms.Retract, [0, 0, 0]); gl.uniform2f(uniforms.FissureProgress, 0, 0); for (const part of geo.parts) {
         gl.uniform4fv(uniforms.Color, picking ? [0, 0, 0, 1] : [...part.rgb, 1]);
         gl.drawArrays(gl.TRIANGLES, part.first, part.count);
     } bindVertexBuffer(buffer); }
@@ -1075,39 +1164,64 @@
         gl = canvas.getContext('webgl', { antialias: true, alpha: false, preserveDrawingBuffer: true });
         if (!gl)
             throw Error('WebGL is unavailable');
+        const fragmentVectors = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS) || 16;
+        fissureN = fragmentVectors >= 64 ? 12 : fragmentVectors >= 40 ? 8 : 4;
         program = gl.createProgram();
         gl.attachShader(program, shader(gl.VERTEX_SHADER, `attribute vec3 aPosition;attribute vec3 aNormal;
 uniform mediump float uLine;
 uniform float uLinePx,uLineNudge,uDistance,uAspect,uScale;
 uniform mat3 uView;
-uniform vec2 uPan,uRetract;
+uniform vec2 uPan;
+uniform vec3 uRetract;
 uniform vec3 uTarget,uOffset,uFlapAxis,uFlapPivot;
 uniform float uFlapAngle;
 uniform float uCurlOn,uCurlIA;
 uniform vec3 uCurlPivot,uCurlAxis,uCurlAway,uCurlLift;
 uniform vec4 uCurlP;
 uniform float uCurlRow[16];
+uniform float uDrapeW;
+uniform vec4 uDrapeP;
+uniform float uDrape[96];
+uniform float uPartOn;
+uniform vec4 uPart;
+uniform vec3 uInc[24];
 varying mediump vec3 vNormal,vObjN;
 varying highp vec3 vOriginal,vEye;
 varying mediump float vAO;
 /* Hinge travel and tabulated height are shared with the CPU capture and label transform. */
 vec3 curlF(vec3 q){vec3 v=q-uCurlPivot;float d=dot(v,uCurlAway),dd=d-uCurlP.z;if(dd<=0.)return q;float a=dot(v,uCurlAxis),fi=clamp((a-uCurlP.w)*uCurlIA,0.,15.);int i0=int(floor(fi));int i1=i0<15?i0+1:15;float hp=mix(uCurlRow[i0],uCurlRow[i1],fi-float(i0)),hh=dot(v,uCurlLift),R=uCurlP.x,s=min(dd,R*uCurlP.y),ph=s/R,c=cos(ph),sn=sin(ph);vec3 aw=c*uCurlAway+sn*uCurlLift,li=c*uCurlLift-sn*uCurlAway;
  vec3 r=uCurlPivot+(uCurlP.z+R*sn)*uCurlAway+(hp+R*(1.-c))*uCurlLift+(v-d*uCurlAway-hh*uCurlLift)+(dd-s)*aw+(hh-hp)*li;
+ if(uDrapeW>0.&&dd>s){float fa=clamp((a-uDrapeP.x)*uDrapeP.y,0.,11.),fe=clamp((d-uDrapeP.w)*uDrapeP.z,0.,7.);int j0=int(floor(fa));int k0=int(floor(fe));int j1=j0<11?j0+1:11;int k1=k0<7?k0+1:7;float u=fa-float(j0),w=fe-float(k0);
+  r+=li*(uDrapeW*smoothstep(0.,.4,dd-s)*mix(mix(uDrape[k0*12+j0],uDrape[k0*12+j1],u),mix(uDrape[k1*12+j0],uDrape[k1*12+j1],u),w));}
  return r;}
 vec3 retractF(vec3 p) {
     float x=p.x,y=p.y,z=p.z;
-    float b=-.16-.42*z+.035*z*z;
-    float region=smoothstep(1.,2.15,x)*(1.-smoothstep(.02,1.45,abs(y-b)))*
-        smoothstep(-1.85,-1.,z)*(1.-smoothstep(2.16,2.73,z));
-    float split=mix(uRetract.y,uRetract.x,smoothstep(.40,1.62,z));
-    float h=exp(clamp(18.*(y-b),-30.,30.));
-    p.y+=.76*(h-1.)/(h+1.)*region*split;
+    float b=-.55-.20*z;
+    float region=smoothstep(.78,2.35,x)*(1.-smoothstep(.24,1.48,abs(y-b)))*
+        smoothstep(-1.9,-1.08,z)*(1.-smoothstep(2.0,2.62,z));
+    float blend=smoothstep(.23,1.12,z);
+    p.y+=uRetract.z*.48*region*(uRetract.x*(blend+(1.-blend)*.50)+uRetract.y*.50*(1.-blend));
     return p;
 }
 void main(){
     vAO=length(aNormal); vOriginal=aPosition;
     vec3 norm=aNormal/max(vAO,1e-4), q=aPosition;
-    if (uRetract.x+uRetract.y>0.) {
+    if (uPartOn>.5) {
+        vec3 rad=normalize(aPosition-vec3(0.,-.4,-.4));
+        float best=1e3, bt=0.;
+        vec3 tg=vec3(0.,1.,0.);
+        for(int i=0;i<23;i++){
+            vec3 a=uInc[i],ab=uInc[i+1]-a;
+            float t=clamp(dot(aPosition-a,ab)/max(dot(ab,ab),1e-8),0.,1.);
+            vec3 e=aPosition-a-ab*t;
+            e-=dot(e,rad)*rad;
+            float d=length(e);
+            if(d<best){best=d;bt=(float(i)+t)/23.;tg=ab;}
+        }
+        vec3 perp=normalize(cross(normalize(tg),rad));
+        q+=perp*(uPart.z*uPart.y*(1.-smoothstep(0.,uPart.w,best))*smoothstep(0.,.05,uPart.x*1.05-bt)*(1.-smoothstep(.94,1.,bt)));
+    }
+    if (uRetract.z!=0. && uRetract.x+uRetract.y>0.) {
         vec3 t1=normalize(cross(norm,abs(norm.x)<.9?vec3(1.,0.,0.):vec3(0.,1.,0.)));
         vec3 t2=cross(norm,t1);
         vec3 p=retractF(q);
@@ -1134,7 +1248,11 @@ precision mediump float;
 #endif
 uniform sampler2D uInkMask;
 uniform vec4 uInkBounds,uColor;
-uniform float uInkProgress,uSelected,uPick,uChange,uIsMarker,uMaterial,uSurgical,uQuality,uFontanel,uOpenSac,uBonePiece;
+uniform float uInkProgress,uSelected,uPick,uChange,uIsMarker,uMaterial,uSurgical,uQuality,uOpenSac,uBonePiece,uGroove;
+uniform vec4 uDuralWindow;
+uniform vec2 uFissureProgress;
+#define FISSURE_N ${fissureN}
+uniform vec3 uFissure[FISSURE_N];
 uniform mediump float uLine;
 uniform vec2 uViewport;
 uniform vec3 uInner;
@@ -1151,15 +1269,22 @@ float hsh(vec3 p){return .5;}
 float vnoise(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);return mix(mix(mix(hsh(i),hsh(i+vec3(1.,0.,0.)),f.x),mix(hsh(i+vec3(0.,1.,0.)),hsh(i+vec3(1.,1.,0.)),f.x),f.y),mix(mix(hsh(i+vec3(0.,0.,1.)),hsh(i+vec3(1.,0.,1.)),f.x),mix(hsh(i+vec3(0.,1.,1.)),hsh(i+vec3(1.,1.,1.)),f.x),f.y),f.z);}
 float fbm(vec3 p){float f=.5*vnoise(p)+.25*vnoise(p*2.03);f+=uQuality>.5?.125*vnoise(p*4.07):.0625;return f/.875;}
 float ridge(vec3 p){return NOISE*(1.-abs(2.*vnoise(p)-1.));}
+float fissureDist(vec3 p,out float t){float best=1e3;t=.5;for(int i=0;i<FISSURE_N-1;i++){vec3 a=uFissure[i],ab=uFissure[i+1]-a;float h=clamp(dot(p-a,ab)/max(dot(ab,ab),1e-6),0.,1.);float d=distance(p,a+ab*h);if(d<best){best=d;t=(float(i)+h)/float(FISSURE_N-1);}}return best;}
 void main(){
-if(uFontanel>.5&&vOriginal.y>0.&&abs(vOriginal.x)/.39+abs(vOriginal.z-.78)/.54<1.)discard;
 if(uOpenSac>0.&&vOriginal.x>uOpenSac)discard;
+if(uFissureProgress.x+uFissureProgress.y>0.){
+    float t=.5, d=fissureDist(vOriginal,t);
+    float end=smoothstep(.30,.79,t);
+    float split=uFissureProgress.x*end+uFissureProgress.y*(1.-end);
+    float width=.23*split*smoothstep(0.,.11,t)*(1.-smoothstep(.89,1.,t));
+    if(d<width)discard;
+}
 if(uPick>.5){gl_FragColor=uColor;return;}if(uLine>0.){vec3 n=normalize(vNormal),V=normalize(vEye);float nv=abs(dot(n,V));vec3 c=uColor.rgb*(.82+.18*max(0.,dot(n,normalize(vec3(-.35,.55,1.)))))+vec3(.10)*pow(nv,30.);c=mix(uColor.rgb*.45,c,smoothstep(.12,.45,nv));if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.5);gl_FragColor=vec4(c,1.);return;}
 vec3 n=normalize(vNormal),V=normalize(vEye);float nv=dot(n,V),ao=clamp(vAO,0.,1.),alpha=uColor.a,rim=pow(1.-abs(nv),2.);bool tissue=uMaterial>-.5&&uIsMarker<.5,arach=uMaterial>8.5&&uMaterial<9.5,skin=uMaterial>9.5&&uMaterial<10.5;
 /* skin slab faces (rest pose): outer skin srad > .45, inner (subcutaneous) < -.45, cut walls between; wall vertex
    normals are tilted +-.34 toward/away from the shell centre at load, so srad runs from the epidermis (+.34) to the
    deep subcutaneous edge (-.34) across a wall. */
-float srad=skin?dot(normalize(vObjN),normalize(vOriginal-vec3(0.,.12,.02))):1.;
+float srad=skin?dot(normalize(vObjN),normalize(vOriginal-vec3(0.,-.4,-.4))):1.;
 float light=.30+.55*abs(dot(n,normalize(vec3(-.5,.7,1.))))+.12*abs(dot(n,normalize(vec3(.9,-.2,.3))));vec3 c=uColor.rgb*light;
 if(tissue&&uSurgical<.5){if(skin&&srad<.45)c=uInner*light;c*=mix(1.,ao,.75);if(arach)alpha=clamp(alpha*(.55+.8*rim),0.,.85);}
 if(tissue&&uSurgical>.5){
@@ -1167,7 +1292,7 @@ if(tissue&&uSurgical>.5){
  vec3 P=vOriginal,base=uColor.rgb;float shin=30.,specI=.2,wrap=.3,sss=0.;
  if(uMaterial<.5){
    base*=.88+.16*fbm(P*38.);shin=14.;specI=.05;wrap=.1;
-   float radial=abs(dot(vObjN,normalize(P-vec3(0.,.12,.02))));
+   float radial=abs(dot(vObjN,normalize(P-vec3(0.,-.4,-.4))));
    float cut=uBonePiece*(1.-smoothstep(.22,.58,radial));
    base=mix(base,vec3(.83,.61,.54)*(.84+.21*vnoise(P*88.)),cut*.68);
  }
@@ -1205,11 +1330,16 @@ if(tissue&&uSurgical>.5){
  c=sqrt(clamp(col,0.,1.));light=clamp(dot(c,vec3(.33)),0.,1.);
  if(arach)alpha=clamp(alpha*(.55+1.3*pow(1.-nv,2.))+specI*(s1+s2)*.5,0.,.92);
 }
+if(uGroove>0.){
+    vec2 g=(vOriginal.yz-uDuralWindow.xy)/uDuralWindow.zw;
+    float r=abs(length(g)-1.), a=mod(atan(g.y,g.x)+4.65,6.2831853)/6.2831853;
+    if(a<uGroove && r<.04)c=mix(c,vec3(.37,.12,.14),1.-smoothstep(.012,.04,r));
+}
 if(uChange>0.)c=mix(c,vec3(1.,.65,.17)*(.6+.4*light),.31*(.27+.73*rim));
 if(uInkProgress>0.){
   vec2 uv=(vOriginal.yz-uInkBounds.xy)/uInkBounds.zw;
   vec4 ink=texture2D(uInkMask,uv);
-  float outer=smoothstep(.18,.55,dot(vObjN, normalize(vOriginal - vec3(0., .12, .02))));
+  float outer=smoothstep(.18,.55,dot(vObjN, normalize(vOriginal - vec3(0., -.4, -.4))));
   c=mix(c,vec3(.052,.041,.038),ink.a*outer*step(ink.r,uInkProgress));
 }
 if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb,.8);gl_FragColor=vec4(c,alpha);}`));
@@ -1220,7 +1350,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         ['InkMask','InkBounds','InkProgress','View','Distance','Aspect','Scale','Pan','Color','Selected','Pick',
          'Target','Offset','Change','FlapAngle','IsMarker','Line','LinePx','LineNudge','Material','Surgical','Quality',
          'Viewport','FlapAxis','FlapPivot','CurlOn','CurlIA','CurlPivot','CurlAxis','CurlAway','CurlLift','CurlP',
-         'CurlRow','Inner','Retract','Fontanel','OpenSac','BonePiece'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
+         'CurlRow','Inner','Retract','OpenSac','BonePiece','Groove','DuralWindow','PartOn','Part','Inc','DrapeW','DrapeP','Drape','Fissure','FissureProgress'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
         gl.uniform1i(uniforms.InkMask, 1);
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
@@ -1250,7 +1380,15 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         $('#loading').hidden = true;
         render();
     }
-    let pickTarget = null;
+    let pickTarget = null, fissureN = 12;
+    function fissureUniform(m) {
+        if (!m.fissurePoints) {
+            const line = m.fissureLine;
+            m.fissurePoints = Array.from({length:fissureN},
+                (_,i) => line[Math.round(i*(line.length-1)/(fissureN-1))]).flat();
+        }
+        return m.fissurePoints;
+    }
     function preparePickTarget(w, h) { if (pickTarget && pickTarget.w === w && pickTarget.h === h)
         return; if (pickTarget) {
         gl.deleteFramebuffer(pickTarget.fbo);
@@ -1269,6 +1407,12 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         gl.uniform4f(uniforms.CurlP, mo.R, cs.T, cs.dh, mo.prof.a0);
         gl.uniform1f(uniforms.CurlIA, mo.prof.ia);
         gl.uniform1fv(uniforms.CurlRow, cs.row);
+        const drape = cs.mo.drape;
+        gl.uniform1f(uniforms.DrapeW, drape ? cs.wD : 0);
+        if (drape && cs.wD > 0) {
+            gl.uniform4f(uniforms.DrapeP, drape.a0, drape.ia, drape.ie, drape.RT);
+            gl.uniform1fv(uniforms.Drape, drape.tab);
+        }
     }
     // Largest drawable size (an oversized layout, e.g. a very wide page, must not break the selection buffer).
     let drawLimitCache = 0;
@@ -1386,7 +1530,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
             ensureGeometry(m);
             const flat = m.marker || m.instrument || !(m.group in materialIds), see = !picking && opacity(m) < 1;
             let rgb = palette === 'surgical' && !flat ? surgicalRgb[m.id === 'sac' ? 'clot' : m.group] : m.rgb;
-            gl.uniform1f(uniforms.InkProgress, m.group === 'skin' ? inkProgress : 0);
+            gl.uniform1f(uniforms.InkProgress, m.group === 'skin' && meshSide(m) === 'left' ? inkProgress : 0);
             if (see) {
                 gl.enable(gl.BLEND);
                 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -1403,12 +1547,23 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
             gl.uniform1f(uniforms.FlapAngle, boneAngle(m));
             gl.uniform3fv(uniforms.FlapAxis, flapAxis);
             gl.uniform3fv(uniforms.FlapPivot, flapPivot);
-            gl.uniform2fv(uniforms.Retract, m.retract || m.retractVein
+            gl.uniform3fv(uniforms.Retract, m.retract ? [stateProgress('proximal'), stateProgress('distal'), m.retract] : [0, 0, 0]);
+            const part = incisionState(m);
+            gl.uniform1f(uniforms.PartOn, part ? 1 : 0);
+            if (part) {
+                gl.uniform3fv(uniforms.Inc, part.inc.flat);
+                gl.uniform4f(uniforms.Part, part.reveal, part.gap, part.sign, PART_FALLOFF);
+            }
+            gl.uniform2fv(uniforms.FissureProgress, m.fissureLine
                 ? [stateProgress('proximal'), stateProgress('distal')] : [0, 0]);
-            gl.uniform1f(uniforms.Fontanel, m.fontanelMask ? 1 : 0);
+            if (m.fissureLine) gl.uniform3fv(uniforms.Fissure, fissureUniform(m));
+            const groove = m.group === 'dura' && meshSide(m) === 'left'
+                ? clamp01(stateProgress('dura') / .20) : 0;
+            gl.uniform1f(uniforms.Groove, groove);
+            if (groove) gl.uniform4fv(uniforms.DuralWindow, [...manifest.duraWindow.center,...manifest.duraWindow.radii]);
             const sacOpen = m.sacMask && stateProgress('sacOpen');
             gl.uniform1f(uniforms.OpenSac, sacOpen ? m.anchor[0] + .096 + .23 * (1 - sacOpen) : 0);
-            gl.uniform1f(uniforms.BonePiece, m.group === 'bone' && m.move ? 1 : 0);
+            gl.uniform1f(uniforms.BonePiece, m.cutEdge ? 1 : 0);
             gl.depthMask(!see);
             gl.uniform4fv(uniforms.Color, [...rgb, picking ? 1 : opacity(m)]);
             gl.uniform1f(uniforms.Selected, m.index === selected ? 1 : 0);
