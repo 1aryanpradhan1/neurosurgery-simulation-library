@@ -736,7 +736,9 @@
     function motionFor(m) {
         if (!motionCache.has(m.id)) {
             const fr = m.flap;
-            const profile = curlProfile(fr, gatherPoints([m], outerOnShell));
+            const shared = ['skin','galea','pericranium','fascia'].includes(fr.key);
+            const skin = meshes.find(x => x.id === 'scalp-leaf');
+            const profile = curlProfile(fr, gatherPoints(shared ? [skin] : [m], outerOnShell));
             if (!profile || profile.dmax <= 0) return null;
             const motion = { ...fr, R: fr.radius, Tf: fr.angle, thetaS: fr.angle * .76,
                 P1: .8, prof: profile, dmax: profile.dmax };
@@ -792,6 +794,11 @@
         return { pts: samples, flat: samples.flat() };
     }
     const incision = sampleIncision(manifest.ink);
+    const flapAnchor = meshes.find(m => m.id === 'scalp-leaf').anchor;
+    incision.sign = Math.sign(incisionCoords(incision, flapAnchor).side) || 1;
+    function movesWithFlap(m, p) {
+        return !m.splitFlap || incisionCoords(incision, p).side * incision.sign > .08;
+    }
     function incisionState(m) {
         if (!m.incisionPart) return null;
         const reveal = stateProgress('incision');
@@ -840,7 +847,7 @@
         const part = incisionState(m);
         let q = part ? partPoint(part,p) : p;
         const curl = flapState(m);
-        if (curl) q = curlPoint(curl, q);
+        if (curl && movesWithFlap(m, p)) q = curlPoint(curl, q);
         if (m.retract) q = vAdd(q, [0, m.retract * retractionFactor(p), 0]);
         const angle = boneAngle(m);
         if (angle) q = vAdd(flapPivot, mApply(qMat(qAxis(flapAxis, angle)), vSub(q, flapPivot)));
@@ -1100,7 +1107,7 @@
         propBuffer = gl.createBuffer(); bindVertexBuffer(propBuffer); if (!geo.uploaded) {
         gl.bufferData(gl.ARRAY_BUFFER, geo.data, gl.DYNAMIC_DRAW);
         geo.uploaded = true;
-    } for (const [n, v] of [['Material', -1], ['IsMarker', 1], ['Line', 0], ['Change', 0], ['FlapAngle', 0], ['Selected', 0], ['CurlOn', 0], ['PartOn', 0], ['Groove', 0], ['OpenSac', 0], ['BonePiece', 0]])
+    } for (const [n, v] of [['Material', -1], ['IsMarker', 1], ['Line', 0], ['Change', 0], ['FlapAngle', 0], ['Selected', 0], ['CurlOn', 0], ['PartOn', 0], ['SplitPass', 0], ['Groove', 0], ['OpenSac', 0], ['BonePiece', 0]])
         gl.uniform1f(uniforms[n], v); gl.uniform3fv(uniforms.Offset, [0, 0, 0]); gl.uniform3fv(uniforms.Retract, [0, 0, 0]); gl.uniform2f(uniforms.FissureProgress, 0, 0); for (const part of geo.parts) {
         gl.uniform4fv(uniforms.Color, picking ? [0, 0, 0, 1] : [...part.rgb, 1]);
         gl.drawArrays(gl.TRIANGLES, part.first, part.count);
@@ -1182,11 +1189,13 @@ uniform float uCurlRow[16];
 uniform float uDrapeW;
 uniform vec4 uDrapeP;
 uniform float uDrape[96];
-uniform float uPartOn;
+uniform float uPartOn,uSplitPass;
+uniform vec2 uSplitInc;
 uniform vec4 uPart;
 uniform vec3 uInc[24];
 varying mediump vec3 vNormal,vObjN;
 varying highp vec3 vOriginal,vEye;
+varying highp float vSplit;
 varying mediump float vAO;
 /* Hinge travel and tabulated height are shared with the CPU capture and label transform. */
 vec3 curlF(vec3 q){vec3 v=q-uCurlPivot;float d=dot(v,uCurlAway),dd=d-uCurlP.z;if(dd<=0.)return q;float a=dot(v,uCurlAxis),fi=clamp((a-uCurlP.w)*uCurlIA,0.,15.);int i0=int(floor(fi));int i1=i0<15?i0+1:15;float hp=mix(uCurlRow[i0],uCurlRow[i1],fi-float(i0)),hh=dot(v,uCurlLift),R=uCurlP.x,s=min(dd,R*uCurlP.y),ph=s/R,c=cos(ph),sn=sin(ph);vec3 aw=c*uCurlAway+sn*uCurlLift,li=c*uCurlLift-sn*uCurlAway;
@@ -1206,20 +1215,22 @@ vec3 retractF(vec3 p) {
 void main(){
     vAO=length(aNormal); vOriginal=aPosition;
     vec3 norm=aNormal/max(vAO,1e-4), q=aPosition;
-    if (uPartOn>.5) {
+    vSplit=1.;
+    if (uPartOn>.5 || uSplitPass>0.) {
         vec3 rad=normalize(aPosition-vec3(0.,-.4,-.4));
         float best=1e3, bt=0.;
-        vec3 tg=vec3(0.,1.,0.);
+        vec3 tg=vec3(0.,1.,0.), be=vec3(0.);
         for(int i=0;i<23;i++){
             vec3 a=uInc[i],ab=uInc[i+1]-a;
             float t=clamp(dot(aPosition-a,ab)/max(dot(ab,ab),1e-8),0.,1.);
             vec3 e=aPosition-a-ab*t;
             e-=dot(e,rad)*rad;
             float d=length(e);
-            if(d<best){best=d;bt=(float(i)+t)/23.;tg=ab;}
+            if(d<best){best=d;bt=(float(i)+t)/23.;tg=ab;be=e;}
         }
         vec3 perp=normalize(cross(normalize(tg),rad));
-        q+=perp*(uPart.z*uPart.y*(1.-smoothstep(0.,uPart.w,best))*smoothstep(0.,.05,uPart.x*1.05-bt)*(1.-smoothstep(.94,1.,bt)));
+        vSplit=dot(be,perp)*uSplitInc.x-uSplitInc.y;
+        if(uPartOn>.5) q+=perp*(uPart.z*uPart.y*(1.-smoothstep(0.,uPart.w,best))*smoothstep(0.,.05,uPart.x*1.05-bt)*(1.-smoothstep(.94,1.,bt)));
     }
     if (uRetract.z!=0. && uRetract.x+uRetract.y>0.) {
         vec3 t1=normalize(cross(norm,abs(norm.x)<.9?vec3(1.,0.,0.):vec3(0.,1.,0.)));
@@ -1248,7 +1259,7 @@ precision mediump float;
 #endif
 uniform sampler2D uInkMask;
 uniform vec4 uInkBounds,uColor;
-uniform float uInkProgress,uSelected,uPick,uChange,uIsMarker,uMaterial,uSurgical,uQuality,uOpenSac,uBonePiece,uGroove;
+uniform float uInkProgress,uSelected,uPick,uChange,uIsMarker,uMaterial,uSurgical,uQuality,uOpenSac,uBonePiece,uGroove,uSplitPass;
 uniform vec4 uDuralWindow;
 uniform vec2 uFissureProgress;
 #define FISSURE_N ${fissureN}
@@ -1258,6 +1269,7 @@ uniform vec2 uViewport;
 uniform vec3 uInner;
 varying mediump vec3 vNormal,vObjN;
 varying highp vec3 vOriginal,vEye;
+varying highp float vSplit;
 varying mediump float vAO;
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 float hsh(vec3 p){p=fract(p*.1031);p+=dot(p,p.zyx+31.32);return fract((p.x+p.y)*p.z);}
@@ -1272,6 +1284,7 @@ float ridge(vec3 p){return NOISE*(1.-abs(2.*vnoise(p)-1.));}
 float fissureDist(vec3 p,out float t){float best=1e3;t=.5;for(int i=0;i<FISSURE_N-1;i++){vec3 a=uFissure[i],ab=uFissure[i+1]-a;float h=clamp(dot(p-a,ab)/max(dot(ab,ab),1e-6),0.,1.);float d=distance(p,a+ab*h);if(d<best){best=d;t=(float(i)+h)/float(FISSURE_N-1);}}return best;}
 void main(){
 if(uOpenSac>0.&&vOriginal.x>uOpenSac)discard;
+if(uSplitPass>0. && (uSplitPass<1.5 ? vSplit>0. : vSplit<=0.))discard;
 if(uFissureProgress.x+uFissureProgress.y>0.){
     float t=.5, d=fissureDist(vOriginal,t);
     float end=smoothstep(.30,.79,t);
@@ -1350,7 +1363,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         ['InkMask','InkBounds','InkProgress','View','Distance','Aspect','Scale','Pan','Color','Selected','Pick',
          'Target','Offset','Change','FlapAngle','IsMarker','Line','LinePx','LineNudge','Material','Surgical','Quality',
          'Viewport','FlapAxis','FlapPivot','CurlOn','CurlIA','CurlPivot','CurlAxis','CurlAway','CurlLift','CurlP',
-         'CurlRow','Inner','Retract','OpenSac','BonePiece','Groove','DuralWindow','PartOn','Part','Inc','DrapeW','DrapeP','Drape','Fissure','FissureProgress'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
+         'CurlRow','Inner','Retract','OpenSac','BonePiece','Groove','DuralWindow','PartOn','Part','Inc','DrapeW','DrapeP','Drape','Fissure','FissureProgress','SplitPass','SplitInc'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
         gl.uniform1i(uniforms.InkMask, 1);
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
@@ -1568,8 +1581,21 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
             gl.uniform4fv(uniforms.Color, [...rgb, picking ? 1 : opacity(m)]);
             gl.uniform1f(uniforms.Selected, m.index === selected ? 1 : 0);
             gl.uniform3fv(uniforms.Inner, m.innerRgb || m.rgb);
-            setCurlUniforms(flapState(m));
-            gl.drawArrays(gl.TRIANGLES, m.first, m.count);
+            const curl = flapState(m);
+            if (m.splitFlap && curl) {
+                gl.uniform3fv(uniforms.Inc, incision.flat);
+                gl.uniform2f(uniforms.SplitInc, incision.sign, .08);
+                gl.uniform1f(uniforms.SplitPass, 1);
+                setCurlUniforms(null);
+                gl.drawArrays(gl.TRIANGLES, m.first, m.count);
+                gl.uniform1f(uniforms.SplitPass, 2);
+                setCurlUniforms(curl);
+                gl.drawArrays(gl.TRIANGLES, m.first, m.count);
+            } else {
+                gl.uniform1f(uniforms.SplitPass, 0);
+                setCurlUniforms(curl);
+                gl.drawArrays(gl.TRIANGLES, m.first, m.count);
+            }
         }
         gl.disable(gl.BLEND);
         gl.depthMask(true);
