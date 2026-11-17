@@ -316,12 +316,6 @@
     figureVideo.playsInline = true;
     let videoUrl = '', pendingSeek = null, figureSeek = null, videoFailed = false;
 
-    function stepVideoNote(step) {
-        if (step.time !== null) return `Video at ${formatTime(step.time)}`;
-        if (step.context !== null) return `Action unavailable in footage. Narration or related view at ${formatTime(step.context)}.`;
-        return 'Action unavailable in the video.';
-    }
-
     function seekPendingVideo() {
         if (pendingSeek === null || video.readyState < 1 || videoFailed) return;
         if (pendingSeek < video.duration) video.currentTime = pendingSeek;
@@ -332,7 +326,6 @@
         const step = steps[stage];
         if (!step) return;
         pendingSeek = step.time;
-        $('#caseVideoStep').textContent = stepVideoNote(step);
         $('#caseVideoTime').textContent = step.time === null ? '' : ' · ' + formatTime(step.time);
         seekPendingVideo();
     }
@@ -379,7 +372,8 @@
         if (!videoUrl) return;
         videoFailed = true;
         $('#caseVideoPlayer').hidden = true;
-        $('#caseVideoStatus').textContent = 'The local file could not play. Choose the operative MP4 again or open the publisher’s video.';
+        $('#caseVideoImport').hidden = false;
+        $('#caseVideoStatus').textContent = 'The video could not play. Load an MP4 from About.';
     });
     figureVideo.addEventListener('loadedmetadata', requestSourceFrame);
     figureVideo.addEventListener('loadeddata', drawSourceFrame);
@@ -389,7 +383,11 @@
         if (status) status.textContent = 'The local video frame could not load. The teaching figure is available below.';
     });
     $('#caseVideoFile').addEventListener('change', e => {
-        attachVideo(e.target.files[0]);
+        const file = e.target.files[0];
+        if (file) {
+            attachVideo(file);
+            $('#credits').close();
+        }
         e.target.value = '';
     });
     $('#operativeVideo').addEventListener('toggle', () => {
@@ -407,7 +405,6 @@
         const numbers = sources.map((p, i) => sourceLink(p.url, `[${i + 1}]`)).join(' ');
         return `<details class="study-notes"><summary>Details</summary>
             <p>${escape(step.detail)} <span class="study-reference-links">${numbers}</span></p>
-            <p class="step-video-note">${escape(stepVideoNote(step))}</p>
             <h4>Sources for This Step</h4>${stepCitations(step.sources)}</details>`;
     }
 
@@ -417,7 +414,7 @@
         const related = step.time === null;
         const frame = step.still === null ? '' : `<figure class="source-figure">
             <canvas hidden id="caseStill" role="img" aria-label="${escape(step.caption)}"></canvas>
-            <p id="caseStillStatus">${videoUrl ? 'Loading local frame…' : 'Choose the operative video to see this frame.'}</p>
+            <p id="caseStillStatus">${videoUrl ? 'Loading local frame…' : 'Load the recording from About to see this frame.'}</p>
             <figcaption><strong>${related ? 'Related frame' : 'Operative video'} · ${formatTime(step.still)}</strong>
                 <p>${escape(step.caption)}</p>
                 <p class="figure-credit">${escape(caseSource.citation)} © Congress of Neurological Surgeons 2026.</p>
@@ -528,9 +525,12 @@
         if (privateVideo) {
             const payload = privateVideo.textContent.trim();
             try { attachVideo(new Blob([decode64(payload)], { type: 'video/mp4' })); }
-            catch (error) { $('#caseVideoStatus').textContent = 'Choose the original MP4 to load the video.'; }
+            catch (error) {
+                $('#caseVideoImport').hidden = false;
+                $('#caseVideoStatus').textContent = 'The video could not load. Load an MP4 from About.';
+            }
             privateVideo.remove();
-        }
+        } else $('#caseVideoImport').hidden = false;
     }
 
     function hasStageChange() {
