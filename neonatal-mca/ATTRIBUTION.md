@@ -1,0 +1,12 @@
+# Ruptured MCA Aneurysm in a Neonate
+
+- **Case report and operative video:** Zeitouni D, Drossopoulos P, Pugh BA, et al. *Operative Neurosurgery*. 2026;31(3):613–614. [DOI](https://doi.org/10.1227/ons.0000000000001913), [PMID 41537666](https://pubmed.ncbi.nlm.nih.gov/41537666/). © Congress of Neurological Surgeons 2026. The public guide contains original instructional prose and drawings. The local file control plays a reader-selected copy and extracts stills in the browser. It does not send that media to the site.
+- **Cortical surfaces:** TemplateFlow [tpl-dhcpSym](https://github.com/templateflow/tpl-dhcpSym/tree/d9157b3e47c4ae7f724cf168df3095c7634f8879), cohort-39, L and R 32k pial surfaces. [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Bozek J, Makropoulos A, Schuh A, et al. [NeuroImage. 2018;179:11–29](https://doi.org/10.1016/j.neuroimage.2018.06.018) and Williams LZJ et al. [Nat Hum Behav. 2023](https://doi.org/10.1038/s41562-023-01542-8). Coordinate transforms, mesh packing, and simulated local opercular motion are adaptations. Dura, osteotomies, fontanelle, vascular course, pathology, instruments, and layers are added teaching geometry.
+- **Anatomical figure:** Giotta Lucifero A, Baldoncini M, Bruno N, et al. *Acta Biomed*. 2021;92(Suppl 4):e2021412, [Figure 5, p. 9](https://pmc.ncbi.nlm.nih.gov/articles/PMC9179062/). [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Extracted and resized, with CMYK converted to RGB. Adult cadaveric anatomy provides related context.
+- **Case viewer:** adapted from the [operative website skill’s retained Pterional viewer](https://github.com/nyuolab/operative-website-skill), including the camera, tissue shaders, curl/peel, picking, reader and mobile controls. This case uses the separately sourced neonatal cortical meshes.
+
+## Preview and edit
+
+Open the standalone HTML in a browser for offline use. To preview the extracted site folder, open the folder in VS Code, start `python3 -m http.server 8000` there, and visit `http://localhost:8000/`. The guide page is `index.html` and the viewer code is `assets/app.js`. The compressed assets contain the atlas geometry and case data.
+
+The hosted version can load the supplied recording with **Operative Video → Choose local operative video**. The file remains in the browser. The timestamps correspond to the attached 11-minute 6-second recording. Steps outside the microscope footage carry a note or contextual source frame.
