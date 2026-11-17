@@ -9,10 +9,12 @@
         cases: new URL('cases.html', fallback),
     };
     const from = new URLSearchParams(location.search).get('from');
+    const caseRedirect = new URL('case-simulation.html', fallback);
     let previous = null;
     try {
         const candidate = new URL(document.referrer);
-        if (['http:', 'https:'].includes(candidate.protocol) &&
+        const isCaseRedirect = candidate.origin === caseRedirect.origin && candidate.pathname === caseRedirect.pathname;
+        if (!isCaseRedirect && ['http:', 'https:'].includes(candidate.protocol) &&
             (candidate.origin !== location.origin || candidate.pathname !== location.pathname)) {
             previous = candidate;
         }

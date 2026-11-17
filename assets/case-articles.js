@@ -95,7 +95,8 @@ const articles = [
         "issue": "2026 · Vol. 31, Issue 3",
         "specialty": "Vascular",
         "video": true,
-        "pmid": "41537666"
+        "pmid": "41537666",
+        "simulation": "neonatal-mca/"
     },
     {
         "title": "Open Surgical Trapping and PICA-PICA Bypass for Ruptured Dissecting Right Posterior Inferior Cerebellar Artery Aneurysm: Operative Technique and 1-Year Clinical Outcome: 2-Dimensional Operative Video",
