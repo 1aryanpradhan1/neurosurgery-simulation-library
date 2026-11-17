@@ -315,6 +315,7 @@
     figureVideo.muted = true;
     figureVideo.playsInline = true;
     let videoUrl = '', pendingSeek = null, figureSeek = null, videoFailed = false;
+    let previousVideoTime = null, followingVideo = false;
 
     function seekPendingVideo() {
         if (pendingSeek === null || video.readyState < 1 || videoFailed) return;
@@ -325,6 +326,10 @@
     function syncVideoStep() {
         const step = steps[stage];
         if (!step) return;
+        if (followingVideo) {
+            $('#caseVideoTime').textContent = step.time === null ? '' : ' · ' + formatTime(step.time);
+            return;
+        }
         pendingSeek = step.time;
         $('#caseVideoTime').textContent = step.time === null ? '' : ' · ' + formatTime(step.time);
         seekPendingVideo();
@@ -368,6 +373,23 @@
     }
 
     video.addEventListener('loadedmetadata', seekPendingVideo);
+    video.addEventListener('seeking', () => { previousVideoTime = null; });
+    video.addEventListener('seeked', () => { previousVideoTime = video.currentTime; });
+    video.addEventListener('timeupdate', () => {
+        const now = video.currentTime;
+        if (!video.seeking && !video.paused && previousVideoTime !== null && now >= previousVideoTime) {
+            let next = -1;
+            for (let i = 0; i < steps.length; i++) {
+                const time = steps[i].time;
+                if (time !== null && time > previousVideoTime && time <= now) next = i;
+            }
+            if (next >= 0 && next !== stage) {
+                followingVideo = true;
+                try { activate(next); } finally { followingVideo = false; }
+            }
+        }
+        previousVideoTime = now;
+    });
     video.addEventListener('error', () => {
         if (!videoUrl) return;
         videoFailed = true;

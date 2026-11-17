@@ -3002,6 +3002,11 @@ header {
 #caseStill { display:block; max-width:100%; max-height:52dvh; height:auto; margin:0 auto }
 button.indication-card { display:block; text-align:left; color:inherit; width:calc(100% - 24px); margin:12px; padding:12px; }
 .indication-card span { display:block; margin-top:6px; font-weight:400 }
+@media(min-width:761px) {
+  .reading-expanded .operative-video[open] { max-height:65% }
+  .reading-expanded .video-content { max-height:calc(58dvh - 30px) }
+  .reading-expanded #caseVideo { max-height:50dvh }
+}
 @media(max-width:760px) {
   header { height:auto; min-height:42px; gap:6px; padding:4px 7px }
   .case-header-heading { gap:6px }
