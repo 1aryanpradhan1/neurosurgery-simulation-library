@@ -171,9 +171,7 @@ function draw() {
     const items = procedures.filter(({name, title, group}) =>
         (selectedGroup === allProcedures || group === selectedGroup) &&
         `${title} ${group} ${simulations[name]?.keywords ?? ''}`.toLowerCase().includes(query));
-    if (selectedGroup === allProcedures) {
-        items.sort((a, b) => Number(Object.hasOwn(simulations, b.name)) - Number(Object.hasOwn(simulations, a.name)));
-    }
+    items.sort((a, b) => Number(Object.hasOwn(simulations, b.name)) - Number(Object.hasOwn(simulations, a.name)));
 
     document.querySelector('#heading').textContent = selectedGroup;
     document.querySelector('#count').textContent = items.length + ' procedures';
