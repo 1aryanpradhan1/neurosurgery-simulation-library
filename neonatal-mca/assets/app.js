@@ -315,11 +315,14 @@
     figureVideo.muted = true;
     figureVideo.playsInline = true;
     let videoUrl = '', pendingSeek = null, figureSeek = null, videoFailed = false;
-    let previousVideoTime = null, followingVideo = false;
+    let previousVideoTime = null, followingVideo = false, stepSeekTarget = null;
 
     function seekPendingVideo() {
         if (pendingSeek === null || video.readyState < 1 || videoFailed) return;
-        if (pendingSeek < video.duration) video.currentTime = pendingSeek;
+        if (pendingSeek < video.duration && Math.abs(video.currentTime - pendingSeek) > 0.01) {
+            stepSeekTarget = pendingSeek;
+            video.currentTime = pendingSeek;
+        }
         pendingSeek = null;
     }
 
@@ -362,6 +365,9 @@
         if (!file) return;
         if (videoUrl.startsWith('blob:')) URL.revokeObjectURL(videoUrl);
         videoUrl = URL.createObjectURL(file);
+        previousVideoTime = null;
+        stepSeekTarget = null;
+        pendingSeek = null;
         videoFailed = false;
         $('#caseVideoPlayer').hidden = false;
         $('#caseVideoStatus').textContent = '';
@@ -375,7 +381,21 @@
 
     video.addEventListener('loadedmetadata', seekPendingVideo);
     video.addEventListener('seeking', () => { previousVideoTime = null; });
-    video.addEventListener('seeked', () => { previousVideoTime = video.currentTime; });
+    video.addEventListener('seeked', () => {
+        const now = video.currentTime;
+        const stepInitiated = stepSeekTarget !== null && Math.abs(now - stepSeekTarget) < 0.1;
+        stepSeekTarget = null;
+        previousVideoTime = now;
+        if (stepInitiated) return;
+        let selectedStep = 0;
+        for (let i = 0; i < steps.length; i++) {
+            if (steps[i].videoTime !== null && steps[i].videoTime <= now) selectedStep = i;
+        }
+        if (selectedStep >= 0 && selectedStep !== stage) {
+            followingVideo = true;
+            try { activate(selectedStep); } finally { followingVideo = false; }
+        }
+    });
     video.addEventListener('timeupdate', () => {
         const now = video.currentTime;
         if (!video.seeking && !video.paused && previousVideoTime !== null && now >= previousVideoTime) {
