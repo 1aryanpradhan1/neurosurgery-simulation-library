@@ -68224,6 +68224,14 @@ html.library-preview #pterionalOperativeVideo {display:none}
     const clinoidArrowTail = [clinoidArrow.bounds[0][0], ...clinoidArrow.bounds[1].slice(1)];
     const [clinoidScopeX, clinoidScopeY, clinoidScopeZ] =
         clinoidArrowTail.map((coordinate, axis) => coordinate - clinoidArrow.anchor[axis]);
+    function corridorScope(target, entry, label) {
+        const [x, y, z] = entry.map((coordinate, axis) => coordinate - target[axis]);
+        return { target, yaw: Math.atan2(-x, z), pitch: Math.atan2(y, Math.hypot(x, z)),
+            distance: 5.2, label };
+    }
+    // Aim through the center of the corresponding dural opening toward the basal target.
+    const limitedCorridorScope = corridorScope([-1.02, -1.02, 1.46], [-3.25, -.62, 1.65], 'Opticocarotid corridor');
+    const wideCorridorScope = corridorScope([-1.16, -.74, 1.32], [-3.25, .15, 1.50], 'Intradural working corridor');
     const scopeViews = {
         'sphenoid-ridge': { target: drillTip, yaw: 1.16, pitch: .38, distance: 4.5, label: 'Sphenoid wing' },
         extension: { target: [-2.25,-1.15,1.98], yaw: 1.08, pitch: .48, distance: 4.6, label: 'Basal bone exposure' },
@@ -68237,11 +68245,10 @@ html.library-preview #pterionalOperativeVideo {display:none}
             label: 'Anterior clinoid and optic region',
         },
         dura: { target: [-2.4,.05,1.35], yaw: 1.30, pitch: .30, distance: 5.7, label: 'Dural opening' },
-        // Center the exposed Sylvian trace between the frontal and temporal opercula.
-        fissure: { target: [-3.02,-.44,.58], yaw: 1.32, pitch: .34, distance: 5.2, label: 'Sylvian fissure' },
-        cistern: { target: [-1.02,-1.02,1.46], yaw: .78, pitch: .85, distance: 4.6, label: 'Opticocarotid corridor' },
+        fissure: { target: [-2.08,-.49,1.05], yaw: 1.30, pitch: .45, distance: 4.8, label: 'Sylvian fissure' },
+        cistern: limitedCorridorScope,
         retain: { target: [-.8,-1.1,1.35], yaw: .60, pitch: 1.25, distance: 4.8, label: 'Anterior clinoid and optic region' },
-        'intradural-work': { target: [-1.16,-.74,1.32], yaw: .88, pitch: .72, distance: 4.7, label: 'Intradural working corridor' },
+        'intradural-work': wideCorridorScope,
     };
     function showScopeView() {
         return !!scopeViews[steps[stage]?.id] && procedure && mode === '3d' &&
@@ -68250,7 +68257,9 @@ html.library-preview #pterionalOperativeVideo {display:none}
     // Move the screen-space center only, leaving orbit, zoom and the scope camera unchanged.
     function scopeCompositionShift() { return showScopeView() ? .24 : 0; }
     function scopePass() {
-        const panel = $('#scopeView'), spec = scopeViews[steps[stage]?.id];
+        const panel = $('#scopeView'), step = steps[stage]?.id;
+        const spec = step === 'intradural-work' && config.fissure === 'no'
+            ? limitedCorridorScope : scopeViews[step];
         panel.hidden = !showScopeView();
         if (panel.hidden) return null;
         const lens = panel.querySelector('canvas');
