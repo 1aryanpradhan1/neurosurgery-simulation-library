@@ -3007,7 +3007,9 @@ html.library-preview #pterionalOperativeVideo {display:none}
 <script>if(new URLSearchParams(location.search).has('previewStep'))document.documentElement.classList.add('library-preview');</script><style>html.library-preview,html.library-preview body{height:100%;margin:0;overflow:hidden;background:#101b20}html.library-preview body>header,html.library-preview .config,html.library-preview #guideTabs,html.library-preview #steps-panel,html.library-preview .viewhead,html.library-preview #stepStatus,html.library-preview #viewinfo,html.library-preview #viewTools,html.library-preview #orientGizmo,html.library-preview #gesturehint,html.library-preview #labelLines,html.library-preview #popup,html.library-preview .floating,html.library-preview #loading,html.library-preview #noGL{display:none!important}html.library-preview .layout,html.library-preview .visual,html.library-preview #viewport{display:block!important;position:fixed!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;margin:0!important;padding:0!important}html.library-preview canvas{width:100%!important;height:100%!important}</style><link rel="stylesheet" href="assets/case-back.css?v=study-details"><script defer src="assets/case-back.js?v=return-source-1"></script><link rel="stylesheet" href="assets/clinical-overview.css?v=2"><script defer src="assets/clinical-overview.js?v=1"></script><style>
 #scopeView {position:absolute;top:10px;left:10px;width:min(34%, 39vh, calc(88cqh - 62px));margin:0;z-index:4;pointer-events:none}
 #scopeView[hidden]{display:none}
-#scopeView canvas {display:block;width:100%;height:auto;aspect-ratio:1;border-radius:50%;border:2px solid #a5c7bd;box-sizing:border-box}
+#scopeView canvas:active {cursor:grabbing}
+#scopeView:focus-within canvas {border-color:#d6ecdc}
+#scopeView canvas {display:block;pointer-events:auto;touch-action:none;cursor:grab;clip-path:circle(50%);width:100%;height:auto;aspect-ratio:1;border-radius:50%;border:2px solid #a5c7bd;box-sizing:border-box}
 #scopeView figcaption {margin-top:5px;text-align:center;color:#e5efdf;font-size:12px;font-weight:600;text-shadow:0 1px 3px #101b20}
 #viewport {container-type:size}
 </style></head>
@@ -3020,7 +3022,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
 <fieldset><legend>Temporalis Dissection</legend><div class="choices"><label><input name="muscle" type="radio" value="subfascial" checked><span>Subfascial</span></label><label><input name="muscle" type="radio" value="split"><span>Muscle-splitting</span></label></div></fieldset>
 <fieldset><legend>Open the Sylvian Fissure?</legend><div class="choices"><label><input name="fissure" type="radio" value="yes" checked><span>Yes</span></label><label><input name="fissure" type="radio" value="no"><span>No</span></label></div></fieldset>
 </section>
-<main class="layout"><section class="visual" aria-label="Interactive anatomy"><div class="viewhead"><div><button id="mode3d" aria-pressed="true">◇ 3D Model</button><button id="mode2d" aria-pressed="false">▧ 2D Figures</button><button id="surgeonView" title="View the posed head from the head of the table, as the seated surgeon sees it">Surgeon's View</button><button id="focusChange">Focus Change</button><button id="compareChange" aria-pressed="false">Before</button></div></div><div id="viewport"><figure id="scopeView" hidden><canvas width="512" height="512" role="img" aria-label="Independent simulated operating microscope view"></canvas><figcaption>Operative Microscope</figcaption></figure><canvas id="canvas" tabindex="0" aria-label="3D pterional regional anatomy. Drag to rotate around the center of the skull; hold Alt or Option and drag to roll the camera. Wheel to zoom, shift-drag to pan. Arrow keys rotate, Q and E roll, plus and minus zoom. Click to identify anatomy."></canvas><div id="figurepanel" hidden></div>
+<main class="layout"><section class="visual" aria-label="Interactive anatomy"><div class="viewhead"><div><button id="mode3d" aria-pressed="true">◇ 3D Model</button><button id="mode2d" aria-pressed="false">▧ 2D Figures</button><button id="surgeonView" title="View the posed head from the head of the table, as the seated surgeon sees it">Surgeon's View</button><button id="focusChange">Focus Change</button><button id="compareChange" aria-pressed="false">Before</button></div></div><div id="viewport"><figure id="scopeView" hidden><canvas width="512" height="512" tabindex="0" role="img" aria-label="Independent simulated operating microscope view"></canvas><figcaption>Operative Microscope</figcaption></figure><canvas id="canvas" tabindex="0" aria-label="3D pterional regional anatomy. Drag to rotate around the center of the skull; hold Alt or Option and drag to roll the camera. Wheel to zoom, shift-drag to pan. Arrow keys rotate, Q and E roll, plus and minus zoom. Click to identify anatomy."></canvas><div id="figurepanel" hidden></div>
 <details class="floating" id="layerControls"><summary>Layers &amp; View</summary><div class="layer-content"><button id="recommendedView">Recommended View</button><details id="positionControls" class="position-controls"><summary class="position-heading" id="positionHeading">Patient Position</summary><div class="pose-toggle" role="group" aria-label="Head position"><button id="poseAnatomical" aria-pressed="true" title="Neutral supine head">Anatomical</button><button id="poseOperative" aria-pressed="false" title="Head turned and extended for the approach">Operative</button></div><div class="pose-slider"><label for="poseRotation" title="Turn of the head away from the operative side, about the patient's long axis">Contralateral Rotation<output>20°</output></label><input id="poseRotation" data-pose="rotation" type="range" min="0" max="70" step="1" value="20"></div><div class="pose-slider"><label for="poseExtension" title="Extension: the vertex drops toward the floor">Extension (Vertex Down)<output>20°</output></label><input id="poseExtension" data-pose="extension" type="range" min="-10" max="40" step="1" value="20"></div><div class="pose-slider"><label for="poseLateral" title="Lateral flexion: positive tilts the vertex toward the contralateral shoulder">Lateral Flexion<output>0°</output></label><input id="poseLateral" data-pose="lateral" type="range" min="-20" max="30" step="1" value="0"></div><div class="pose-actions"><button id="poseReset" class="twod" title="Default operative pose: 20° contralateral rotation, 20° extension, no lateral flexion">Default 20° / 20°</button><button id="surgeonViewPanel" class="twod">Surgeon's View</button></div><label title="Schematic Mayfield-type head holder and table edge, shown in room-fixed views">Head Holder &amp; Table<input id="poseProps" type="checkbox" checked></label><div class="pose-note">Default follows the cited example (about 20° rotation, 20° extension); tailor to the target. Holder, pins and table are schematic.</div></details><label title="Illustrative instrument entry direction; not a planned trajectory">Instrument Illustration<input id="instruments" type="checkbox" checked></label><label for="palette">Colors</label><select id="palette" title="Surgical: lifelike tissue shading with decorative surface texture. Atlas: the original teaching colors."><option value="surgical">Surgical (lifelike)</option><option value="atlas">Atlas (teaching colors)</option></select><div class="layer-caption">Relevant: operative structures · All: available head anatomy</div><div class="layer-columns"><span>Layers</span><span>Relevant</span><span>All</span></div><div class="layer-row"><span><i class="swatch" data-swatch="skin" style="background:#d9a184"></i>Scalp Skin</span><input type="checkbox" data-layer="skin" aria-label="Relevant scalp skin" checked><input type="checkbox" data-all-layer="skin" aria-label="All available head scalp skin"></div><div class="layer-row"><span><i class="swatch" data-swatch="galea" style="background:#d8dad3"></i>Galea</span><input type="checkbox" data-layer="galea" aria-label="Relevant galea" checked><input type="checkbox" data-all-layer="galea" aria-label="All available head galea"></div><div class="layer-row"><span><i class="swatch" data-swatch="pericranium" style="background:#dcd6e4"></i>Pericranium</span><input type="checkbox" data-layer="pericranium" aria-label="Relevant pericranium" checked><input type="checkbox" data-all-layer="pericranium" aria-label="All available head pericranium"></div><div class="layer-row"><span><i class="swatch" data-swatch="bone" style="background:#e2d5b8"></i>Bone</span><input type="checkbox" data-layer="bone" aria-label="Relevant bone" checked><input type="checkbox" data-all-layer="bone" aria-label="All available head bone"></div><div class="layer-row"><span><i class="swatch" data-swatch="brain" style="background:#bca99d"></i>Brain</span><input type="checkbox" data-layer="brain" aria-label="Relevant brain" checked><input type="checkbox" data-all-layer="brain" aria-label="All available head brain"></div><div class="layer-row"><span><i class="swatch" data-swatch="muscle" style="background:#b87367"></i>Muscles</span><input type="checkbox" data-layer="muscle" aria-label="Relevant muscles" checked><input type="checkbox" data-all-layer="muscle" aria-label="All available head muscles"></div><div class="layer-row"><span><i class="swatch" data-swatch="fascia" style="background:#a4c7ba"></i>Superficial Fascia</span><input type="checkbox" data-layer="fascia" aria-label="Relevant superficial fascia" checked><input type="checkbox" data-all-layer="fascia" aria-label="All available head superficial fascia"></div><div class="layer-row"><span><i class="swatch" data-swatch="deepfascia" style="background:#75a99a"></i>Deep Fascia</span><input type="checkbox" data-layer="deepfascia" aria-label="Relevant deep fascia" checked><input type="checkbox" data-all-layer="deepfascia" aria-label="All available head deep fascia"></div><div class="layer-row"><span><i class="swatch" data-swatch="fat" style="background:#debd69"></i>Fat Pads</span><input type="checkbox" data-layer="fat" aria-label="Relevant fat pads" checked><input type="checkbox" data-all-layer="fat" aria-label="All available head fat pads"></div><div class="layer-row"><span><i class="swatch" data-swatch="arteries" style="background:#dd6268"></i>Arteries</span><input type="checkbox" data-layer="arteries" aria-label="Relevant arteries" checked><input type="checkbox" data-all-layer="arteries" aria-label="All available head arteries"></div><div class="layer-row"><span><i class="swatch" data-swatch="veins" style="background:#5f6fae"></i>Veins</span><input type="checkbox" data-layer="veins" aria-label="Relevant veins" checked><input type="checkbox" data-all-layer="veins" aria-label="All available head veins"></div><div class="layer-row"><span><i class="swatch" data-swatch="nerves" style="background:#f2d776"></i>Nerves</span><input type="checkbox" data-layer="nerves" aria-label="Relevant nerves" checked><input type="checkbox" data-all-layer="nerves" aria-label="All available head nerves"></div><div class="layer-row"><span><i class="swatch" data-swatch="dura" style="background:#95b7bb"></i>Dura</span><input type="checkbox" data-layer="dura" aria-label="Relevant dura" checked><input type="checkbox" data-all-layer="dura" aria-label="All available head dura"></div><div class="layer-row"><span><i class="swatch" data-swatch="arachnoid" style="background:#cfe3ea"></i>Arachnoid</span><input type="checkbox" data-layer="arachnoid" aria-label="Relevant arachnoid" checked><input type="checkbox" data-all-layer="arachnoid" aria-label="All available head arachnoid"></div><label>Procedure<input id="procedure" type="checkbox" checked></label><button id="separateLayers" class="twod" aria-pressed="false">Separate Fascial Layers</button><label for="side">Procedure Side / Context</label><select id="side"><option value="right">Right</option><option value="both">Both · procedure on right</option><option value="left">Left</option></select><div id="openingControl"><label for="opening">Stage Progress<output id="openingValue">100%</output></label><input id="opening" type="range" min="0" max="100" value="100"><button id="replay" class="twod">Replay</button></div><div class="compactnote">Surgical colors add decorative surface texture and baked shading. Scalp layers, dura, fascial layers, fat pads, veins and arachnoid are illustrations.</div></div></details>
 <div id="orientGizmo" aria-hidden="true"><svg viewBox="-50 -50 100 100"></svg></div><div class="viewtools" id="viewTools"><button data-view="anterior">Anterior</button><button data-view="right">Right</button><button data-view="left">Left</button><button data-view="posterior">Posterior</button><button data-view="superior">Top</button><button id="resetView">Reset View</button></div><div class="mobile-model-dock" id="mobileModelDock"></div><svg id="labelLines" aria-hidden="true"></svg><div id="stepLabels"></div><div id="popup" hidden></div><div id="noGL" hidden></div><div id="loading" class="loadstatus">Loading embedded anatomy…</div></div>
 <div class="statusbar" id="stepStatus"><div><span id="stagecaption"></span><small id="visualnote">Reference anatomy with illustrative procedure states.</small></div><div class="pager" id="stepPager"><button id="previous" aria-label="Previous step">←</button><span id="stagecount"></span><button id="next" aria-label="Next step">→</button></div></div><button type="button" class="reading-toggle" aria-pressed="false" aria-label="Expand reading panel" title="Expand reading panel">‹</button></section>
@@ -65745,8 +65747,14 @@ html.library-preview #pterionalOperativeVideo {display:none}
     }
 
     // Apply PR #1's incremental trackball in the screen plane for every view.
-    function rotateByDrag(dx, dy, k = .008) { const len = Math.hypot(dx, dy); if (!len)
-        return; viewQ = qNorm(qMul(qAxis([dy, dx, 0], len * k), viewQ)); viewChanged(); }
+    function trackballRotation(q, dx, dy, sensitivity = .008) {
+        const length = Math.hypot(dx, dy);
+        return length ? qNorm(qMul(qAxis([dy, dx, 0], length * sensitivity), q)) : q;
+    }
+    function rotateByDrag(dx, dy, sensitivity) {
+        viewQ = trackballRotation(viewQ, dx, dy, sensitivity);
+        viewChanged();
+    }
     function markInteraction() { interactionActive = true; pickDirty = false; clearTimeout(interactionTimer); interactionTimer = setTimeout(() => { if (pointers.size)
         return; interactionActive = false; render(true); }, 140); }
     // Camera glide: slerp the orientation and ease distance and zoom to a preset (same frame) over
@@ -65779,7 +65787,8 @@ html.library-preview #pterionalOperativeVideo {display:none}
     else
         render(); }
     // Roll about the line of sight; a positive angle turns the image counter-clockwise.
-    function rollView(angle) { viewQ = qNorm(qMul(qAxis([0, 0, 1], angle), viewQ)); viewChanged(); }
+    function rolledRotation(q, angle) { return qNorm(qMul(qAxis([0, 0, 1], angle), q)); }
+    function rollView(angle) { viewQ = rolledRotation(viewQ, angle); viewChanged(); }
     function meshSide(m) { if (m.procedureSide)
         return m.procedureSide; if (m.nativeName.endsWith('.l'))
         return 'left'; if (m.nativeName.endsWith('.r'))
@@ -65833,8 +65842,10 @@ html.library-preview #pterionalOperativeVideo {display:none}
         return low; return low[0].toUpperCase() + low.slice(1); }); }
     function updateMobilePanelHeight() { if (isMobile)
         $('#mobileModelDock').style.setProperty('--mobile-panel-height', Math.max(0, host.clientHeight - 62) + 'px'); }
-    function zoomBy(factor, refreshPicking = true) { if (!Number.isFinite(factor) || factor <= 0)
-        return; viewZoom = Math.max(.25, Math.min(16, viewZoom * factor)); render(refreshPicking); }
+    function cameraZoom(zoom, factor) {
+        return Number.isFinite(factor) && factor > 0 ? Math.max(.25, Math.min(16, zoom * factor)) : zoom;
+    }
+    function zoomBy(factor, refreshPicking = true) { viewZoom = cameraZoom(viewZoom, factor); render(refreshPicking); }
     function alignActiveStep() { const card = $$('.step')[stage], panel = $('#steps-panel'); if (!card || panel.hidden)
         return; if (isMobile) {
         panel.scrollTop += card.getBoundingClientRect().top - panel.getBoundingClientRect().top;
@@ -67391,7 +67402,9 @@ html.library-preview #pterionalOperativeVideo {display:none}
     // operative pose (the camera is pinned to the room, so the head moves rather than the room around it). Leaving it
     // with that framing untouched glides on to the new step's recommended (head-framed) view, so the walkthrough
     // returns to the anatomy, which then looks as it did before positioning existed.
-    const changed = activeStepId !== steps[stage].id; if (changed && steps[stage].change === 'position' && $('#positionControls'))
+    const changed = activeStepId !== steps[stage].id;
+    if (changed) scopeCamera = null;
+    if (changed && steps[stage].change === 'position' && $('#positionControls'))
         $('#positionControls').open = true; if (changed && !cameraExplicit && steps[stage].change === 'position') {
         glideCamera(stepView(steps[stage]), 1100);
         roomCameraAuto = true;
@@ -68256,6 +68269,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
     }
     // Move the screen-space center only, leaving orbit, zoom and the scope camera unchanged.
     function scopeCompositionShift() { return showScopeView() ? .24 : 0; }
+    let scopeCamera = null;
     function scopePass() {
         const panel = $('#scopeView'), step = steps[stage]?.id;
         const spec = step === 'intradural-work' && config.fissure === 'no'
@@ -68263,17 +68277,22 @@ html.library-preview #pterionalOperativeVideo {display:none}
         panel.hidden = !showScopeView();
         if (panel.hidden) return null;
         const lens = panel.querySelector('canvas');
-        lens.setAttribute('aria-label', 'Operating microscope view of ' + spec.label);
+        lens.setAttribute('aria-label', 'Operating microscope view of ' + spec.label +
+            '. Drag to orbit, Alt or Option-drag to roll, Shift-drag to pan, and scroll to zoom. Home resets the view.');
         const sign = sideSign();
+        if (scopeCamera?.spec !== spec || scopeCamera.side !== sign) {
+            scopeCamera = { spec, side: sign, q: qFromAngles(spec.yaw * sign, spec.pitch), pan: [0, 0], zoom: 1.5 };
+        }
         const target = typeof spec.target === 'function' ? spec.target() :
             [spec.target[0] * sign, ...spec.target.slice(1)];
         return {
-            M: qMat(qFromAngles(spec.yaw * sign, spec.pitch, 0)),
+            M: qMat(scopeCamera.q),
             target,
             distance: spec.distance,
             showCortex: spec.showCortex,
             cortexDisplacement: spec.cortexDisplacement || 0,
-            zoom: 1.5,
+            zoom: scopeCamera.zoom,
+            pan: scopeCamera.pan,
             lens,
         };
     }
@@ -68674,7 +68693,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         const basis = scope || viewBasis();
         const passDistance = scope?.distance ?? distance;
         const passZoom = scope?.zoom ?? viewZoom;
-        const passPan = scope ? [0, 0] : pan;
+        const passPan = scope?.pan ?? pan;
         if (picking)
             preparePickTarget(w, h);
         gl.bindFramebuffer(gl.FRAMEBUFFER, picking ? pickTarget.fbo : null);
@@ -68814,11 +68833,10 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
     } }); }
     // Pterional PR #1 trackball, pan, pinch, twist and keyboard gestures.
     const pointers = new Map();
-    let dragging = false, press = null;
     const wrapAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
 
-    function touchPair() {
-        const [a, b] = pointers.values();
+    function touchPair(points) {
+        const [a, b] = points.values();
         const dx = b[0] - a[0], dy = b[1] - a[1];
         return {
             center: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2],
@@ -68827,124 +68845,160 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         };
     }
 
-    function panBy(dx, dy) {
-        const unit = 2 * distance / (scale * viewZoom * Math.max(1, host.clientHeight));
-        pan[0] += dx * unit;
-        pan[1] -= dy * unit;
+    function moveCameraPan(offset, dx, dy, viewDistance, zoom, height) {
+        const unit = 2 * viewDistance / (scale * zoom * Math.max(1, height));
+        offset[0] += dx * unit;
+        offset[1] -= dy * unit;
     }
 
-    canvas.onpointerdown = e => {
-        if (e.button !== 0 && e.button !== 2) return;
-        stopGlide(false);
-        try {
-            canvas.setPointerCapture(e.pointerId);
-        } catch {
-            // Synthetic or already released pointers cannot be captured.
-        }
-        const point = [e.clientX, e.clientY];
-        if (!pointers.size) {
-            press = point;
-            dragging = false;
-        } else {
-            dragging = true;
-        }
-        pointers.set(e.pointerId, point);
-        markInteraction();
-    };
-
-    canvas.onpointermove = e => {
-        const previous = pointers.get(e.pointerId);
-        if (!previous) return;
-        const point = [e.clientX, e.clientY];
-        const pair = pointers.size === 2 ? touchPair() : null;
-        pointers.set(e.pointerId, point);
-
-        const origin = dragging ? previous : press;
-        const dx = point[0] - origin[0], dy = point[1] - origin[1];
-        if (!dragging && Math.hypot(dx, dy) < 5) return;
-        if (pointers.size > 2 || (!pair && !dx && !dy)) return;
-        dragging = true;
-        stopGlide();
-        markInteraction();
-
-        if (pair) {
-            const next = touchPair();
-            if (pair.distance > 0 && next.distance > 0) {
-                zoomBy(next.distance / pair.distance, false);
-                rollView(-wrapAngle(next.angle - pair.angle));
+    function bindCameraGestures(surface, points, controls) {
+        let dragging = false, press = null;
+        surface.onpointerdown = event => {
+            if (!controls.ready() || (event.button !== 0 && event.button !== 2)) return;
+            controls.prepare?.();
+            try {
+                surface.setPointerCapture(event.pointerId);
+            } catch {
+                // Synthetic or already released pointers cannot be captured.
             }
-            panBy(next.center[0] - pair.center[0], next.center[1] - pair.center[1]);
-        } else if (e.shiftKey || (e.buttons & 2)) {
-            panBy(dx, dy);
-        } else if (e.altKey) {
-            const rect = canvas.getBoundingClientRect();
-            const [x, y] = project(anatomyCenter);
-            const angle = p => Math.atan2(p[1] - rect.top - y, p[0] - rect.left - x);
-            rollView(-wrapAngle(angle(point) - angle(origin)));
-        } else {
-            rotateByDrag(dx, dy);
-        }
-        render(false);
-    };
+            const point = [event.clientX, event.clientY];
+            if (!points.size) press = point;
+            dragging = points.size > 0;
+            points.set(event.pointerId, point);
+            controls.interact?.();
+        };
 
-    function cancelPointer(e) {
-        if (pointers.delete(e.pointerId) && !pointers.size) markInteraction();
+        surface.onpointermove = event => {
+            const previous = points.get(event.pointerId);
+            if (!previous || !controls.ready()) return;
+            const point = [event.clientX, event.clientY];
+            const pair = points.size === 2 ? touchPair(points) : null;
+            points.set(event.pointerId, point);
+
+            const origin = dragging ? previous : press;
+            const dx = point[0] - origin[0], dy = point[1] - origin[1];
+            if (!dragging && Math.hypot(dx, dy) < 5) return;
+            if (points.size > 2 || (!pair && !dx && !dy)) return;
+            dragging = true;
+            controls.beginMotion?.();
+            controls.interact?.();
+
+            if (pair) {
+                const next = touchPair(points);
+                if (pair.distance > 0 && next.distance > 0) {
+                    controls.zoom(next.distance / pair.distance, false);
+                    controls.roll(-wrapAngle(next.angle - pair.angle));
+                }
+                controls.pan(next.center[0] - pair.center[0], next.center[1] - pair.center[1]);
+            } else if (event.shiftKey || (event.buttons & 2)) {
+                controls.pan(dx, dy);
+            } else if (event.altKey) {
+                const rect = surface.getBoundingClientRect();
+                const [x, y] = controls.rollCenter(rect);
+                const angle = p => Math.atan2(p[1] - rect.top - y, p[0] - rect.left - x);
+                controls.roll(-wrapAngle(angle(point) - angle(origin)));
+            } else {
+                controls.rotate(dx, dy);
+            }
+            render(false);
+        };
+
+        function cancelPointer(event) {
+            if (points.delete(event.pointerId) && !points.size) controls.interact?.();
+        }
+
+        surface.onpointerup = event => {
+            if (!points.has(event.pointerId)) return;
+            const click = !dragging && event.button === 0 &&
+                Math.hypot(event.clientX - press[0], event.clientY - press[1]) < 5;
+            cancelPointer(event);
+            if (click) controls.pick?.(event);
+        };
+        surface.onpointercancel = cancelPointer;
+        surface.addEventListener('lostpointercapture', cancelPointer);
+        window.addEventListener('blur', () => {
+            if (!points.size) return;
+            points.clear();
+            controls.interact?.();
+        });
+        surface.oncontextmenu = event => event.preventDefault();
+
+        surface.addEventListener('wheel', event => {
+            if (!controls.ready()) return;
+            event.preventDefault();
+            controls.prepare?.();
+            controls.interact?.();
+            const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? controls.height() : 1);
+            controls.zoom(Math.exp(-delta * .0015), false);
+            render(false);
+        }, { passive: false });
+
+        surface.onkeydown = event => {
+            if (!controls.ready()) return;
+            if (event.key === 'Escape') {
+                controls.clear?.();
+                return;
+            }
+            const key = event.code === 'KeyQ' ? 'q' : event.code === 'KeyE' ? 'e' : event.key.toLowerCase();
+            const actions = {
+                arrowleft: () => controls.rotate(-.13, 0, 1),
+                arrowright: () => controls.rotate(.13, 0, 1),
+                arrowup: () => controls.rotate(0, .1, 1),
+                arrowdown: () => controls.rotate(0, -.1, 1),
+                q: () => controls.roll(.1),
+                e: () => controls.roll(-.1),
+                '+': () => controls.zoom(1.15),
+                '=': () => controls.zoom(1.15),
+                '-': () => controls.zoom(1 / 1.15),
+                home: controls.reset
+            };
+            if (!Object.hasOwn(actions, key)) return;
+            event.preventDefault();
+            controls.beginMotion?.();
+            actions[key]();
+            render(controls.refreshPicking);
+        };
     }
 
-    canvas.onpointerup = e => {
-        if (!pointers.has(e.pointerId)) return;
-        const click = !dragging && e.button === 0 &&
-            Math.hypot(e.clientX - press[0], e.clientY - press[1]) < 5;
-        cancelPointer(e);
-        if (click && available) {
+    bindCameraGestures(canvas, pointers, {
+        ready: () => true,
+        prepare: () => stopGlide(false),
+        beginMotion: stopGlide,
+        interact: markInteraction,
+        rotate: rotateByDrag,
+        roll: rollView,
+        zoom: zoomBy,
+        pan: (dx, dy) => moveCameraPan(pan, dx, dy, distance, viewZoom, host.clientHeight),
+        height: () => host.clientHeight,
+        rollCenter: () => project(anatomyCenter),
+        pick: event => {
+            if (!available) return;
             draw(true);
             cacheLabelVisibility();
             const rect = canvas.getBoundingClientRect();
-            select(pickIdAt(e.clientX - rect.left, e.clientY - rect.top));
+            select(pickIdAt(event.clientX - rect.left, event.clientY - rect.top));
             render();
-        }
-    };
-    canvas.onpointercancel = cancelPointer;
-    canvas.addEventListener('lostpointercapture', cancelPointer);
-    window.addEventListener('blur', () => {
-        if (!pointers.size) return;
-        pointers.clear();
-        markInteraction();
+        },
+        reset: () => $('#resetView').click(),
+        clear: clearSelection,
+        refreshPicking: true
     });
-    canvas.oncontextmenu = e => e.preventDefault();
 
-    canvas.addEventListener('wheel', e => {
-        e.preventDefault();
-        stopGlide(false);
-        markInteraction();
-        const delta = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? host.clientHeight : 1);
-        zoomBy(Math.exp(-delta * .0015), false);
-    }, { passive: false });
-
-    canvas.onkeydown = e => {
-        if (e.key === 'Escape') {
-            clearSelection();
-            return;
-        }
-        const key = e.code === 'KeyQ' ? 'q' : e.code === 'KeyE' ? 'e' : e.key.toLowerCase();
-        const actions = {
-            arrowleft: () => rotateByDrag(-.13, 0, 1),
-            arrowright: () => rotateByDrag(.13, 0, 1),
-            arrowup: () => rotateByDrag(0, .1, 1),
-            arrowdown: () => rotateByDrag(0, -.1, 1),
-            q: () => rollView(.1),
-            e: () => rollView(-.1),
-            '+': () => zoomBy(1.15),
-            '=': () => zoomBy(1.15),
-            '-': () => zoomBy(1 / 1.15),
-            home: () => $('#resetView').click()
-        };
-        if (!Object.hasOwn(actions, key)) return;
-        e.preventDefault();
-        stopGlide();
-        actions[key]();
-        render();
-    };
+    const scopeLens = $('#scopeView canvas');
+    bindCameraGestures(scopeLens, new Map(), {
+        ready: () => !!scopeCamera && showScopeView(),
+        rotate: (dx, dy, sensitivity) => { scopeCamera.q = trackballRotation(scopeCamera.q, dx, dy, sensitivity); },
+        roll: angle => { scopeCamera.q = rolledRotation(scopeCamera.q, angle); },
+        zoom: factor => { scopeCamera.zoom = cameraZoom(scopeCamera.zoom, factor); },
+        pan: (dx, dy) => moveCameraPan(scopeCamera.pan, dx, dy, scopeCamera.spec.distance, scopeCamera.zoom, scopeLens.clientHeight),
+        height: () => scopeLens.clientHeight,
+        rollCenter: rect => {
+            const unit = scale * scopeCamera.zoom * rect.height / (2 * scopeCamera.spec.distance);
+            return [rect.width / 2 + scopeCamera.pan[0] * unit, rect.height / 2 - scopeCamera.pan[1] * unit];
+        },
+        reset: () => { scopeCamera = null; },
+        refreshPicking: false
+    });
     canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); available = false; $('#noGL').hidden = false; });
     canvas.addEventListener('webglcontextrestored', () => location.reload());
     new ResizeObserver(() => { updateMobilePanelHeight(); render(); }).observe(host);
