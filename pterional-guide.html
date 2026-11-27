@@ -2949,6 +2949,22 @@ body:has(input[name="residentLevel"][value="senior"]:checked) [data-resident="ju
 body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-resident="senior"] { display:none }
 .config-heading:has(.resident-level) { flex-wrap:wrap; }
 .resident-level { margin-top:4px; }
+.operative-video {flex:none;padding:0 12px;border-bottom:1px solid var(--line);font-size:.82rem}
+.operative-video > summary {cursor:pointer;padding:7px 0;font-weight:600}
+.operative-video-content {max-height:28dvh;overflow:auto;overscroll-behavior:contain;padding-bottom:6px}
+.operative-video-content p {margin:5px 0}
+#pterionalVideoChoice:not([hidden]) {display:flex;align-items:center;gap:6px;margin-bottom:5px}
+#pterionalVideoSelect {min-width:0;max-width:100%;font:inherit}
+#pterionalVideo {display:block;width:100%;max-height:20dvh;background:#10191f}
+#pterionalVideoStatus:empty {display:none}
+.operative-video-file {margin-top:5px}
+.operative-video-file input {max-width:100%;font:inherit}
+@media(max-width:760px) {
+  .layout:has(#pterionalOperativeVideo[open] #pterionalVideoPlayer:not([hidden])) {
+    grid-template-rows:minmax(110px, 2fr) minmax(0, 3fr)!important
+  }
+}
+html.library-preview #pterionalOperativeVideo {display:none}
 .study-notes { margin-top: .5rem; color: inherit; }
 .study-notes summary { cursor: pointer; font-size: .8rem; font-weight: 450; padding: .25rem 0; }
 .study-notes p { margin: .35rem 0; }
@@ -2962,6 +2978,7 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
 .source-figure-panel { color: #e4ece6; max-width: 54rem; margin: 0 auto; }
 .source-figure-panel .source-figure { margin: 0 0 .9rem; padding: .8rem; border: 1px solid #48615b; border-radius: .55rem; }
 .source-figure-panel .source-figure-image { display: block; margin-bottom: .5rem; }
+.source-figure-panel .source-figure canvas { display:block; max-width:100%; max-height:52dvh; width:auto; height:auto; }
 .source-figure-panel .source-figure img { max-width: 100%; max-height: min(62vh, 47rem); object-fit: contain; }
 .source-figure figcaption p { margin: .38rem 0; }
 </style>
@@ -2976,7 +2993,7 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
 <body>
 <div id="anatomy-loading" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:9999;display:grid;place-content:center;gap:12px;background:#101b20;color:#e5efdf;font:16px Calibri, Carlito, Arial, sans-serif;text-align:center;padding:30px"><strong style="font-size:24px">Pterional Craniotomy</strong><span id="anatomy-loading-message">Loading Anatomy…</span></div><noscript>This interactive guide requires JavaScript.</noscript>
 <header><div class="case-header-heading"><a class="case-back" href="procedures.html" data-case-back>← Back</a><h1>Pterional Craniotomy</h1></div><div class="headeractions"><button class="pill" id="exportPlan">Export guide</button><button class="pill" id="creditsOpen">About</button></div></header>
-<section class="config" aria-label="Choose the Surgical Approach"><div class="config-heading"><strong>Choose the Surgical Approach</strong><fieldset class="resident-level"><legend>Resident Level</legend><div class="choices"><label><input name="residentLevel" type="radio" value="junior" checked><span>Junior Resident</span></label><label><input name="residentLevel" type="radio" value="senior"><span>Senior Resident</span></label></div></fieldset></div>
+<section class="config" aria-label="Surgical approach and resident level"><div class="config-heading"><fieldset class="resident-level"><legend>Resident Level</legend><div class="choices"><label><input name="residentLevel" type="radio" value="junior" checked><span>Junior Resident</span></label><label><input name="residentLevel" type="radio" value="senior"><span>Senior Resident</span></label></div></fieldset></div>
 
 <fieldset><legend>Clinoidectomy Approach</legend><div class="choices"><label><input name="clinoid" type="radio" value="none" checked><span>No</span></label><label><input name="clinoid" type="radio" value="extra"><span>Extradural</span></label><label><input name="clinoid" type="radio" value="intra"><span>Intradural</span></label></div></fieldset>
 <fieldset><legend>Temporalis Dissection</legend><div class="choices"><label><input name="muscle" type="radio" value="subfascial" checked><span>Subfascial</span></label><label><input name="muscle" type="radio" value="split"><span>Muscle-splitting</span></label></div></fieldset>
@@ -2986,20 +3003,44 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
 <details class="floating" id="layerControls"><summary>Layers &amp; View</summary><div class="layer-content"><button id="recommendedView">Recommended View</button><details id="positionControls" class="position-controls"><summary class="position-heading" id="positionHeading">Patient Position</summary><div class="pose-toggle" role="group" aria-label="Head position"><button id="poseAnatomical" aria-pressed="true" title="Neutral supine head">Anatomical</button><button id="poseOperative" aria-pressed="false" title="Head turned and extended for the approach">Operative</button></div><div class="pose-slider"><label for="poseRotation" title="Turn of the head away from the operative side, about the patient's long axis">Contralateral Rotation<output>20°</output></label><input id="poseRotation" data-pose="rotation" type="range" min="0" max="70" step="1" value="20"></div><div class="pose-slider"><label for="poseExtension" title="Extension: the vertex drops toward the floor">Extension (Vertex Down)<output>20°</output></label><input id="poseExtension" data-pose="extension" type="range" min="-10" max="40" step="1" value="20"></div><div class="pose-slider"><label for="poseLateral" title="Lateral flexion: positive tilts the vertex toward the contralateral shoulder">Lateral Flexion<output>0°</output></label><input id="poseLateral" data-pose="lateral" type="range" min="-20" max="30" step="1" value="0"></div><div class="pose-actions"><button id="poseReset" class="twod" title="Default operative pose: 20° contralateral rotation, 20° extension, no lateral flexion">Default 20° / 20°</button><button id="surgeonViewPanel" class="twod">Surgeon's View</button></div><label title="Schematic Mayfield-type head holder and table edge, shown in room-fixed views">Head Holder &amp; Table<input id="poseProps" type="checkbox" checked></label><div class="pose-note">Default follows the cited example (about 20° rotation, 20° extension); tailor to the target. Holder, pins and table are schematic.</div></details><label>Step Labels<input id="prelabels" type="checkbox" checked></label><label title="Illustrative instrument entry direction; not a planned trajectory">Instrument Illustration<input id="instruments" type="checkbox" checked></label><label for="palette">Colors</label><select id="palette" title="Surgical: lifelike tissue shading with decorative surface texture. Atlas: the original teaching colors."><option value="surgical">Surgical (lifelike)</option><option value="atlas">Atlas (teaching colors)</option></select><div class="layer-caption">Relevant: operative structures · All: available head anatomy</div><div class="layer-columns"><span>Layers</span><span>Relevant</span><span>All</span></div><div class="layer-row"><span><i class="swatch" data-swatch="skin" style="background:#d9a184"></i>Scalp Skin</span><input type="checkbox" data-layer="skin" aria-label="Relevant scalp skin" checked><input type="checkbox" data-all-layer="skin" aria-label="All available head scalp skin"></div><div class="layer-row"><span><i class="swatch" data-swatch="galea" style="background:#d8dad3"></i>Galea</span><input type="checkbox" data-layer="galea" aria-label="Relevant galea" checked><input type="checkbox" data-all-layer="galea" aria-label="All available head galea"></div><div class="layer-row"><span><i class="swatch" data-swatch="pericranium" style="background:#dcd6e4"></i>Pericranium</span><input type="checkbox" data-layer="pericranium" aria-label="Relevant pericranium" checked><input type="checkbox" data-all-layer="pericranium" aria-label="All available head pericranium"></div><div class="layer-row"><span><i class="swatch" data-swatch="bone" style="background:#e2d5b8"></i>Bone</span><input type="checkbox" data-layer="bone" aria-label="Relevant bone" checked><input type="checkbox" data-all-layer="bone" aria-label="All available head bone"></div><div class="layer-row"><span><i class="swatch" data-swatch="brain" style="background:#bca99d"></i>Brain</span><input type="checkbox" data-layer="brain" aria-label="Relevant brain" checked><input type="checkbox" data-all-layer="brain" aria-label="All available head brain"></div><div class="layer-row"><span><i class="swatch" data-swatch="muscle" style="background:#b87367"></i>Muscles</span><input type="checkbox" data-layer="muscle" aria-label="Relevant muscles" checked><input type="checkbox" data-all-layer="muscle" aria-label="All available head muscles"></div><div class="layer-row"><span><i class="swatch" data-swatch="fascia" style="background:#a4c7ba"></i>Superficial Fascia</span><input type="checkbox" data-layer="fascia" aria-label="Relevant superficial fascia" checked><input type="checkbox" data-all-layer="fascia" aria-label="All available head superficial fascia"></div><div class="layer-row"><span><i class="swatch" data-swatch="deepfascia" style="background:#75a99a"></i>Deep Fascia</span><input type="checkbox" data-layer="deepfascia" aria-label="Relevant deep fascia" checked><input type="checkbox" data-all-layer="deepfascia" aria-label="All available head deep fascia"></div><div class="layer-row"><span><i class="swatch" data-swatch="fat" style="background:#debd69"></i>Fat Pads</span><input type="checkbox" data-layer="fat" aria-label="Relevant fat pads" checked><input type="checkbox" data-all-layer="fat" aria-label="All available head fat pads"></div><div class="layer-row"><span><i class="swatch" data-swatch="arteries" style="background:#dd6268"></i>Arteries</span><input type="checkbox" data-layer="arteries" aria-label="Relevant arteries" checked><input type="checkbox" data-all-layer="arteries" aria-label="All available head arteries"></div><div class="layer-row"><span><i class="swatch" data-swatch="veins" style="background:#5f6fae"></i>Veins</span><input type="checkbox" data-layer="veins" aria-label="Relevant veins" checked><input type="checkbox" data-all-layer="veins" aria-label="All available head veins"></div><div class="layer-row"><span><i class="swatch" data-swatch="nerves" style="background:#f2d776"></i>Nerves</span><input type="checkbox" data-layer="nerves" aria-label="Relevant nerves" checked><input type="checkbox" data-all-layer="nerves" aria-label="All available head nerves"></div><div class="layer-row"><span><i class="swatch" data-swatch="dura" style="background:#95b7bb"></i>Dura</span><input type="checkbox" data-layer="dura" aria-label="Relevant dura" checked><input type="checkbox" data-all-layer="dura" aria-label="All available head dura"></div><div class="layer-row"><span><i class="swatch" data-swatch="arachnoid" style="background:#cfe3ea"></i>Arachnoid</span><input type="checkbox" data-layer="arachnoid" aria-label="Relevant arachnoid" checked><input type="checkbox" data-all-layer="arachnoid" aria-label="All available head arachnoid"></div><label>Procedure<input id="procedure" type="checkbox" checked></label><button id="separateLayers" class="twod" aria-pressed="false">Separate Fascial Layers</button><label for="side">Procedure Side / Context</label><select id="side"><option value="right">Right</option><option value="both">Both · procedure on right</option><option value="left">Left</option></select><div id="openingControl"><label for="opening">Stage Progress<output id="openingValue">100%</output></label><input id="opening" type="range" min="0" max="100" value="100"><button id="replay" class="twod">Replay</button></div><div class="compactnote">Surgical colors add decorative surface texture and baked shading. Scalp layers, dura, fascial layers, fat pads, veins and arachnoid are illustrations.</div></div></details>
 <div id="gesturehint" class="hint">Drag: orbit 360° on both axes · Alt/Option-drag: roll camera · Wheel: zoom · Shift-drag: pan</div><div id="orientGizmo" aria-hidden="true"><svg viewBox="-50 -50 100 100"></svg><small></small></div><div class="viewtools" id="viewTools"><button data-view="anterior">Anterior</button><button data-view="right">Right</button><button data-view="left">Left</button><button data-view="posterior">Posterior</button><button data-view="superior">Top</button><button id="resetView">Reset View</button></div><div class="mobile-model-dock" id="mobileModelDock"></div><svg id="labelLines" aria-hidden="true"></svg><div id="stepLabels"></div><div id="popup" hidden></div><div id="noGL" hidden></div><div id="loading" class="loadstatus">Loading embedded anatomy…</div></div>
 <div class="statusbar" id="stepStatus"><div><span id="stagecaption"></span><small id="visualnote">Reference anatomy with illustrative procedure states.</small></div><div class="pager" id="stepPager"><button id="previous" aria-label="Previous step">←</button><span id="stagecount"></span><button id="next" aria-label="Next step">→</button></div></div><button type="button" class="reading-toggle" aria-pressed="false" aria-label="Expand reading panel" title="Expand reading panel">‹</button></section>
-<aside class="side"><div class="tabs" id="guideTabs" role="tablist" aria-label="Study content"><button role="tab" id="tab-overview" aria-selected="false" aria-controls="overview-panel">Overview</button><button role="tab" id="tab-steps" aria-selected="true" aria-controls="steps-panel">Guide</button><button role="tab" id="tab-indications" aria-selected="false" aria-controls="indications-panel">Indications</button><button role="tab" id="tab-papers" aria-selected="false" aria-controls="papers-panel">Papers <span id="paperCount">7</span></button></div><div class="mobile-step-nav" id="mobileStepNav"></div>
-<div class="scroll" id="overview-panel" role="tabpanel" aria-labelledby="tab-overview" hidden><article class="clinical-overview"><h2>Pterional Craniotomy</h2>
-<section data-resident="junior">
-  <h3>Junior Resident Objectives</h3>
-  <p>Use the model to trace the approach from scalp to skull base. Identify the pterion and sphenoid ridge on bone imaging, then locate the Sylvian fissure, optic nerve, and internal carotid artery. For each phase, name the tissue plane, explain the purpose of the exposure, and identify a structure to protect.</p>
-  <p>Review the baseline neurologic examination and practice recognizing postoperative changes that need escalation, including new weakness, reduced alertness, and visual change.</p>
-</section>
-<section data-resident="senior">
-  <h3>Senior Resident and Board Review Objectives</h3>
-  <p>Given a lesion and imaging, justify the side, operative corridor, and degree of basal exposure. Compare Sylvian fissure opening with a limited subfrontal route, and explain when retaining the clinoid or choosing an extradural or intradural route changes the balance of exposure and risk.</p>
-  <p>For case-based review, state your imaging and examination priorities, structures at risk, and what would make you change the plan. Rehearse the differential for postoperative visual loss, focal deficit, hemorrhage, and CSF leak, and identify the findings that warrant urgent escalation.</p>
-  <p>The board-review prompts are original exercises.</p>
-</section>
-<p>Training references: <a href="https://www.acgme.org/globalassets/pdfs/milestones/neurologicalsurgerymilestones.pdf">ACGME Neurological Surgery Milestones</a> · <a href="https://www.cns.org/education/sans-lifelong-learning/">CNS SANS</a> · <a href="https://www.abns.org/home/displayPDF/Rules-and-Regulations-Code.pdf/">ABNS examination scope</a></p><p>The pterional, or frontotemporal, craniotomy provides a route to the Sylvian fissure and selected targets of the anterior and middle skull base. Its bony opening is centered near the junction of the frontal, temporal, parietal and sphenoid bones. The exposure is tailored to the intended intradural treatment and the relationship of the lesion to surrounding neurovascular structures. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><h3>Indications and approach selection</h3><p>The Sylvian fissure separates the frontal and temporal lobes and provides an anatomical corridor toward the basal cisterns and major vessels. A pterional exposure can provide access to selected anterior circulation aneurysms and skull-base lesions, among other targets. The exact route depends on where the lesion lies and which vessels, nerves and brain structures surround it. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><p>The exposure is adapted to the operative objective rather than applied as an identical sequence in every case. A lesion's position can favor a more subfrontal, transsylvian or pretemporal perspective. The bone opening, degree of fissure dissection and optional extensions are chosen for that goal. A smaller opening may be sufficient for one target but limit the working angle needed for another. Alternative approaches should be compared on their merits for the individual lesion.</p><h3>Surgical anatomy</h3><p>The superficial exposure includes the scalp and temporalis region. The superficial tissues contain vessels and facial nerve branches relevant to the incision and dissection. The temporalis muscle covers part of the skull and is important for chewing and appearance. Deep to it are the bony landmarks of the pterion; deeper still are dura, the Sylvian fissure and the intracranial vessels. These layers define the progression from the surface to the intradural working corridor. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6759424/" target="_blank" rel="noopener noreferrer">[2]</a></p><p>The sphenoid ridge is a bony boundary near the skull base. Its relationship to the intended working angle helps explain why some procedures include additional bone work. The amount required depends on the target. Similarly, opening the Sylvian fissure or removing the anterior clinoid is not automatically part of every pterional craniotomy; each has its own anatomical purpose and risks. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><h3>Preoperative planning</h3><p>Planning begins with the lesion’s location and its relationship to structures that must be reached or preserved. MRI can show soft tissue and brain relationships; CT helps define bone and sinus anatomy. When vascular anatomy is central to the lesion or corridor, the team reviews appropriate vascular imaging. The selected side and head position follow from the intended line of sight, the patient's anatomy and the planned operation.</p><p>Baseline neurologic function, prior operations and medical conditions provide context for both planning and postoperative comparison. On imaging, the frontal sinus, orbital region and bony landmarks matter because their location can affect the planned opening. The simulator shows representative anatomy rather than the exact relationships in any one patient.</p><h3>Complications and postoperative considerations</h3><p>At the surface, injury to the frontotemporal branch of the facial nerve can affect forehead movement. Temporalis injury or atrophy can affect chewing or appearance; sensory nerve injury can cause altered sensation. Preservation of the relevant fascial planes and blood supply is therefore important to functional and cosmetic outcomes. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><p>Deeper risks—including hemorrhage, infection, cerebrospinal fluid leak and neurologic or vascular injury—depend on the target and intradural work. After surgery, examination and imaging address the specific lesion and operation, alongside wound healing and temporal muscle function. A good exposure is only one contributor to outcome: an aneurysm and a tumor cannot be expected to share a single recovery rate simply because both were approached through a pterional opening.</p><h3>Anatomical relationships in the simulation</h3><p>The simulation follows the marked scalp incision through temporalis exposure and bone removal to the dura. The pterion and sphenoid ridge provide orientation at the surface, while the lesion and its relationships determine the deeper working corridor.</p><p>Fissure dissection and optional extensions are shown in relation to the additional view they may provide and the structures encountered at that depth. The model uses illustrative movement and anatomy; it does not reproduce the tissue properties, vascular variation or lesion-specific constraints of an individual patient. Use the cited sources to deepen the anatomy and interpret each optional step in context.</p><h3>Sources</h3><p class="overview-source">[1] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">Pterional Approach: anatomy, variations and complications.</a> [2] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6759424/" target="_blank" rel="noopener noreferrer">Rodriguez Rubio et al. Immersive Surgical Anatomy of the Pterional Approach.</a></p></article></div>
+<aside class="side"><details id="pterionalOperativeVideo" class="operative-video">
+  <summary>Operative Video<span id="pterionalVideoTime"></span></summary>
+  <div class="operative-video-content">
+    <div id="pterionalVideoPlayer" hidden>
+      <label id="pterionalVideoChoice" hidden>Video <select id="pterionalVideoSelect" aria-label="Operative video source"></select></label>
+      <video id="pterionalVideo" controls playsinline preload="metadata" aria-label="Operative video"></video>
+      <p id="pterionalVideoChapter"></p>
+      <a id="pterionalVideoSource" target="_blank" rel="noopener noreferrer"></a>
+      <details class="operative-video-file"><summary>Load local MP4</summary><input id="pterionalVideoFile" type="file" accept="video/mp4" aria-label="Load the matching operative video MP4"></details>
+    </div>
+    <p id="pterionalVideoStatus" role="status"></p>
+  </div>
+</details><div class="tabs" id="guideTabs" role="tablist" aria-label="Study content"><button role="tab" id="tab-overview" aria-selected="false" aria-controls="overview-panel">Overview</button><button role="tab" id="tab-steps" aria-selected="true" aria-controls="steps-panel">Guide</button><button role="tab" id="tab-indications" aria-selected="false" aria-controls="indications-panel">Indications</button><button role="tab" id="tab-papers" aria-selected="false" aria-controls="papers-panel">Papers <span id="paperCount">7</span></button></div><div class="mobile-step-nav" id="mobileStepNav"></div>
+<div class="scroll" id="overview-panel" role="tabpanel" aria-labelledby="tab-overview" hidden><article class="clinical-overview" data-resident="junior">
+  <h2>Pterional Craniotomy</h2>
+  <p>The pterional craniotomy is a frontotemporal opening that lets you look along the skull base and into the Sylvian fissure. Use this guide to build a mental map from the scalp to the optic nerve and major arteries. At each step, ask what layer you are looking at, what the next layer is, and what structure could be injured at the boundary.</p>
+  <h3>Find the landmarks before following the steps</h3>
+  <p>Start with the tragus, zygomatic arch, and pterion. The pterion is the junction of the frontal, parietal, temporal, and sphenoid bones. On bone-window CT, follow the sphenoid ridge inward from this region toward the anterior clinoid. The ridge separates the anterior and middle cranial fossae. On the model, rotate from the outer skull to the operative side and see how the ridge can obstruct the view even after the bone flap is lifted.</p>
+  <h3>Follow the layers from scalp to brain</h3>
+  <p>Identify the superficial temporal artery in the scalp and distinguish it from the facial nerve branches in the temporal soft tissues. Compare the subfascial and muscle-splitting options by watching which layers move together. The temporalis covers the skull, while dura lines its inner surface. Removing the flap exposes dura. Opening dura reveals cortex, surface vessels, and arachnoid. Keep these spaces separate in your mental map so you can localize where bleeding or fluid could collect.</p>
+  <h3>Compare the routes under the microscope</h3>
+  <p>The Sylvian fissure separates the frontal and temporal opercula and leads toward the middle cerebral artery. A limited subfrontal route instead uses the undersurface of the frontal lobe to reach selected basal targets. Find the optic nerve entering its canal and the nearby internal carotid artery. The anterior clinoid sits beside the canal. Compare the intact clinoid with the extradural sequence, where bone work precedes dural opening, and the intradural sequence, where the exposed nerve and artery help orient the bone work.</p>
+  <h3>Connect closure to the postoperative exam</h3>
+  <p>Trace how the dura, bone, temporalis, galea, and skin are restored. Each repairs a different layer. Before leaving the guide, explain how you would compare vision, strength, and alertness with the preoperative examination. A new deficit, declining alertness, or clear wound or nasal drainage should be recognized and escalated promptly.</p>
+</article>
+<article class="clinical-overview" data-resident="senior">
+  <h2>Pterional Approach Planning and Board Review</h2>
+  <p>Work backward from the operative objective. Define what must be exposed, what must remain protected, and what would make you change the plan. A frontotemporal opening can serve vascular and skull-base targets, but the useful trajectory depends on the lesion, surrounding vessels, and which structures are hidden at the intended working angle.</p>
+  <h3>Defend the exposure using the imaging</h3>
+  <p>For an aneurysm, discuss neck and dome projection, branches and perforators, and where proximal control is available. For a clinoidal lesion, assess optic canal extension, the relationship to the internal carotid artery, and the likelihood of an operative plane between tumor and critical structures. Review bone-window CT for the extent of the frontal sinus and for clinoid or optic-strut pneumatization when clinoid work is considered. State which finding changes your side, opening, or reconstruction plan.</p>
+  <h3>Choose the corridor and define a stopping point</h3>
+  <p>Compare basal drilling, Sylvian opening, and a limited subfrontal route in terms of visibility, instrument angles, and frontal or temporal retraction. Explain what is gained by additional bone removal before committing to it. For anterior clinoidectomy, compare extradural bony exposure with the direct intradural view of the nerve, carotid, and lesion. Specify which part of the opticocarotid region needs exposure and which anatomic relationship limits the planned extension. Retaining the clinoid is reasonable when the necessary target and vascular control are already accessible.</p>
+  <h3>Localize complications by phase</h3>
+  <p>Brow weakness and temporal hollowing point to different superficial structures. After basal drilling or clinoid work, new visual loss raises concern for direct or thermal optic injury, compromised blood supply, or compression. Clear rhinorrhea makes the preoperative bone CT and any sinus entry relevant. After Sylvian dissection, use the neurologic exam and imaging to distinguish cortical branch ischemia, deep perforator injury, venous congestion, and hemorrhage. A worsening examination warrants urgent reassessment even when the scalp closure looks satisfactory.</p>
+  <h3>Practice a case defense</h3>
+  <p>Present the imaging and baseline examination, justify the approach, and name the structures you need to see before the critical maneuver. Describe a contingency for inadequate visualization or bleeding and the postoperative findings that would prompt urgent evaluation. Use the step Details to rehearse why each decision changes the exposure, risk, or interpretation of a complication.</p>
+</article>
+</div>
 <div class="scroll" id="steps-panel" role="tabpanel" aria-labelledby="tab-steps"><div id="steps"></div></div>
 <div class="scroll" id="indications-panel" role="tabpanel" aria-labelledby="tab-indications" hidden><div id="indications"></div></div>
 <div class="scroll" id="papers-panel" role="tabpanel" aria-labelledby="tab-papers" hidden><div id="conflict" class="warning" hidden></div><div class="article-tools"><input id="paperSearch" type="search" placeholder="Search papers, techniques, authors…" aria-label="Search papers"></div><div class="sectionintro"><p>References for the approach and all selectable techniques.</p><button class="smallbutton" id="pdfRequests">Download source list</button></div><div id="papers"></div><div id="paperEmpty" class="empty" hidden>No papers match this search.</div></div>
@@ -66976,6 +67017,7 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
             <h2>${escape(titleCase(step.title))}</h2>
             ${images || `<p>See the cited sources for this step.</p>${stepCitations(step.sources || [])}`}
         </section>`;
+        addOperativeVideoStill(panel, step);
         for (const image of panel.querySelectorAll('.source-figure-image img')) {
             image.addEventListener('error', () => {
                 const message = document.createElement('p');
@@ -67067,6 +67109,239 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
         pan = [0, 0];
     } $('#presetname').textContent = titleCase(s.title); syncControls(); clearSelection(); playStepAnimation(); updateChangeControls(); render(); }
     let activeStepId = null;
+    const operativeVideos = {
+        mini: {
+            title: 'Mini-pterional meningioma case',
+            credit: 'Walter C. Jean · Operative Neurosurgery',
+            url: 'https://pubmed.ncbi.nlm.nih.gov/32720680/',
+            file: 'mini-pterional.mp4',
+            duration: 371.36,
+            clips: [
+                ['orient', 100, 107, 'Navigation plan and target'],
+                ['prepare', 121, 124, 'Marked scalp in the operative setup'],
+                ['position', 124, 127, 'Head position and fixation'],
+                ['burr-holes', 143, 150, 'Burr-hole drilling'],
+                ['clinoid:extra', 214, 229, 'Extradural clinoid drilling'],
+                ['intradural-work', 260, 283, 'Tumor dissection in the clinoidal corridor'],
+            ],
+        },
+        extra: {
+            title: 'Extradural aneurysm case',
+            credit: 'Ashish Suri and colleagues · Neurosurgery, Video 2',
+            url: 'https://www.youtube.com/watch?v=rYEJfHxwQOg',
+            file: 'extradural.mp4',
+            duration: 167.60,
+            clips: [
+                ['clinoid:extra', 12, 102, 'Meningo-orbital band exposure and extradural clinoid drilling'],
+                ['dura', 107, 113, 'Dural opening'],
+                ['fissure', 114, 119, 'Sylvian fissure dissection'],
+                ['intradural-work', 126, 165, 'Aneurysm dissection and clipping'],
+            ],
+        },
+        intra: {
+            title: 'Intradural cadaver demonstration',
+            credit: 'Ashish Suri and colleagues · Neurosurgery, Video 1',
+            url: 'https://www.youtube.com/watch?v=JpduXgK3JZw',
+            file: 'intradural.mp4',
+            duration: 97.16,
+            clips: [
+                ['fissure', 9, 11, 'View of the already dissected Sylvian fissure'],
+                ['clinoid:intra', 33, 48, 'Intradural drilling of the anterior clinoid'],
+            ],
+        },
+    };
+    const operativeVideo = $('#pterionalVideo');
+    const operativeVideoSelect = $('#pterionalVideoSelect');
+    const localVideoUrls = new Map();
+    const downloadedVideoUrls = new Map();
+
+    function getOperativeVideoBlob(id) {
+        if (localVideoUrls.has(id)) return Promise.resolve(localVideoUrls.get(id));
+        if (!downloadedVideoUrls.has(id)) {
+            const url = 'assets/pterional-video-local/' + operativeVideos[id].file;
+            const download = fetch(url).then(response => {
+                if (!response.ok) throw Error('Video unavailable');
+                return response.blob();
+            }).then(blob => URL.createObjectURL(blob)).catch(error => {
+                downloadedVideoUrls.delete(id);
+                throw error;
+            });
+            downloadedVideoUrls.set(id, download);
+        }
+        return downloadedVideoUrls.get(id);
+    }
+    let operativeVideoId = '', pendingOperativeSeek = null, followingOperativeVideo = false;
+    let resumeOperativeVideo = false;
+
+    function videoStepKey(step) {
+        return step.id === 'clinoid' ? 'clinoid:' + config.clinoid : step.id;
+    }
+
+    function formatOperativeTime(seconds) {
+        return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+    }
+
+    function applyOperativeSeek() {
+        if (operativeVideo.readyState < 1 || pendingOperativeSeek === null) return;
+        const source = operativeVideos[operativeVideoId];
+        if (Math.abs(operativeVideo.duration - source.duration) > 2) {
+            operativeVideo.pause();
+            $('#pterionalVideoStatus').textContent = 'This file has a different duration. Choose the matching original file to use timestamps.';
+            pendingOperativeSeek = null;
+            resumeOperativeVideo = false;
+            return;
+        }
+        const seekable = operativeVideo.seekable;
+        if (!operativeVideo.src.startsWith('blob:') &&
+            (!seekable.length || seekable.end(seekable.length - 1) < pendingOperativeSeek)) {
+            const id = operativeVideoId, sourceUrl = operativeVideo.src;
+            const status = $('#pterionalVideoStatus');
+            status.textContent = 'Loading video for timestamp navigation…';
+            getOperativeVideoBlob(id).then(url => {
+                if (operativeVideoId !== id || operativeVideo.src !== sourceUrl) return;
+                status.textContent = '';
+                operativeVideo.src = url;
+            }).catch(() => {
+                if (operativeVideoId === id && operativeVideo.src === sourceUrl)
+                    status.textContent = 'Choose the matching MP4 to play this source locally.';
+            });
+            return;
+        }
+        operativeVideo.currentTime = pendingOperativeSeek;
+        pendingOperativeSeek = null;
+        if (resumeOperativeVideo) {
+            resumeOperativeVideo = false;
+            operativeVideo.play().catch(() => {});
+        }
+    }
+
+    function loadOperativeVideo(id) {
+        operativeVideoId = id;
+        const sourceUrl = localVideoUrls.get(id);
+        operativeVideo.src = sourceUrl || 'assets/pterional-video-local/' + operativeVideos[id].file;
+        if (!sourceUrl && downloadedVideoUrls.has(id)) {
+            const requestedUrl = operativeVideo.src;
+            getOperativeVideoBlob(id).then(url => {
+                if (operativeVideoId === id && operativeVideo.src === requestedUrl) operativeVideo.src = url;
+            }).catch(() => {});
+        }
+    }
+
+    function syncOperativeVideo(preferredId = operativeVideoId) {
+        const step = steps[stage];
+        if (!step) return;
+        const key = videoStepKey(step);
+        const choices = Object.entries(operativeVideos).flatMap(([id, source]) => {
+            const clip = source.clips.find(([clipKey]) => clipKey === key);
+            return clip ? [{ id, source, clip }] : [];
+        });
+        operativeVideoSelect.replaceChildren(...choices.map(({id, source}) => new Option(source.title, id)));
+        $('#pterionalVideoChoice').hidden = choices.length < 2;
+        $('#pterionalVideoPlayer').hidden = choices.length === 0;
+        const chosen = choices.find(choice => choice.id === preferredId) || choices[0];
+        if (!chosen) {
+            operativeVideo.pause();
+            pendingOperativeSeek = null;
+            resumeOperativeVideo = false;
+            $('#pterionalVideoTime').textContent = '';
+            $('#pterionalVideoStatus').textContent = 'This step is not shown in the available recordings.';
+            return;
+        }
+        const {id, source, clip} = chosen;
+        operativeVideoSelect.value = id;
+        $('#pterionalVideoTime').textContent = ' · ' + formatOperativeTime(clip[1]);
+        $('#pterionalVideoChapter').textContent = formatOperativeTime(clip[1]) + ' · ' + clip[3];
+        const credit = $('#pterionalVideoSource');
+        credit.textContent = source.credit;
+        credit.href = source.url;
+        $('#pterionalVideoStatus').textContent = operativeVideoId === id && operativeVideo.error
+            ? 'Choose the matching MP4 to play this source locally.' : '';
+        if (followingOperativeVideo) return;
+        pendingOperativeSeek = clip[1];
+        if (operativeVideoId !== id) {
+            resumeOperativeVideo = !operativeVideo.paused || resumeOperativeVideo;
+            loadOperativeVideo(id);
+        }
+        applyOperativeSeek();
+    }
+
+    function addOperativeVideoStill(panel, step) {
+        const key = videoStepKey(step);
+        const id = operativeVideoSelect.value;
+        const source = operativeVideos[id];
+        const clip = source?.clips.find(([clipKey]) => clipKey === key);
+        if (!clip) return;
+        const [, time, , caption] = clip;
+
+        const figure = document.createElement('figure');
+        figure.className = 'source-figure';
+        figure.hidden = true;
+        panel.querySelector('h2').after(figure);
+        getOperativeVideoBlob(id).then(url => {
+            if (!figure.isConnected) return;
+            const frameVideo = document.createElement('video');
+            frameVideo.preload = 'auto';
+            frameVideo.muted = true;
+            frameVideo.addEventListener('loadedmetadata', () => {
+                if (Math.abs(frameVideo.duration - source.duration) <= 2) frameVideo.currentTime = time;
+            }, { once: true });
+            frameVideo.addEventListener('seeked', () => {
+                if (!figure.isConnected) return;
+                const frame = document.createElement('canvas');
+                frame.width = frameVideo.videoWidth;
+                frame.height = frameVideo.videoHeight;
+                frame.setAttribute('role', 'img');
+                frame.setAttribute('aria-label', caption);
+                frame.getContext('2d').drawImage(frameVideo, 0, 0);
+                const credit = document.createElement('figcaption');
+                credit.innerHTML = `<p><strong>${formatOperativeTime(time)} · ${escape(caption)}</strong></p>
+                    <p class="figure-credit">${sourceLink(source.url, source.credit)}</p>`;
+                figure.append(frame, credit);
+                figure.hidden = false;
+            }, { once: true });
+            frameVideo.src = url;
+        }).catch(() => {});
+    }
+
+    function followOperativeVideo() {
+        if (!operativeVideoId || operativeVideo.seeking || pendingOperativeSeek !== null ||
+            $('#pterionalVideoPlayer').hidden || Math.abs(operativeVideo.duration - operativeVideos[operativeVideoId].duration) > 2) return;
+        const current = operativeVideo.currentTime;
+        const clip = operativeVideos[operativeVideoId].clips.find(([, start, end]) => current >= start && current < end);
+        if (!clip || clip[0] === videoStepKey(steps[stage])) return;
+        const index = steps.findIndex(step => videoStepKey(step) === clip[0]);
+        if (index < 0) return;
+        followingOperativeVideo = true;
+        try { activate(index); } finally { followingOperativeVideo = false; }
+    }
+
+    operativeVideoSelect.addEventListener('change', () => {
+        syncOperativeVideo(operativeVideoSelect.value);
+        if (mode === '2d') showSourceFigures();
+    });
+    operativeVideo.addEventListener('loadedmetadata', applyOperativeSeek);
+    operativeVideo.addEventListener('seeked', followOperativeVideo);
+    operativeVideo.addEventListener('timeupdate', followOperativeVideo);
+    operativeVideo.addEventListener('error', () => {
+        resumeOperativeVideo = false;
+        if (!$('#pterionalVideoPlayer').hidden)
+            $('#pterionalVideoStatus').textContent = 'Choose the matching MP4 to play this source locally.';
+    });
+    $('#pterionalVideoFile').addEventListener('change', event => {
+        const file = event.target.files[0];
+        if (!file || !operativeVideoId) return;
+        if (localVideoUrls.has(operativeVideoId)) URL.revokeObjectURL(localVideoUrls.get(operativeVideoId));
+        localVideoUrls.set(operativeVideoId, URL.createObjectURL(file));
+        event.target.value = '';
+        loadOperativeVideo(operativeVideoId);
+        syncOperativeVideo();
+        if (mode === '2d') showSourceFigures();
+    });
+    $('#pterionalOperativeVideo').addEventListener('toggle', () => {
+        updateMobileReaderHeight();
+        alignActiveStep();
+    });
+
     function activate(i) { animationToken++; stopGlide(false); startPoseBlend(); poseOverride = null; beforeCurrent = false; $('#compareChange').setAttribute('aria-pressed', false); $('#compareChange').textContent = 'Before'; stage = Math.max(0, Math.min(steps.length - 1, i)); opening = 1; $$('.step').forEach((c, j) => { c.classList.toggle('active', j === stage); c.setAttribute('aria-current', j === stage ? 'step' : 'false'); }); $('#stagecaption').textContent = String(stage + 1).padStart(2, '0') + ' · ' + titleCase(steps[stage].title); $('#stagecount').textContent = String(stage + 1).padStart(2, '0') + ' / ' + steps.length; $('#previous').disabled = stage === 0; $('#next').disabled = stage === steps.length - 1; // Entering the 'position' step glides the camera to the step's room-fixed view while the head turns into the
     // operative pose (the camera is pinned to the room, so the head moves rather than the room around it). Leaving it
     // with that framing untouched glides on to the new step's recommended (head-framed) view, so the walkthrough
@@ -67079,7 +67354,7 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
     else if (changed && !cameraExplicit && (roomCameraAuto || activeStepId === 'position' && camFrame === 'world')) {
         glideCamera(stepView(steps[stage]), 900);
         roomCameraAuto = false;
-    } activeStepId = steps[stage].id; applyRecommendedView({ preserveCamera: true }); updateChangeControls(); updateMobileReaderHeight(); alignActiveStep();
+    } activeStepId = steps[stage].id; syncOperativeVideo(); applyRecommendedView({ preserveCamera: true }); updateChangeControls(); updateMobileReaderHeight(); alignActiveStep();
     // The lateral drilling view can obscure the medial clinoid. Use the
     // existing clinoid close-up on entry unless an explicit preset is active.
     if (changed && !cameraExplicit && ['sphenoid-ridge', 'clinoid'].includes(steps[stage].id))
