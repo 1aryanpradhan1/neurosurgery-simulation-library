@@ -67592,7 +67592,7 @@ header {
     const scopeViews = {
         'sphenoid-ridge': { target: drillTip, yaw: 1.16, pitch: .38, distance: 4.5, label: 'Sphenoid wing' },
         extension: { target: [-2.25,-1.15,1.98], yaw: 1.08, pitch: .48, distance: 4.6, label: 'Basal bone exposure' },
-        clinoid: { target: [-.8,-1.1,1.35], yaw: .60, pitch: 1.25, distance: 4.8, showCortex: true, label: 'Anterior clinoid and optic region' },
+        clinoid: { target: [-.8,-1.1,1.35], yaw: .60, pitch: 1.25, distance: 4.8, showCortex: true, cortexDisplacement: 1.25, label: 'Anterior clinoid and optic region' },
         dura: { target: [-2.4,.05,1.35], yaw: 1.30, pitch: .30, distance: 5.7, label: 'Dural opening' },
         fissure: { target: [-2.08,-.49,1.05], yaw: 1.30, pitch: .45, distance: 4.8, label: 'Sylvian fissure' },
         cistern: { target: [-1.02,-1.02,1.46], yaw: .78, pitch: .85, distance: 4.6, label: 'Opticocarotid corridor' },
@@ -67619,6 +67619,7 @@ header {
             target,
             distance: spec.distance,
             showCortex: spec.showCortex,
+            cortexDisplacement: spec.cortexDisplacement || 0,
             zoom: 1.5,
             lens,
         };
@@ -67695,7 +67696,7 @@ header {
         const fragmentVectors = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS) || 16;
         fissureN = fragmentVectors >= 64 ? 12 : fragmentVectors >= 40 ? 8 : 4;
         program = gl.createProgram();
-        gl.attachShader(program, shader(gl.VERTEX_SHADER, `attribute vec3 aPosition;attribute vec3 aNormal;uniform mediump float uLine;uniform float uLinePx,uLineNudge;uniform float uDistance,uAspect,uScale,uMotion,uSide;uniform float uCompositionShift;uniform mat3 uView;uniform vec3 uGravity;uniform mediump float uAction;uniform vec2 uPan;uniform vec3 uTarget;uniform vec3 uOffset;uniform float uFlapAngle;uniform vec3 uFlapAxis,uFlapPivot;
+        gl.attachShader(program, shader(gl.VERTEX_SHADER, `attribute vec3 aPosition;attribute vec3 aNormal;uniform mediump float uLine;uniform float uLinePx,uLineNudge;uniform float uDistance,uAspect,uScale,uMotion,uSide;uniform float uCompositionShift, uScopeCortexDisplacement;uniform mat3 uView;uniform vec3 uGravity;uniform mediump float uAction;uniform vec2 uPan;uniform vec3 uTarget;uniform vec3 uOffset;uniform float uFlapAngle;uniform vec3 uFlapAxis,uFlapPivot;
 uniform float uCurlOn,uCurlIA;uniform vec3 uCurlPivot,uCurlAxis,uCurlAway,uCurlLift;uniform vec4 uCurlP;uniform float uCurlRow[16];uniform float uDrapeW;uniform vec4 uDrapeP;uniform float uDrape[96];uniform float uPartOn,uIncReveal;uniform vec4 uPart;uniform vec3 uInc[24];uniform mediump float uSplitKind;uniform vec4 uSplitPlane;uniform vec2 uSplitInc;
 varying mediump vec3 vNormal;varying highp vec3 vOriginal;varying highp vec3 vEye;varying mediump float vAO;varying mediump vec3 vObjN;varying highp float vSplit;varying highp float vIncT;
 /* Curl / peel (see curlPoint in JS): hinge travelled uCurlP.z along away, pivot raised along lift to the tabulated
@@ -67728,7 +67729,14 @@ q+=uOffset;
 // View: uView = head(model)->view rotation (camera orientation x head pose), uTarget = orbit centre in model space.
 // q/norm are model-space (after flap motion); deformations belong above this line. uGravity (unit, model space) is
 // provided for later gravity-driven deformation and is optimised away while unused.
-if(uLine>0.){float w0=uDistance-(uView*(q-uTarget)).z;q+=norm*max(0.,w0*uLinePx-uLine);}vec3 p=uView*(q-uTarget);vNormal=uView*norm;vObjN=vec3(aNormal.x*uSide,aNormal.yz)/max(vAO,1e-4);float w=uDistance-p.z;vEye=vec3(-(p.x+uPan.x),-(p.y+uPan.y),w);float wz=uLine>0.?max(w-uLineNudge,.05):w;gl_Position=vec4((p.x+uPan.x)*uScale/uAspect+uCompositionShift*w,(p.y+uPan.y)*uScale,(1.0125786-1.0062893/wz)*w,w);}`));
+if(uLine>0.){float w0=uDistance-(uView*(q-uTarget)).z;q+=norm*max(0.,w0*uLinePx-uLine);}vec3 p=uView*(q-uTarget);
+// Illustrative local retraction in the clinoid scope pass. Taper the displacement
+// away from the basal working corridor and leave skull and vessels registered.
+if(uScopeCortexDisplacement>0.){
+ float weight=1.-smoothstep(.60,2.35,length(q-uTarget));
+ p.xy+=vec2(-.24*uSide,-1.)*(uScopeCortexDisplacement*weight);
+}
+vNormal=uView*norm;vObjN=vec3(aNormal.x*uSide,aNormal.yz)/max(vAO,1e-4);float w=uDistance-p.z;vEye=vec3(-(p.x+uPan.x),-(p.y+uPan.y),w);float wz=uLine>0.?max(w-uLineNudge,.05):w;gl_Position=vec4((p.x+uPan.x)*uScale/uAspect+uCompositionShift*w,(p.y+uPan.y)*uScale,(1.0125786-1.0062893/wz)*w,w);}`));
         gl.attachShader(program, shader(gl.FRAGMENT_SHADER, `#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
 #else
@@ -67836,7 +67844,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         if (!gl.getProgramParameter(program, gl.LINK_STATUS))
             throw Error(gl.getProgramInfoLog(program));
         gl.useProgram(program);
-        ['InkMask', 'InkBounds', 'InkProgress', 'View', 'Gravity', 'Distance', 'Aspect', 'Scale', 'CompositionShift', 'Pan', 'Color', 'Selected', 'Pick', 'Region', 'Target', 'Cut', 'Ridge', 'Motion', 'Action', 'Offset', 'Change', 'WindowAction', 'FlapAngle', 'Side', 'Burrs', 'IsMarker', 'Line', 'LinePx', 'LineNudge', 'MarkKind', 'MarkAxis', 'MarkReveal', 'MarkCenter', 'MarkRange', 'Material', 'Surgical', 'Quality', 'Viewport', 'Fissure', 'FlapAxis', 'FlapPivot', 'CamPos', 'FisVeil', 'CurlOn', 'CurlIA', 'CurlPivot', 'CurlAxis', 'CurlAway', 'CurlLift', 'CurlP', 'CurlRow', 'DrapeW', 'DrapeP', 'Drape', 'PartOn', 'Part', 'Inc', 'IncReveal', 'SplitKind', 'SplitPlane', 'SplitInc', 'SplitPass', 'Groove', 'Inner'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
+        ['InkMask', 'InkBounds', 'InkProgress', 'View', 'Gravity', 'Distance', 'Aspect', 'Scale', 'CompositionShift', 'ScopeCortexDisplacement', 'Pan', 'Color', 'Selected', 'Pick', 'Region', 'Target', 'Cut', 'Ridge', 'Motion', 'Action', 'Offset', 'Change', 'WindowAction', 'FlapAngle', 'Side', 'Burrs', 'IsMarker', 'Line', 'LinePx', 'LineNudge', 'MarkKind', 'MarkAxis', 'MarkReveal', 'MarkCenter', 'MarkRange', 'Material', 'Surgical', 'Quality', 'Viewport', 'Fissure', 'FlapAxis', 'FlapPivot', 'CamPos', 'FisVeil', 'CurlOn', 'CurlIA', 'CurlPivot', 'CurlAxis', 'CurlAway', 'CurlLift', 'CurlP', 'CurlRow', 'DrapeW', 'DrapeP', 'Drape', 'PartOn', 'Part', 'Inc', 'IncReveal', 'SplitKind', 'SplitPlane', 'SplitInc', 'SplitPass', 'Groove', 'Inner'].forEach(n => uniforms[n] = gl.getUniformLocation(program, 'u' + n));
         gl.uniform1i(uniforms.InkMask, 1);
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
@@ -68052,6 +68060,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         gl.depthMask(true);
         gl.uniform1f(uniforms.InkProgress, 0);
         gl.uniform1f(uniforms.Ridge, -1);
+        gl.uniform1f(uniforms.ScopeCortexDisplacement, 0);
         if (!scope) drawProps(picking); // schematic head holder and table (room views only); restores the anatomy buffer
         const inkProgress = prepareSkinInk(picking);
         for (const m of list) {
@@ -68064,6 +68073,8 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
                 gl.enable(gl.BLEND);
                 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             }
+            gl.uniform1f(uniforms.ScopeCortexDisplacement,
+                scope && m.group === 'brain' ? scope.cortexDisplacement : 0);
             gl.uniform1f(uniforms.Material, flat ? -1 : m.externalSurface ? 13 : materialIds[m.group]);
             if (picking) {
                 const id = m.index + 1;
