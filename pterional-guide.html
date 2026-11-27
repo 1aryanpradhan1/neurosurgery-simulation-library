@@ -66831,7 +66831,7 @@ header {
         return false; const side = meshSide(m); if (contextSide !== 'both' && side !== 'both' && side !== contextSide && !wholeScalp(m))
         return false; if (m.marker)
         return procedure && side === operativeSide() && (baseId(m).replace(/-l$/, '') !== 'MARK-incision' && showsStageMarker(m, steps[stage].id)) && (!m.markerFissure || m.markerFissure === config.fissure); if (m.instrument) {
-        if (!procedure || (!wholeStep && beforeCurrent) || side !== operativeSide() || !instrumentsOn)
+        if (scope || !procedure || (!wholeStep && beforeCurrent) || side !== operativeSide() || !instrumentsOn)
             return false;
         if (m.sphenoidDrill && (opening <= .025 || opening >= .97)) return false;
         const match = m.instrumentStage === steps[stage].visualAction && (m.instrumentKind !== 'dura-wide' || config.fissure === 'yes') && (m.instrumentKind !== 'dura-low' || config.fissure === 'no');
