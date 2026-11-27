@@ -2949,7 +2949,6 @@ body:has(input[name="residentLevel"][value="senior"]:checked) [data-resident="ju
 body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-resident="senior"] { display:none }
 .config-heading:has(.resident-level) { flex-wrap:wrap; }
 .resident-level { margin-top:4px; }
-.resident-step { font-weight:600; }
 .study-notes { margin-top: .5rem; color: inherit; }
 .study-notes summary { cursor: pointer; font-size: .8rem; font-weight: 450; padding: .25rem 0; }
 .study-notes p { margin: .35rem 0; }
@@ -66768,6 +66767,128 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
             'Distinguish early wound hematoma, infection, and CSF drainage. Explain what features of the wound and neurologic exam would prompt urgent reassessment.',
         ],
     };
+    const residentLessons = {
+        "orient": [
+            "The pterion is where frontal, parietal, squamous temporal, and greater sphenoid wing meet. It approximates the lateral end of the sphenoid ridge, which separates the anterior and middle cranial fossae. On an axial bone-window image, trace the ridge medially toward the anterior clinoid. The pterion is a starting landmark. The deeper target, such as the carotid bifurcation or proximal middle cerebral artery, determines which part of the opening is most useful.",
+            "Start with target anatomy on axial and coronal imaging. For an aneurysm, identify the parent artery, the dome projection, and the segment available for proximal control. For a skull-base mass, identify optic canal involvement, arterial encasement, and the likely plane against cortex. A lateral surface landmark can orient the opening but cannot establish that the target is accessible. Explain which finding would make you choose a different side or extend the exposure.",
+        ],
+        "position": [
+            "The clamp holds the skull steady while the head is turned and extended. Rotation changes which side of the frontotemporal region faces the surgeon. Extension changes the relationship between the frontal lobe, gravity, and the anterior skull base. Compare the modeled head in neutral and operative positions. The surface landmarks have moved in the room, but their relationship to each other has stayed the same. This is why orientation must use patient anatomy as well as the room view.",
+            "Head position sets the access angle before any bone is removed. Ask whether the planned line of sight runs toward the Sylvian fissure or along the anterior skull base. Too much rotation can bring the temporal lobe into the path or obstruct venous return, depending on neck position. If the brain is unexpectedly full, review neck alignment and venous drainage with anesthesia while also considering ventilation, mass effect, and possible bleeding.",
+        ],
+        "prepare": [
+            "The incision is planned in relation to the hairline, tragus, and zygomatic root. The superficial temporal artery crosses the zygomatic arch anterior to the ear and divides into branches within superficial tissues. Its position varies, so the projection on a model is an orientation aid. The frontal facial nerve branches travel in a deeper relationship and are vulnerable during flap elevation. Keeping these structures distinct explains why a reasonable skin line still needs a deliberate dissection plane.",
+            "Start by deciding whether the superficial temporal artery is simply a structure to preserve or a potential donor. If bypass is a possibility, the expected donor course and usable length may influence the skin opening. Prior scars or radiation can also change flap perfusion. Explain how you would revise an incision that gives adequate bone access but threatens an important pedicle, and how you would document that plan before the landmarks disappear under drapes.",
+        ],
+        "sterile": [
+            "Preparation and draping create a working field while leaving the site and incision legible. The marked side, visible ear and zygomatic reference, and agreed head orientation help the team re-establish anatomy after covering much of the patient. A recognizable surface field is especially useful when the rotated head looks unfamiliar from the operator’s position. The team pause links this external view back to the imaging and planned procedure before an incision is made.",
+            "Treat the pause as a check of the operative plan in addition to patient and side. The team should agree on the target, relevant approach variants, any special vascular or reconstruction needs, and issues arising from prior surgery. If imaging and the visible marking disagree, stop and resolve the discrepancy against the primary records. A useful board answer explains how you would resolve the conflict and how you would confirm the corrected plan with the whole team.",
+        ],
+        "incision": [
+            "Scalp layers from superficial to deep are skin, dense connective tissue, galea, loose areolar tissue, and pericranium. Vessels in the dense layer can bleed conspicuously because surrounding tissue holds them open. The superficial temporal artery is distinct from the nearby facial nerve branches. The incision determines access, while the depth and plane of later dissection determine which layer carries each structure. Follow the incision on the model and relate it to the underlying temporal region.",
+            "Assess bleeding and flap perfusion as separate problems. Brisk bleeding from a cut scalp edge does not establish that the reflected flap retains adequate blood supply. A prior incision, a narrow pedicle, or sacrifice of a superficial temporal branch changes the risk. If a vessel was reserved for possible bypass, injury also changes the vascular contingency plan. Explain which finding would prompt you to reassess the incision or flap before proceeding deeper.",
+        ],
+        "scalp-flap": [
+            "The scalp flap moves forward to expose the temporalis and frontal bone. In a muscle-splitting approach, the skin and muscle can be reflected together as a myocutaneous flap. With subfascial dissection, the model separates the scalp and muscle in stages. Watch which tissue remains attached during reflection. The fascial plane matters because frontal facial nerve branches lie superficial to the deep temporal fascia near the arch and are particularly vulnerable in the anterior temporal region.",
+            "Loss of forehead elevation after a pterional exposure suggests dysfunction of the frontal facial nerve branch. A hollow temple can instead reflect loss or displacement of temporalis muscle or adjacent fat. Identify the tissue plane in your selected approach and explain how superficial injury or sustained traction could produce the first finding. Then describe how muscle perfusion, attachment, and preservation of the fat planes affect contour even when frontalis movement remains normal.",
+        ],
+        "muscle": [
+            "The temporalis originates broadly from the temporal fossa and inserts on the coronoid process of the mandible. It contributes to jaw closure, so disruption can affect chewing as well as appearance. Fascia covers the muscle and helps define different planes of exposure. Compare which layers the model opens together and which remain separate. Reflecting the muscle reveals the temporal squama and sphenoid region needed for the bony opening.",
+            "The deep temporal nerves and vessels approach the muscle from its deep surface. Extensive stripping, cautery, or traction can compromise muscle function and bulk. Compare the exposure a myocutaneous flap provides with the layer control of a subfascial approach. At follow-up, ask separately about pain with chewing, restricted opening, and loss of contour. These findings can overlap, but their timing and examination help distinguish scarring, impaired muscle function, and loss of volume.",
+        ],
+        "retract-flap": [
+            "After reflection, the flap must stay clear of the bone opening. Locate the zygomatic root and temporal squama that become visible and trace the flap back to its attachment. The reflected tissues are still connected to their blood supply and may contain superficial sensory or motor structures. The practical teaching point is to see what the reflection exposes and where load is transferred to the tissue that remains attached.",
+            "If exposure requires increasing tension, identify what is actually limiting the view. It might be a flap edge, residual muscle attachment, or the amount of bone exposed. Traction concentrated over a small area can compress tissue and distort the pedicle. A color change or excessive tension warrants checking how the flap sits. In a case discussion, describe a change that improves access while preserving the blood supply and avoiding unnecessary pressure on superficial structures.",
+        ],
+        "periosteum": [
+            "Pericranium is the periosteum on the outside of the skull. It is a distinct layer from the dura lining the inside of the skull. Around the temporal region, distinguish it from the fascia covering temporalis. Exposure of the skull allows the bony landmarks and planned margins to be seen directly. Preserved pericranium may also be useful as tissue for reconstruction, particularly when a defect needs to be separated from the frontal sinus.",
+            "Use bone-window CT to check whether the planned opening approaches the frontal sinus. If sinus entry is plausible, preserving vascularized pericranium can expand reconstruction options. Prior operations and scarring can alter its availability. In a board vignette, distinguish the role of supporting dural closure from the role of separating a sinus from the cranial space. A reconstruction plan should account for the actual defect and communication rather than assuming tissue alone solves both issues.",
+        ],
+        "burr-holes": [
+            "A burr hole gives access to the interface between skull and dura and helps define where the bone flap begins. Near the frontotemporal junction, the orbit is anteroinferior and the frontal sinus extent varies. Identify the inner and outer tables on CT, and compare them with the model. Seeing dura at a hole confirms the layer exposed at that point. It does not demonstrate that the dura has separated along the entire planned flap.",
+            "Review the frontal sinus boundary, orbital roof, and bone thickness on imaging before assuming a standard hole position works in a particular patient. Prior craniotomy and advanced age can make separation less predictable. A low hole can improve basal access, but an orbital breach may expose periorbita and sinus entry creates a reconstruction issue. Explain how you would recognize these events and what each changes about the next part of the exposure.",
+        ],
+        "bone-edges": [
+            "The bone cut links the openings around the frontotemporal flap. A low edge helps the view run toward the skull base, and remaining sphenoid bone can still obstruct that view before basal drilling. Trace the cut relative to the orbit and frontal sinus. The intact dura on the inside is a protective boundary around the brain. Bone thickness and dural adherence vary along the cut, especially near the skull base.",
+            "Distinguish a bony edge limiting instrument angle from inadequate exposure caused by soft tissue overlying the target. A high edge can force a steep trajectory and increase retraction. Extending the cut blindly near the orbital roof, sinus, or adherent dura adds a different set of risks. Describe the limiting landmark on imaging and explain which change would improve access before committing to a larger opening.",
+        ],
+        "dural-separation": [
+            "Dura lines the inner table and can adhere to the bone, especially near sutures and prior operative sites. The epidural plane is outside the dura. On the model, compare the layer covering the brain with the underside of the flap. Maintaining that separation allows the bone to move without carrying the dural layer with it. A tear changes what lies exposed and introduces a potential source of CSF leakage after the dura is opened.",
+            "Resistance to separation can reflect an adhesion, bony spur, or proximity to a meningeal vessel. Traction may extend a tear or avulse a bleeding point. If the plane is unclear, describe what can be inspected through available openings and how a revised bone cut could change access. Explain how the location and size of an incidental tear affect repair planning and the interpretation of later clear wound drainage.",
+        ],
+        "bone": [
+            "When the bone flap is lifted, the frontal and temporal components of the opening reveal dura. The sphenoid ridge may remain at the base even after the flap moves away. Use the lower edge to distinguish flap removal from the subsequent reduction of basal bone. The structure on the undersurface of the flap is bone, while the broad membrane still covering the intracranial contents is dura. The cortex remains beneath it at this stage.",
+            "If the flap will not lift, consider an incomplete cut, a bony bridge, and adherent dura before increasing force. Each possibility carries different consequences. A cut that is incomplete at the base can transmit force toward the orbit, whereas adherent dura can tear or bleed. Describe how inspection localizes the tether and what would change if the bleeding is epidural versus arising from tissue exposed through a dural defect.",
+        ],
+        "epidural-hemostasis": [
+            "After the bone flap is removed, bleeding can come from exposed diploic channels, the dura, or meningeal vessels. The epidural space is between dura and bone and can collect blood as the dura separates from the skull. Distinguish this space from the subdural space on the model. Understanding the source and compartment makes it easier to relate a postoperative CT collection to the operative field and recognize why a clean-looking scalp does not rule out deeper bleeding.",
+            "Identify the likely source and compartment rather than treating all oozing as equivalent. A meningeal vessel, diffuse bony bleeding, and a torn dural edge require different assessment. Persistent epidural bleeding can accumulate after closure and cause mass effect. In a vignette with deterioration, explain the need for urgent neurologic reassessment and imaging while maintaining a differential that includes ischemia, seizure, and other intracranial hemorrhage.",
+        ],
+        "sphenoid-ridge": [
+            "The sphenoid ridge separates the anterior and middle cranial fossae. Its lateral projection can block a shallow view even after the frontotemporal flap is lifted. Flattening the ridge opens the line of sight along the floor of the craniotomy. Follow the lateral ridge medially on bone-window CT until it approaches deeper structures. Notice that the lateral bony obstacle, the orbital roof, and the anterior clinoid are related but distinct landmarks.",
+            "The goal is a basal viewing angle adequate for the target, with less need for fixed frontal or temporal retraction. The benefit changes as drilling approaches the thin orbital roof and medial landmarks. At the medial end, recognize the superior orbital fissure, optic canal, and nearby cavernous region. When asked whether to continue drilling, identify the obstructing bone precisely and state what access would be gained and which structure now limits extension.",
+        ],
+        "extension": [
+            "The orbital roof forms part of the anterior cranial floor, while the temporal base forms part of the middle cranial floor. Extending basal removal changes the working angle across these surfaces. A deeper target can sometimes be seen through the existing exposure simply by using the available corridor. The extension is conditional because different targets need different views. On the model, identify where an extension would improve the line of sight and what tissue would be beyond that bone.",
+            "Use imaging to name the structure obscuring the intended line of sight. Orbital roof reduction can improve access along the anterior skull base, while another target may require a different corridor entirely. Weigh the anticipated benefit against orbital entry, sinus communication, and injury near the optic and cavernous regions. Explain which imaging feature or intraoperative observation would make you stop after a limited extension or reconsider the approach.",
+        ],
+        "clinoid:extra": [
+            "The anterior clinoid projects backward from the lesser sphenoid wing. The optic canal roof runs beside it, and the optic strut separates the optic canal from the superior orbital fissure. Extradural exposure approaches these bones before opening the main dura. Trace the canal to see where the optic nerve runs, then locate the carotid nearby. The order matters because the bony corridor is developed while the dura still separates much of the operative field from intradural contents.",
+            "Review thin-section bone CT for aeration of the clinoid or optic strut and assess cross-sectional vascular imaging for the carotid and lesion relationships. A communication with an aerated sinus can become a CSF fistula. New visual loss raises concern for optic nerve trauma, thermal injury, ischemia, or compression. Cavernous venous bleeding can impair visualization, while direct carotid injury is a different emergency. A postoperative third-nerve palsy localizes differently from loss of optic nerve function.",
+        ],
+        "clinoid:intra": [
+            "In the intradural view, find the optic nerve as it enters the canal and the adjacent internal carotid artery. The clinoid is a bony projection beside these structures. Its removal can improve visibility of the space around the nerve and carotid. This approach exposes the nerve, vessel, and lesion relationships before the bone is removed. Use the model to see which anatomy lies in the foreground and which portion remains hidden behind the clinoid.",
+            "Direct visualization helps relate the optic nerve and carotid to the lesion and estimate how much bone is obstructing the view. In aneurysm cases, dome attachment or proximity to bone raises concern for rupture during manipulation. Visual deterioration after surgery calls for a differential including mechanical injury, thermal injury, vascular compromise, and compression. Aeration on bone CT remains relevant even when the work is intradural because a sinus communication can present later as clear rhinorrhea.",
+        ],
+        "tack-up": [
+            "After a craniotomy, the dura can separate from the inner skull, leaving an epidural space. Tack-up sutures bring the dura closer to adjacent bone. Their purpose is to reduce the potential space and support apposition around the opening. Compare a thin gap outside the dura with the region inside the dural envelope. Neither the appearance of sutures nor their location identifies the source of bleeding, so the benefit is easiest to understand in combination with inspection of the epidural field.",
+            "Tack-ups address the potential space in which blood can accumulate. Persistent bleeding from bone or a meningeal vessel still needs to be identified. Review dural integrity and the nearby vascular anatomy before choosing an attachment point. In a postoperative vignette, correlate a new focal deficit or reduced level of consciousness with urgent head imaging. Explain how an epidural collection near the craniotomy differs anatomically from an intradural lesion or venous infarction.",
+        ],
+        "dura": [
+            "Once dura opens, the arachnoid-covered cortex and superficial vessels become visible. The dural flap is reflected to make room along the sphenoid base. Compare the tailored opening in the selected plan with the limited opening that leads toward the basal cisterns. The opening defines what can be seen before any fissure dissection. The superficial veins are part of the anatomy revealed and help orient the frontal and temporal surfaces.",
+            "Review the expected cortical draining veins and the target angle before deciding the opening is adequate. A narrow opening can concentrate traction on cortex or leave the deeper vascular corridor poorly seen. A broader opening can expose more surface and change how veins cross the field. In a case discussion, explain how injury to a cortical vein could lead to delayed swelling or hemorrhagic infarction, distinct from an immediate focal cortical injury.",
+        ],
+        "fissure": [
+            "The Sylvian fissure separates the frontal and temporal opercula. Its superficial veins do not mark every segment of the deeper arterial path. The middle cerebral artery lies deeper, with proximal M1 leading to branches that run over the insula and toward cortex. Identify these layers in sequence. Opening the arachnoid can connect the shallow field to deeper cisterns, which helps explain both the view gained and the importance of protecting the vessels along the way.",
+            "Plan the split around venous drainage and the required arterial exposure. Distinguish an M2 branch supplying lateral cortex from a lenticulostriate perforator supplying deep structures. New hemiparesis can arise from either territory, but accompanying cortical signs and imaging can help localize the injury. A venous complication can produce edema or hemorrhage outside a clean arterial territory. Explain how these patterns change your interpretation of a postoperative deficit.",
+        ],
+        "cistern": [
+            "The limited subfrontal route follows the undersurface of the frontal lobe toward the basal cisterns. The optic nerve and internal carotid artery help define the corridor. Identify where they diverge and how the available opening shapes the background view. The approach can reach selected targets without widely opening the Sylvian fissure, but the branches and perforators visible through a limited window depend on the target and the angle of exposure.",
+            "Assess whether the limited route permits inspection of the far side of the lesion and the intended site of proximal control. A narrow view may hide important vessels or require more frontal retraction than a wider route. For a vascular target, describe what anatomy must be seen before deciding that the corridor is adequate. Compare adding exposure with the risks of continuing through a tight window when critical structures cannot be confirmed.",
+        ],
+        "retain": [
+            "The anterior clinoid is part of the lesser sphenoid wing and sits beside the optic canal. Keeping it in place preserves a bony landmark between the lateral exposure and the optic region. Look for the nerve and carotid segments already visible from the chosen route. The step illustrates that some targets can be reached using the existing opening. The relevant question is what the bone obscures and whether that structure is necessary to the planned operation.",
+            "Describe whether retaining the clinoid leaves the operative target and proximal control visible. A lesion that extends into the optic canal or a need for additional carotid exposure can change the decision. If no critical structure is hidden, removal adds potential optic, vascular, and sinus complications without an identified benefit. A strong board answer specifies the missing view or maneuver that justifies additional bone removal.",
+        ],
+        "intradural-work": [
+            "Distinguish the optic nerve from the internal carotid artery and follow the carotid toward its terminal branches. The middle cerebral artery enters the Sylvian corridor, while small perforators may disappear into deep brain tissue. Major vessels are easier to recognize in a model, but smaller vessels can supply important functional regions. Use the landmarks to explain where the operative target lies and which structures could be hidden on its far side.",
+            "Before a vascular maneuver, state how proximal control would be obtained and what branches or perforators need to stay patent. A new postoperative deficit requires localization using the exam, imaging, and operative events. Consider a cortical branch occlusion, deep perforator injury, venous complication, or hemorrhage. Explain which findings favor each mechanism and why a satisfactory view of a major artery does not establish that smaller vessels are intact.",
+        ],
+        "dura-close": [
+            "Dura is the fibrous envelope around the brain and CSF spaces. Bringing its edges together restores the barrier at the operative opening. If edges cannot be reapproximated directly, a graft may bridge the gap. Recognize that a closed skin incision and a closed dural layer are different boundaries. CSF can collect outside the dural closure or escape along a communication with a paranasal sinus, depending on where the barrier is incomplete.",
+            "Distinguish incisional leakage and pseudomeningocele from rhinorrhea after skull-base drilling. The former can point toward a dural or wound defect, while the latter raises concern for a communication with a sinonasal space. Review the drilling field and whether sinus entry was recognized. Explain how fever or neurologic change affects urgency, and why addressing a dural edge alone may leave a separate skull-base communication unresolved.",
+        ],
+        "bone-replace": [
+            "The replaced bone flap protects the brain and restores the shape of the skull. Orient it by matching its curved surface and margins to the opening. The temporal muscle and scalp then cover it. The region beneath the flap remains a potential epidural space, which helps explain why the epidural field is inspected before fixation. The contour at the inferior edge also affects the transition from forehead to temple after healing.",
+            "Review how flap position and fixation affect contour and stability. If there was frontal sinus entry, replacing the flap does not by itself separate the sinus from the cranial cavity. Reassess that issue and hemostasis before closure. In a patient with a postoperative contour change, distinguish displacement or resorption of bone from temporalis loss. Acute neurologic decline suggests a different priority with urgent assessment for an intracranial cause.",
+        ],
+        "muscle-close": [
+            "The temporalis closes the jaw and contributes to the normal contour of the temple. Its broad attachment to the temporal fossa helps explain why inferior displacement after closure can leave a hollow superiorly. Locate the muscle and its attachment after the bone flap is replaced. A normal brow movement depends on the facial nerve and is not a direct measure of temporalis function. Ask about chewing and look at contour separately.",
+            "An inferiorly displaced muscle can create a contour defect even when its blood supply and innervation are intact. Atrophy can also follow deep muscle injury, devascularization, or denervation. Compare these findings with frontalis weakness after injury to the frontal facial nerve branch. In a follow-up question, explain how examination during jaw clenching and brow elevation can help distinguish the affected tissue and mechanism.",
+        ],
+        "drain": [
+            "The subgaleal plane lies deep to the galea and superficial to the pericranium or replaced flap. Fluid can track in this layer and produce a soft scalp swelling. A drain in this plane addresses a superficial space. It does not directly sample the epidural or subdural compartments. Review the layers as the scalp returns over the bone. Knowing which compartment the drain occupies helps interpret output and identify when an examination or imaging is needed.",
+            "A drain is an adjunct selected for the operative situation. Its output can reflect residual blood, serous fluid, or communication with another compartment. A sudden increase, persistent clear fluid, or enlarging swelling calls for review of symptoms and the closure details. New neurologic change warrants evaluation for an intracranial complication even if the superficial drain is functioning. In a case discussion, relate the finding to the likely compartment and identify what information would narrow the differential.",
+        ],
+        "galea-close": [
+            "The galea is the tough sheet beneath the skin and subcutaneous tissue. Reapproximating it restores deeper support so the skin edges need less tension. The loose plane below the galea can still accommodate fluid if there is residual dead space. Identify the deeper closure line separately from the superficial skin edges. This distinction helps explain how a well-aligned skin surface can coexist with a fluid collection or a deeper separation.",
+            "Consider how flap perfusion, tension, and dead space interact. Excessive tension can compromise wound edges, while poor deep support can transfer tension to the skin. A postoperative collection has several possible sources and may create further pressure on the closure. In a board vignette, distinguish a superficial seroma from hematoma or CSF by integrating timing, examination, operative findings, and imaging when indicated.",
+        ],
+        "skin-close": [
+            "Skin closure restores the outer barrier. Inspect edge alignment, perfusion, and the surrounding scalp. Sutures or staples maintain apposition while deeper layers support the incision. Early bruising and swelling should be interpreted with the wound and neurologic examination. Increasing pain, spreading redness, clear drainage, or a growing collection can indicate different problems. A change in alertness, strength, or vision requires attention even if the incision looks satisfactory.",
+            "A tense expanding wound suggests bleeding, while increasing redness, tenderness, or purulent drainage raises infection concern. Clear drainage after cranial surgery should prompt consideration of CSF leakage, particularly if there was a dural or sinus defect. Use timing, systemic findings, and neurologic examination to assess urgency. Explain how a superficial wound problem differs from an intracranial emergency and what findings would lead you to evaluate both in parallel.",
+        ],
+    };
     const residentReview = {
         'clinoid:extra': ['What finding on bone-window CT changes your discussion of postoperative clear rhinorrhea?',
             'Pneumatization of the anterior clinoid or optic strut can connect the operative site to a paranasal sinus. A persistent communication can provide a route for CSF rhinorrhea.'],
@@ -66781,11 +66902,21 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
         return step.id === 'clinoid' ? 'clinoid:' + config.clinoid : step.id;
     }
 
-    function residentStepSummary(step) {
-        const notes = residentStudy[residentStepKey(step)];
-        if (!notes) return '';
-        return `<p class="resident-step" data-resident="junior">Learning focus · ${escape(notes[0])}</p>
-            <p class="resident-step" data-resident="senior">Clinical judgment · ${escape(notes[1])}</p>`;
+    function residentStepLesson(step) {
+        const key = residentStepKey(step);
+        const lessons = residentLessons[key];
+        const focus = residentStudy[key];
+        if (!lessons || !focus) return '';
+        return `<section data-resident="junior">
+            <h4>Anatomy and rationale</h4>
+            <p>${escape(lessons[0])}</p>
+            <p><strong>Check your understanding.</strong> ${escape(focus[0])}</p>
+        </section>
+        <section data-resident="senior">
+            <h4>Operative judgment and complications</h4>
+            <p>${escape(lessons[1])}</p>
+            <p><strong>Case discussion.</strong> ${escape(focus[1])}</p>
+        </section>`;
     }
 
     function residentStepReview(step) {
@@ -66799,15 +66930,18 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
 
     function studyNotes(step, index) {
         const entry = studyEntry(step);
-        if (!entry) return '';
+        const lesson = residentStepLesson(step);
+        if (!entry && !lesson) return '';
         const reading = index === 0 ? studyGuide.reading : null;
+        const stepSources = entry?.citations || [];
         const citations = studyCitations(index === 0
-            ? [...entry.citations, ...studyGuide.overviewCitations] : entry.citations);
+            ? [...stepSources, ...studyGuide.overviewCitations] : stepSources);
         const links = citations.map((paper, i) =>
             `<a href="${escape(paper.url)}" title="${escape(paper.citation || paper.title)}" aria-label="${escape(paper.citation || paper.title)}" target="_blank" rel="noopener noreferrer">[${i + 1}]</a>`);
         if (reading) links.push(sourceLink(reading.url, 'Atlas'));
         return `<details class="study-notes"><summary>Details</summary>
-            <p>${escape(entry.detail)}${links.length ? ` <span class="study-reference-links">${links.join(' ')}</span>` : ''}</p>
+            ${lesson}
+            <p>${escape(entry?.detail || step.body)}${links.length ? ` <span class="study-reference-links">${links.join(' ')}</span>` : ''}</p>
             ${residentStepReview(step)}
             ${citations.length || reading ? `<h4>Sources for this step</h4><ul class="study-citations">${citations.map(paper => `<li>${sourceLink(paper.url, paper.citation || paper.title)}</li>`).join('')}${reading ? `<li>${sourceLink(reading.url, reading.label || 'Atlas')}</li>` : ''}</ul>` : ''}</details>`;
     }
@@ -66907,7 +67041,7 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
         add('skin-close', 'Close the skin', 'Align and close the skin edges with the selected sutures or staples. This restores the external barrier and completes the wound closure with attention to scalp perfusion and contour.', { sources: ['general', 'radiopaedia'], groups: soft, contextGroups: ['skin'], labels: ['Skin closure — schematic'], change: { skin: false }, sections: { general: 'Closure' }, note: 'The illustrative skin edges close; sutures or staples are marked schematically, not modeled.' });
         return list;
     }
-    function rebuild({ reset = false } = {}) { animationToken++; const old = steps[stage]?.id; steps = buildSteps(); $('#steps').replaceChildren(); steps.forEach((s, i) => { const card = document.createElement('article'); card.className = 'step'; card.tabIndex = 0; card.innerHTML = `<div class="step-heading"><span class="step-number">${String(i + 1).padStart(2, '0')}</span><div class="step-heading-text"><h2>${escape(titleCase(s.title))}</h2></div></div><p>${escape(s.body)}</p>${residentStepSummary(s)}${studyNotes(s, i)}`; card.onclick = event => { if (!event.target.closest('details, a, button')) activate(i); }; card.onkeydown = e => { if (e.target === card && ['Enter', ' '].includes(e.key)) {
+    function rebuild({ reset = false } = {}) { animationToken++; const old = steps[stage]?.id; steps = buildSteps(); $('#steps').replaceChildren(); steps.forEach((s, i) => { const card = document.createElement('article'); card.className = 'step'; card.tabIndex = 0; card.innerHTML = `<div class="step-heading"><span class="step-number">${String(i + 1).padStart(2, '0')}</span><div class="step-heading-text"><h2>${escape(titleCase(s.title))}</h2></div></div><p>${escape(s.body)}</p>${studyNotes(s, i)}`; card.onclick = event => { if (!event.target.closest('details, a, button')) activate(i); }; card.onkeydown = e => { if (e.target === card && ['Enter', ' '].includes(e.key)) {
         e.preventDefault();
         activate(i);
     } }; $('#steps').append(card); }); $('#conflict').hidden = !(config.clinoid === 'intra' && config.fissure === 'no'); $('#conflict').textContent = 'Evidence conflict: this intradural clinoidectomy source describes wide Sylvian splitting. This selectable combination is shown for comparison, but is not validated by the cited sequence.'; renderPapers(); renderIndications(); activate(reset ? 0 : Math.max(0, steps.findIndex(s => s.id === old))); $('#planLive').textContent = steps.length + ' guide steps. Configuration updated.'; }
