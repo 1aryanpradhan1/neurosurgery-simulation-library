@@ -67120,8 +67120,12 @@ html.library-preview #pterionalOperativeVideo {display:none}
                 ['orient', 100, 107, 'Navigation plan and target'],
                 ['prepare', 121, 124, 'Marked scalp in the operative setup'],
                 ['position', 124, 127, 'Head position and fixation'],
+                ['sterile', 140, 142, 'Context: the draped field is already in place'],
+                ['retract-flap', 142, 143, 'Context: hooks hold the reflected tissues clear of the opening'],
                 ['burr-holes', 143, 148, 'Burr-hole drilling'],
                 ['bone', 149, 151, 'Mini-pterional bone flap elevation'],
+                ['epidural-hemostasis', 152, 154, 'Context: the exposed epidural field after flap elevation'],
+                ['sphenoid-ridge', 167, 171, 'Basal drilling in the mini-pterional sphenoid-wing exposure'],
                 ['clinoid:extra', 214, 229, 'Extradural clinoid drilling'],
                 ['intradural-work', 260, 283, 'Tumor dissection in the clinoidal corridor'],
             ],
@@ -67133,6 +67137,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
             file: 'extradural.mp4',
             duration: 167.60,
             clips: [
+                ['extension', 7, 12, 'Context: the already unroofed orbit is labeled'],
                 ['clinoid:extra', 12, 102, 'Meningo-orbital band exposure and extradural clinoid drilling'],
                 ['dura', 107, 113, 'Dural opening'],
                 ['fissure', 114, 119, 'Sylvian fissure dissection'],
@@ -67147,7 +67152,9 @@ html.library-preview #pterionalOperativeVideo {display:none}
             duration: 97.16,
             clips: [
                 ['fissure', 9, 11, 'View of the already dissected Sylvian fissure'],
+                ['retain', 14, 18, 'Comparison: dura over the intact clinoid before drilling in the cadaver demonstration'],
                 ['clinoid:intra', 33, 48, 'Intradural drilling of the anterior clinoid'],
+                ['intradural-work', 88, 96, 'Cadaver comparison: exposed optic and oculomotor anatomy after clinoidectomy'],
             ],
         },
     };
@@ -67245,7 +67252,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
             pendingOperativeSeek = null;
             resumeOperativeVideo = false;
             $('#pterionalVideoTime').textContent = '';
-            $('#pterionalVideoStatus').textContent = 'This step is not shown in the available recordings.';
+            $('#pterionalVideoStatus').textContent = 'No clip is mapped to this step.';
             return;
         }
         const {id, source, clip} = chosen;
