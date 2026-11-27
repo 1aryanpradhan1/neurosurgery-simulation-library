@@ -2949,13 +2949,14 @@ body:has(input[name="residentLevel"][value="senior"]:checked) [data-resident="ju
 body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-resident="senior"] { display:none }
 .config-heading:has(.resident-level) { flex-wrap:wrap; }
 .resident-level { margin-top:4px; }
-.operative-video {color:var(--ink);flex:none;padding:0 12px;border-bottom:1px solid var(--line);font-size:.82rem}
+.operative-video {position:relative;color:var(--ink);flex:none;padding:0 12px;border-bottom:1px solid var(--line);font-size:.82rem}
 .operative-video > summary {line-height:1.2;cursor:pointer;padding:10px 0;font-weight:600}
 .operative-video[open] {max-height:46%;display:flex;flex-direction:column;overflow:hidden}
 .operative-video-content {max-height:calc(min(38dvh, 410px) - 30px);overflow:auto;overscroll-behavior:contain;padding:0 0 6px}
 .operative-video-content p {margin:5px 0}
-#pterionalVideoChoice:not([hidden]) {display:flex;align-items:center;gap:6px;margin-bottom:5px}
-#pterionalVideoSelect {min-width:0;max-width:100%;font:inherit}
+#pterionalVideoSelect {position:absolute;top:50%;right:12px;transform:translateY(-50%);width:min(49%, 15rem);font:inherit}
+.operative-video[open] #pterionalVideoSelect {top:5px;transform:none}
+.operative-video:has(#pterionalVideoSelect:not([hidden])) > summary {padding-right:50%;white-space:nowrap}
 #pterionalVideo {display:block;width:100%;max-height:24dvh;background:#10191f}
 #pterionalVideoStatus:empty {display:none}
 .operative-video-file {margin-top:5px}
@@ -2973,6 +2974,7 @@ body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-reside
   .operative-video[open] {max-height:60%}
   .operative-video-content {max-height:32dvh}
   #pterionalVideo {max-height:19dvh}
+  .operative-video[open] #pterionalVideoSelect {top:3px}
 }
 html.library-preview #pterionalOperativeVideo {display:none}
 .study-notes { margin-top: .5rem; color: inherit; }
@@ -2997,7 +2999,6 @@ html.library-preview #pterionalOperativeVideo {display:none}
 #scopeView[hidden]{display:none}
 #scopeView canvas {display:block;width:100%;height:auto;aspect-ratio:1;border-radius:50%;border:2px solid #a5c7bd;box-sizing:border-box}
 #scopeView figcaption {margin-top:5px;text-align:center;color:#e5efdf;font-size:12px;font-weight:600;text-shadow:0 1px 3px #101b20}
-#viewport:has(#scopeView:not([hidden])) #viewinfo {display:none}
 #viewport {container-type:size}
 </style></head>
 <body>
@@ -3009,16 +3010,16 @@ html.library-preview #pterionalOperativeVideo {display:none}
 <fieldset><legend>Temporalis Dissection</legend><div class="choices"><label><input name="muscle" type="radio" value="subfascial" checked><span>Subfascial</span></label><label><input name="muscle" type="radio" value="split"><span>Muscle-splitting</span></label></div></fieldset>
 <fieldset><legend>Open the Sylvian Fissure?</legend><div class="choices"><label><input name="fissure" type="radio" value="yes" checked><span>Yes</span></label><label><input name="fissure" type="radio" value="no"><span>No</span></label></div></fieldset>
 </section>
-<main class="layout"><section class="visual" aria-label="Interactive anatomy"><div class="viewhead"><div><button id="mode3d" aria-pressed="true">◇ 3D Model</button><button id="mode2d" aria-pressed="false">▧ 2D Figures</button><button id="surgeonView" title="View the posed head from the head of the table, as the seated surgeon sees it">Surgeon's View</button><button id="focusChange">Focus Change</button><button id="regionalContext" aria-pressed="false" hidden>Full Head Context</button><button id="compareChange" aria-pressed="false">Before</button></div><span id="sideCaption">Right-sided procedure</span></div><div id="viewport"><figure id="scopeView" hidden><canvas width="512" height="512" role="img" aria-label="Independent simulated operating microscope view"></canvas><figcaption>Operative Microscope</figcaption></figure><canvas id="canvas" tabindex="0" aria-label="3D pterional regional anatomy. Drag to rotate around the center of the skull; hold Alt or Option and drag to roll the camera. Wheel to zoom, shift-drag to pan. Arrow keys rotate, Q and E roll, plus and minus zoom. Click to identify anatomy."></canvas><div id="viewinfo"><span class="tag" id="viewlabel"></span><strong id="presetname">Pterional region</strong><small class="desktop-identify">Click a surface to identify it.</small><small class="mobile-identify">Tap a Surface to Identify It</small></div><div id="figurepanel" hidden></div>
+<main class="layout"><section class="visual" aria-label="Interactive anatomy"><div class="viewhead"><div><button id="mode3d" aria-pressed="true">◇ 3D Model</button><button id="mode2d" aria-pressed="false">▧ 2D Figures</button><button id="surgeonView" title="View the posed head from the head of the table, as the seated surgeon sees it">Surgeon's View</button><button id="focusChange">Focus Change</button><button id="compareChange" aria-pressed="false">Before</button></div></div><div id="viewport"><figure id="scopeView" hidden><canvas width="512" height="512" role="img" aria-label="Independent simulated operating microscope view"></canvas><figcaption>Operative Microscope</figcaption></figure><canvas id="canvas" tabindex="0" aria-label="3D pterional regional anatomy. Drag to rotate around the center of the skull; hold Alt or Option and drag to roll the camera. Wheel to zoom, shift-drag to pan. Arrow keys rotate, Q and E roll, plus and minus zoom. Click to identify anatomy."></canvas><div id="figurepanel" hidden></div>
 <details class="floating" id="layerControls"><summary>Layers &amp; View</summary><div class="layer-content"><button id="recommendedView">Recommended View</button><details id="positionControls" class="position-controls"><summary class="position-heading" id="positionHeading">Patient Position</summary><div class="pose-toggle" role="group" aria-label="Head position"><button id="poseAnatomical" aria-pressed="true" title="Neutral supine head">Anatomical</button><button id="poseOperative" aria-pressed="false" title="Head turned and extended for the approach">Operative</button></div><div class="pose-slider"><label for="poseRotation" title="Turn of the head away from the operative side, about the patient's long axis">Contralateral Rotation<output>20°</output></label><input id="poseRotation" data-pose="rotation" type="range" min="0" max="70" step="1" value="20"></div><div class="pose-slider"><label for="poseExtension" title="Extension: the vertex drops toward the floor">Extension (Vertex Down)<output>20°</output></label><input id="poseExtension" data-pose="extension" type="range" min="-10" max="40" step="1" value="20"></div><div class="pose-slider"><label for="poseLateral" title="Lateral flexion: positive tilts the vertex toward the contralateral shoulder">Lateral Flexion<output>0°</output></label><input id="poseLateral" data-pose="lateral" type="range" min="-20" max="30" step="1" value="0"></div><div class="pose-actions"><button id="poseReset" class="twod" title="Default operative pose: 20° contralateral rotation, 20° extension, no lateral flexion">Default 20° / 20°</button><button id="surgeonViewPanel" class="twod">Surgeon's View</button></div><label title="Schematic Mayfield-type head holder and table edge, shown in room-fixed views">Head Holder &amp; Table<input id="poseProps" type="checkbox" checked></label><div class="pose-note">Default follows the cited example (about 20° rotation, 20° extension); tailor to the target. Holder, pins and table are schematic.</div></details><label>Step Labels<input id="prelabels" type="checkbox" checked></label><label title="Illustrative instrument entry direction; not a planned trajectory">Instrument Illustration<input id="instruments" type="checkbox" checked></label><label for="palette">Colors</label><select id="palette" title="Surgical: lifelike tissue shading with decorative surface texture. Atlas: the original teaching colors."><option value="surgical">Surgical (lifelike)</option><option value="atlas">Atlas (teaching colors)</option></select><div class="layer-caption">Relevant: operative structures · All: available head anatomy</div><div class="layer-columns"><span>Layers</span><span>Relevant</span><span>All</span></div><div class="layer-row"><span><i class="swatch" data-swatch="skin" style="background:#d9a184"></i>Scalp Skin</span><input type="checkbox" data-layer="skin" aria-label="Relevant scalp skin" checked><input type="checkbox" data-all-layer="skin" aria-label="All available head scalp skin"></div><div class="layer-row"><span><i class="swatch" data-swatch="galea" style="background:#d8dad3"></i>Galea</span><input type="checkbox" data-layer="galea" aria-label="Relevant galea" checked><input type="checkbox" data-all-layer="galea" aria-label="All available head galea"></div><div class="layer-row"><span><i class="swatch" data-swatch="pericranium" style="background:#dcd6e4"></i>Pericranium</span><input type="checkbox" data-layer="pericranium" aria-label="Relevant pericranium" checked><input type="checkbox" data-all-layer="pericranium" aria-label="All available head pericranium"></div><div class="layer-row"><span><i class="swatch" data-swatch="bone" style="background:#e2d5b8"></i>Bone</span><input type="checkbox" data-layer="bone" aria-label="Relevant bone" checked><input type="checkbox" data-all-layer="bone" aria-label="All available head bone"></div><div class="layer-row"><span><i class="swatch" data-swatch="brain" style="background:#bca99d"></i>Brain</span><input type="checkbox" data-layer="brain" aria-label="Relevant brain" checked><input type="checkbox" data-all-layer="brain" aria-label="All available head brain"></div><div class="layer-row"><span><i class="swatch" data-swatch="muscle" style="background:#b87367"></i>Muscles</span><input type="checkbox" data-layer="muscle" aria-label="Relevant muscles" checked><input type="checkbox" data-all-layer="muscle" aria-label="All available head muscles"></div><div class="layer-row"><span><i class="swatch" data-swatch="fascia" style="background:#a4c7ba"></i>Superficial Fascia</span><input type="checkbox" data-layer="fascia" aria-label="Relevant superficial fascia" checked><input type="checkbox" data-all-layer="fascia" aria-label="All available head superficial fascia"></div><div class="layer-row"><span><i class="swatch" data-swatch="deepfascia" style="background:#75a99a"></i>Deep Fascia</span><input type="checkbox" data-layer="deepfascia" aria-label="Relevant deep fascia" checked><input type="checkbox" data-all-layer="deepfascia" aria-label="All available head deep fascia"></div><div class="layer-row"><span><i class="swatch" data-swatch="fat" style="background:#debd69"></i>Fat Pads</span><input type="checkbox" data-layer="fat" aria-label="Relevant fat pads" checked><input type="checkbox" data-all-layer="fat" aria-label="All available head fat pads"></div><div class="layer-row"><span><i class="swatch" data-swatch="arteries" style="background:#dd6268"></i>Arteries</span><input type="checkbox" data-layer="arteries" aria-label="Relevant arteries" checked><input type="checkbox" data-all-layer="arteries" aria-label="All available head arteries"></div><div class="layer-row"><span><i class="swatch" data-swatch="veins" style="background:#5f6fae"></i>Veins</span><input type="checkbox" data-layer="veins" aria-label="Relevant veins" checked><input type="checkbox" data-all-layer="veins" aria-label="All available head veins"></div><div class="layer-row"><span><i class="swatch" data-swatch="nerves" style="background:#f2d776"></i>Nerves</span><input type="checkbox" data-layer="nerves" aria-label="Relevant nerves" checked><input type="checkbox" data-all-layer="nerves" aria-label="All available head nerves"></div><div class="layer-row"><span><i class="swatch" data-swatch="dura" style="background:#95b7bb"></i>Dura</span><input type="checkbox" data-layer="dura" aria-label="Relevant dura" checked><input type="checkbox" data-all-layer="dura" aria-label="All available head dura"></div><div class="layer-row"><span><i class="swatch" data-swatch="arachnoid" style="background:#cfe3ea"></i>Arachnoid</span><input type="checkbox" data-layer="arachnoid" aria-label="Relevant arachnoid" checked><input type="checkbox" data-all-layer="arachnoid" aria-label="All available head arachnoid"></div><label>Procedure<input id="procedure" type="checkbox" checked></label><button id="separateLayers" class="twod" aria-pressed="false">Separate Fascial Layers</button><label for="side">Procedure Side / Context</label><select id="side"><option value="right">Right</option><option value="both">Both · procedure on right</option><option value="left">Left</option></select><div id="openingControl"><label for="opening">Stage Progress<output id="openingValue">100%</output></label><input id="opening" type="range" min="0" max="100" value="100"><button id="replay" class="twod">Replay</button></div><div class="compactnote">Surgical colors add decorative surface texture and baked shading. Scalp layers, dura, fascial layers, fat pads, veins and arachnoid are illustrations.</div></div></details>
-<div id="gesturehint" class="hint">Drag: orbit 360° on both axes · Alt/Option-drag: roll camera · Wheel: zoom · Shift-drag: pan</div><div id="orientGizmo" aria-hidden="true"><svg viewBox="-50 -50 100 100"></svg><small></small></div><div class="viewtools" id="viewTools"><button data-view="anterior">Anterior</button><button data-view="right">Right</button><button data-view="left">Left</button><button data-view="posterior">Posterior</button><button data-view="superior">Top</button><button id="resetView">Reset View</button></div><div class="mobile-model-dock" id="mobileModelDock"></div><svg id="labelLines" aria-hidden="true"></svg><div id="stepLabels"></div><div id="popup" hidden></div><div id="noGL" hidden></div><div id="loading" class="loadstatus">Loading embedded anatomy…</div></div>
+<div id="orientGizmo" aria-hidden="true"><svg viewBox="-50 -50 100 100"></svg><small></small></div><div class="viewtools" id="viewTools"><button data-view="anterior">Anterior</button><button data-view="right">Right</button><button data-view="left">Left</button><button data-view="posterior">Posterior</button><button data-view="superior">Top</button><button id="resetView">Reset View</button></div><div class="mobile-model-dock" id="mobileModelDock"></div><svg id="labelLines" aria-hidden="true"></svg><div id="stepLabels"></div><div id="popup" hidden></div><div id="noGL" hidden></div><div id="loading" class="loadstatus">Loading embedded anatomy…</div></div>
 <div class="statusbar" id="stepStatus"><div><span id="stagecaption"></span><small id="visualnote">Reference anatomy with illustrative procedure states.</small></div><div class="pager" id="stepPager"><button id="previous" aria-label="Previous step">←</button><span id="stagecount"></span><button id="next" aria-label="Next step">→</button></div></div><button type="button" class="reading-toggle" aria-pressed="false" aria-label="Expand reading panel" title="Expand reading panel">‹</button></section>
 <aside class="side"><details id="pterionalOperativeVideo" class="operative-video">
   <summary>Operative Video<span id="pterionalVideoTime"></span></summary>
+  <select id="pterionalVideoSelect" aria-label="Operative video source" hidden></select>
   <div class="operative-video-content">
     <p id="pterionalVideoStatus" role="status"></p>
     <div id="pterionalVideoPlayer" hidden>
-      <label id="pterionalVideoChoice" hidden>Video <select id="pterionalVideoSelect" aria-label="Operative video source"></select></label>
       <video id="pterionalVideo" controls playsinline preload="metadata" aria-label="Operative video"></video>
     </div>
   </div>
@@ -65571,7 +65572,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
     const escape = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const mobileQuery = matchMedia('(max-width:760px)');
     let isMobile = mobileQuery.matches, desktopLabelPreference = true, mobileLabelPreference = false, viewZoom = 1;
-    let config = { clinoid: 'none', muscle: 'subfascial', fissure: 'yes' }, steps = [], stage = 0, mode = '3d', selected = -1, contextAlpha = 1, contextSide = 'right', procedure = true, prelabelsOn = !isMobile, opening = 1, animationToken = 0, separateLayers = false, instrumentsOn = true, beforeCurrent = false, regionalContext = true, contextLayerSnapshot = null;
+    let config = { clinoid: 'none', muscle: 'subfascial', fissure: 'yes' }, steps = [], stage = 0, mode = '3d', selected = -1, contextAlpha = 1, contextSide = 'right', procedure = true, prelabelsOn = !isMobile, opening = 1, animationToken = 0, separateLayers = false, instrumentsOn = true, beforeCurrent = false, regionalContext = true;
     const enabled = { skin: true, galea: true, pericranium: true, bone: true, brain: true, muscle: true, fascia: true, deepfascia: true, fat: true, arteries: true, veins: true, nerves: true, dura: true, arachnoid: true };
     // Surgical palette: approximate unlit tissue albedo (sRGB) used by the material shader; Atlas keeps the manifest colours.
     const palettes = { atlas: { skin: '#d9a184', galea: '#d8dad3', pericranium: '#dcd6e4', bone: '#e2d5b8', brain: '#bca99d', muscle: '#b87367', fascia: '#a4c7ba', deepfascia: '#75a99a', fat: '#debd69', arteries: '#dd6268', veins: '#5f6fae', nerves: '#f2d776', dura: '#95b7bb', arachnoid: '#cfe3ea' }, surgical: { skin: '#cf9a7f', galea: '#dcdbd3', pericranium: '#d8d9e0', bone: '#dccdb0', brain: '#d4aa9c', muscle: '#82302a', fascia: '#e2ddd1', deepfascia: '#d9dcd8', fat: '#e3c677', arteries: '#c4423d', veins: '#5e3e66', nerves: '#ede3c6', dura: '#c4bcb5', arachnoid: '#e6eef1' } };
@@ -65820,22 +65821,6 @@ html.library-preview #pterionalOperativeVideo {display:none}
         showSourceFigures();
     else
         render(); }
-    function toggleFullContext() { const expanded = Object.keys(enabled).filter(k => enabled[k]).every(k => allEnabled[k]); if (!expanded) {
-        contextLayerSnapshot = { ...allEnabled };
-        // A step's contextLayers (the reflected scalp and soft tissue around the bony and intradural steps) join the
-        // expanded view even though the step's relevant view leaves them out.
-        const extra = steps[stage]?.contextLayers || [];
-        for (const k in allEnabled)
-            allEnabled[k] = enabled[k] || extra.includes(k);
-        regionalContext = false;
-    }
-    else {
-        Object.assign(allEnabled, contextLayerSnapshot || Object.fromEntries(Object.keys(allEnabled).map(k => [k, false])));
-        regionalContext = true;
-    } syncControls(); clearSelection(); updateChangeControls(); if (mode === '2d')
-        showSourceFigures();
-    else
-        render(); }
     function chooseIndication(key, value) { choose({ ...config, [key]: value }); const id = key === 'clinoid' ? (value === 'none' ? 'retain' : 'clinoid') : key === 'muscle' ? 'muscle' : value === 'yes' ? 'fissure' : 'cistern'; activate(Math.max(0, steps.findIndex(s => s.id === id))); if (mode !== '3d')
         setMode('3d'); }
     function titleCase(value) { return String(value).replace(/\b([a-z][a-z0-9]*)\b/gi, (word, _, offset) => { const low = word.toLowerCase(); if (/^(ii|iii|iv|vi|vii|viii|ix|xi|xii|ica|mca|aca|sta|csf|m1|m2)$/.test(low))
@@ -65883,7 +65868,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
         alignActiveStep();
     } }
     $$('[role=tab]').forEach(b => b.onclick = () => setTab(b.id.slice(4)));
-    function setMode(next) { animationToken++; mode = next; $('#mode3d').setAttribute('aria-pressed', mode === '3d'); $('#mode2d').setAttribute('aria-pressed', mode === '2d'); for (const s of ['#canvas', '#viewinfo', '.floating', '#gesturehint', '.viewtools', '#mobileModelDock', '#stepLabels', '#labelLines', '#orientGizmo'])
+    function setMode(next) { animationToken++; mode = next; $('#mode3d').setAttribute('aria-pressed', mode === '3d'); $('#mode2d').setAttribute('aria-pressed', mode === '2d'); for (const s of ['#canvas', '.floating', '.viewtools', '#mobileModelDock', '#stepLabels', '#labelLines', '#orientGizmo'])
         $(s).toggleAttribute('hidden', mode !== '3d'); $('#figurepanel').hidden = mode === '3d'; if (mode !== '3d') $('#scopeView').hidden = true; $('#popup').hidden = true; if (mode === '2d') {
         $('#labelLines').replaceChildren();
         $('#stepLabels').replaceChildren();
@@ -65904,7 +65889,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
     }
     function hasStageChange() { const s = steps[stage]; return !!s && (!!s.change && (s.change !== 'fissure' || hasArachnoid()) || meshes.some(m => m.marker && showsStageMarker(m, s.id))); }
     function updateChangeControls() { const s = steps[stage]; if (!s)
-        return; $('#mode2d').textContent = s.id === 'sphenoid-ridge' ? 'Surgical illustration' : '▧ 2D Figures'; $('#regionalContext').hidden = false; $('#regionalContext').textContent = 'Full Head Context'; const keys = Object.keys(enabled).filter(k => enabled[k]), expanded = keys.length > 0 && keys.every(k => allEnabled[k]), partial = Object.values(allEnabled).some(Boolean); regionalContext = !expanded; $('#regionalContext').setAttribute('aria-pressed', expanded ? 'true' : partial ? 'mixed' : 'false'); $('#viewlabel').textContent = 'Isolated Skull Base'; $('#viewlabel').hidden = !(s.isolateBone && !allEnabled.bone); $('#sideCaption').textContent = contextSide === 'both' ? 'Both Sides · Right Procedure' : (operativeSide() === 'left' ? 'Left' : 'Right') + '-Sided Procedure'; $('#focusChange').hidden = mode !== '3d'; $('#compareChange').hidden = mode !== '3d' || !hasStageChange(); const tools = meshes.filter(m => m.instrument && visible(m)); $('#visualnote').textContent = (tools.length ? 'Cyan: instrument · ' : '') + 'Colored markings are schematic · ' + (operativeSide() === 'left' ? 'Left' : 'Right') + ' procedure'; $('#surgeonView').hidden = mode !== '3d'; }
+        return; $('#mode2d').textContent = s.id === 'sphenoid-ridge' ? 'Surgical illustration' : '▧ 2D Figures'; const keys = Object.keys(enabled).filter(k => enabled[k]); regionalContext = !keys.length || !keys.every(k => allEnabled[k]); $('#focusChange').hidden = mode !== '3d'; $('#compareChange').hidden = mode !== '3d' || !hasStageChange(); const tools = meshes.filter(m => m.instrument && visible(m)); $('#visualnote').textContent = (tools.length ? 'Cyan: instrument · ' : '') + 'Colored markings are schematic'; $('#surgeonView').hidden = mode !== '3d'; }
     function changeKind(m) { if (!procedure || m.instrument || m.marker || !onOperativeSide(m))
         return 0; const s = steps[stage], id = s.change; if (id === 'clinoid' && m.nativeName === 'Sphenoid bone')
         return 2; if (id === 'burr' && m.group === 'bone')
@@ -67120,7 +67105,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
         stopGlide();
         applyCamera({ frame: 'head', ...stepView(s) }); // head-framed, or world-framed for the 'position' step
         pan = [0, 0];
-    } $('#presetname').textContent = titleCase(s.title); syncControls(); clearSelection(); playStepAnimation(); updateChangeControls(); render(); }
+    } syncControls(); clearSelection(); playStepAnimation(); updateChangeControls(); render(); }
     let activeStepId = null;
     const operativeVideos = {
         mini: {
@@ -67264,7 +67249,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
             return clip ? [{ id, source, clip }] : [];
         });
         operativeVideoSelect.replaceChildren(...choices.map(({id, source}) => new Option(source.title, id)));
-        $('#pterionalVideoChoice').hidden = choices.length < 2;
+        operativeVideoSelect.hidden = choices.length < 2;
         $('#pterionalVideoPlayer').hidden = !choices.length && !operativeVideoId;
         const chosen = choices.find(choice => choice.id === preferredId) || choices[0];
         if (!chosen) {
@@ -67272,8 +67257,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
             resumeOperativeVideo = false;
             $('#pterionalVideoTime').textContent = '';
             $('#pterionalVideoStatus').textContent = operativeVideo.error
-                ? 'No clip is mapped to this step. Load the matching MP4 from the Papers tab.'
-                : 'No clip is mapped to this step.';
+                ? 'Load the matching MP4 from the Papers tab.' : '';
             return;
         }
         const {id, clip} = chosen;
@@ -67412,7 +67396,6 @@ html.library-preview #pterionalOperativeVideo {display:none}
     else
         render(); };
     $('#focusChange').onclick = () => applyRecommendedView();
-    $('#regionalContext').onclick = toggleFullContext;
     $('#compareChange').onclick = () => { startPoseBlend(); beforeCurrent = !beforeCurrent; animationToken++; opening = 1; $('#compareChange').setAttribute('aria-pressed', beforeCurrent); $('#compareChange').textContent = beforeCurrent ? 'After' : 'Before'; if (mode === '2d')
         showSourceFigures();
     else
