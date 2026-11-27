@@ -66801,7 +66801,7 @@ header {
         $('#openingValue').textContent = '100%';
         render();
         return;
-    } const start = performance.now(); const duration = s.id === 'sphenoid-ridge' ? 3400 : 1500; opening = 0; $('#opening').value = 0; $('#openingValue').textContent = '0%'; function tick(now) { if (token !== animationToken || mode !== '3d' || !procedure)
+    } const start = performance.now(); const duration = steps[stage]?.id === 'sphenoid-ridge' ? 3400 : 1500; opening = 0; $('#opening').value = 0; $('#openingValue').textContent = '0%'; function tick(now) { if (token !== animationToken || mode !== '3d' || !procedure)
         return; opening = Math.min(1, (now - start) / duration); $('#opening').value = Math.round(opening * 100); $('#openingValue').textContent = Math.round(opening * 100) + '%'; render(); if (opening < 1)
         requestAnimationFrame(tick); } requestAnimationFrame(tick); }
     $('#replay').onclick = () => { beforeCurrent = false; $('#compareChange').setAttribute('aria-pressed', false); $('#compareChange').textContent = 'Before'; playStepAnimation(); };
