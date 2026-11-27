@@ -65709,8 +65709,26 @@ header {
     function baseId(m) { return m.baseId || m.id; }
     // contextOnly meshes count as relevant only for groups a step lists in contextGroups (the 'position' step shows the
     // whole skull, face included, so the head's orientation in the room is legible).
-    function relevantMesh(m) { const s = steps[stage]; if (m.externalSurface || s?.id === 'orient' && m.group === 'skin')
-        return !!s?.contextGroups?.includes(m.group) && !m.nativeName.startsWith('Hyoid'); if (m.group === 'bone' && s?.isolateBone && !s.isolateBone.includes(m.nativeName))
+    const superficialArterySteps = new Set([
+        'position', 'prepare', 'sterile', 'incision', 'scalp-flap', 'muscle',
+        'retract-flap', 'periosteum', 'galea-close', 'skin-close',
+    ]);
+    // Atlas names identify extracranial surface vessels explicitly.
+    const superficialArteries = new Set([
+        'Superficial temporal artery', 'Frontal branch of superficial temporal artery',
+        'Occipital artery', 'Supra-orbital artery', 'Supratrochlear artery',
+        'Facial artery', 'Angular artery', 'Transverse facial artery',
+        'Inferior labial artery', 'Superior labial artery', 'Infra-orbital artery',
+    ]);
+    function relevantMesh(m) {
+        const s = steps[stage];
+        if (m.externalSurface || s?.id === 'orient' && m.group === 'skin')
+            return true;
+        if (m.group === 'arteries' && superficialArterySteps.has(s?.id) &&
+            superficialArteries.has(m.nativeName.replace(/\.[lr]$/, '')))
+            return true;
+        if (m.contextOnly)
+            return !!s?.contextGroups?.includes(m.group) && !m.nativeName.startsWith('Hyoid'); if (m.group === 'bone' && s?.isolateBone && !s.isolateBone.includes(m.nativeName))
         return false; // The isolated skull-base view omits cortex (and the arachnoid on it), as the About panel states.
     if (s?.isolateBone && ['brain', 'arachnoid'].includes(m.group))
         return false; return true; }
