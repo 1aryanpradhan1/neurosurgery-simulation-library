@@ -2949,20 +2949,30 @@ body:has(input[name="residentLevel"][value="senior"]:checked) [data-resident="ju
 body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-resident="senior"] { display:none }
 .config-heading:has(.resident-level) { flex-wrap:wrap; }
 .resident-level { margin-top:4px; }
-.operative-video {flex:none;padding:0 12px;border-bottom:1px solid var(--line);font-size:.82rem}
-.operative-video > summary {cursor:pointer;padding:7px 0;font-weight:600}
-.operative-video-content {max-height:28dvh;overflow:auto;overscroll-behavior:contain;padding-bottom:6px}
+.operative-video {color:var(--ink);flex:none;padding:0 12px;border-bottom:1px solid var(--line);font-size:.82rem}
+.operative-video > summary {line-height:1.2;cursor:pointer;padding:10px 0;font-weight:600}
+.operative-video[open] {max-height:46%;display:flex;flex-direction:column;overflow:hidden}
+.operative-video-content {max-height:calc(min(38dvh, 410px) - 30px);overflow:auto;overscroll-behavior:contain;padding:0 0 6px}
 .operative-video-content p {margin:5px 0}
 #pterionalVideoChoice:not([hidden]) {display:flex;align-items:center;gap:6px;margin-bottom:5px}
 #pterionalVideoSelect {min-width:0;max-width:100%;font:inherit}
-#pterionalVideo {display:block;width:100%;max-height:20dvh;background:#10191f}
+#pterionalVideo {display:block;width:100%;max-height:24dvh;background:#10191f}
 #pterionalVideoStatus:empty {display:none}
 .operative-video-file {margin-top:5px}
 .operative-video-file input {max-width:100%;font:inherit}
+@media(min-width:761px) {
+  .reading-expanded .operative-video[open] {max-height:65%}
+  .reading-expanded .operative-video-content {max-height:calc(58dvh - 30px)}
+  .reading-expanded #pterionalVideo {max-height:50dvh}
+}
 @media(max-width:760px) {
+  .operative-video > summary {padding:7px 0;font-size:12px}
   .layout:has(#pterionalOperativeVideo[open] #pterionalVideoPlayer:not([hidden])) {
-    grid-template-rows:minmax(110px, 2fr) minmax(0, 3fr)!important
+    grid-template-rows:minmax(120px, 34fr) minmax(0, 66fr)!important
   }
+  .operative-video[open] {max-height:60%}
+  .operative-video-content {max-height:32dvh}
+  #pterionalVideo {max-height:19dvh}
 }
 html.library-preview #pterionalOperativeVideo {display:none}
 .study-notes { margin-top: .5rem; color: inherit; }
@@ -3006,6 +3016,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
 <aside class="side"><details id="pterionalOperativeVideo" class="operative-video">
   <summary>Operative Video<span id="pterionalVideoTime"></span></summary>
   <div class="operative-video-content">
+    <p id="pterionalVideoStatus" role="status"></p>
     <div id="pterionalVideoPlayer" hidden>
       <label id="pterionalVideoChoice" hidden>Video <select id="pterionalVideoSelect" aria-label="Operative video source"></select></label>
       <video id="pterionalVideo" controls playsinline preload="metadata" aria-label="Operative video"></video>
@@ -3013,7 +3024,6 @@ html.library-preview #pterionalOperativeVideo {display:none}
       <a id="pterionalVideoSource" target="_blank" rel="noopener noreferrer"></a>
       <details class="operative-video-file"><summary>Load local MP4</summary><input id="pterionalVideoFile" type="file" accept="video/mp4" aria-label="Load the matching operative video MP4"></details>
     </div>
-    <p id="pterionalVideoStatus" role="status"></p>
   </div>
 </details><div class="tabs" id="guideTabs" role="tablist" aria-label="Study content"><button role="tab" id="tab-overview" aria-selected="false" aria-controls="overview-panel">Overview</button><button role="tab" id="tab-steps" aria-selected="true" aria-controls="steps-panel">Guide</button><button role="tab" id="tab-indications" aria-selected="false" aria-controls="indications-panel">Indications</button><button role="tab" id="tab-papers" aria-selected="false" aria-controls="papers-panel">Papers <span id="paperCount">7</span></button></div><div class="mobile-step-nav" id="mobileStepNav"></div>
 <div class="scroll" id="overview-panel" role="tabpanel" aria-labelledby="tab-overview" hidden><article class="clinical-overview" data-resident="junior">
@@ -67180,6 +67190,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
     }
     let operativeVideoId = '', pendingOperativeSeek = null, followingOperativeVideo = false;
     let resumeOperativeVideo = false;
+    let lastOperativeTime = null, stepSeekTarget = null;
 
     function videoStepKey(step) {
         return step.id === 'clinoid' ? 'clinoid:' + config.clinoid : step.id;
@@ -67215,7 +67226,10 @@ html.library-preview #pterionalOperativeVideo {display:none}
             });
             return;
         }
-        operativeVideo.currentTime = pendingOperativeSeek;
+        if (Math.abs(operativeVideo.currentTime - pendingOperativeSeek) > .01) {
+            stepSeekTarget = pendingOperativeSeek;
+            operativeVideo.currentTime = pendingOperativeSeek;
+        }
         pendingOperativeSeek = null;
         if (resumeOperativeVideo) {
             resumeOperativeVideo = false;
@@ -67225,6 +67239,7 @@ html.library-preview #pterionalOperativeVideo {display:none}
 
     function loadOperativeVideo(id) {
         operativeVideoId = id;
+        lastOperativeTime = stepSeekTarget = null;
         const sourceUrl = localVideoUrls.get(id);
         operativeVideo.src = sourceUrl || 'assets/pterional-video-local/' + operativeVideos[id].file;
         if (!sourceUrl && downloadedVideoUrls.has(id)) {
@@ -67245,14 +67260,16 @@ html.library-preview #pterionalOperativeVideo {display:none}
         });
         operativeVideoSelect.replaceChildren(...choices.map(({id, source}) => new Option(source.title, id)));
         $('#pterionalVideoChoice').hidden = choices.length < 2;
-        $('#pterionalVideoPlayer').hidden = choices.length === 0;
+        $('#pterionalVideoPlayer').hidden = !choices.length && !operativeVideoId;
         const chosen = choices.find(choice => choice.id === preferredId) || choices[0];
         if (!chosen) {
-            operativeVideo.pause();
             pendingOperativeSeek = null;
             resumeOperativeVideo = false;
             $('#pterionalVideoTime').textContent = '';
-            $('#pterionalVideoStatus').textContent = 'No clip is mapped to this step.';
+            $('#pterionalVideoChapter').textContent = '';
+            $('#pterionalVideoStatus').textContent = operativeVideo.error
+                ? 'No clip is mapped to this step. Choose the matching MP4 to load the current recording.'
+                : 'No clip is mapped to this step.';
             return;
         }
         const {id, source, clip} = chosen;
@@ -67311,11 +67328,16 @@ html.library-preview #pterionalOperativeVideo {display:none}
         }).catch(() => {});
     }
 
-    function followOperativeVideo() {
+    function followOperativeVideo(manualSeek = false) {
         if (!operativeVideoId || operativeVideo.seeking || pendingOperativeSeek !== null ||
             $('#pterionalVideoPlayer').hidden || Math.abs(operativeVideo.duration - operativeVideos[operativeVideoId].duration) > 2) return;
         const current = operativeVideo.currentTime;
-        const clip = operativeVideos[operativeVideoId].clips.find(([, start, end]) => current >= start && current < end);
+        const previous = lastOperativeTime;
+        lastOperativeTime = current;
+        const clips = operativeVideos[operativeVideoId].clips;
+        const clip = manualSeek
+            ? clips.find(([, start, end]) => current >= start && current < end)
+            : clips.findLast(([, start]) => previous !== null && start > previous && start <= current);
         if (!clip || clip[0] === videoStepKey(steps[stage])) return;
         const index = steps.findIndex(step => videoStepKey(step) === clip[0]);
         if (index < 0) return;
@@ -67328,8 +67350,15 @@ html.library-preview #pterionalOperativeVideo {display:none}
         if (mode === '2d') showSourceFigures();
     });
     operativeVideo.addEventListener('loadedmetadata', applyOperativeSeek);
-    operativeVideo.addEventListener('seeked', followOperativeVideo);
-    operativeVideo.addEventListener('timeupdate', followOperativeVideo);
+    operativeVideo.addEventListener('seeked', () => {
+        const fromGuide = stepSeekTarget !== null && Math.abs(operativeVideo.currentTime - stepSeekTarget) < .1;
+        stepSeekTarget = null;
+        if (fromGuide) lastOperativeTime = operativeVideo.currentTime;
+        else followOperativeVideo(true);
+    });
+    operativeVideo.addEventListener('timeupdate', () => {
+        if (!operativeVideo.paused && stepSeekTarget === null) followOperativeVideo();
+    });
     operativeVideo.addEventListener('error', () => {
         resumeOperativeVideo = false;
         if (!$('#pterionalVideoPlayer').hidden)
