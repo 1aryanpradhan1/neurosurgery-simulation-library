@@ -67590,7 +67590,7 @@ header {
     // Head-relative teaching views through the open craniotomy. Each lens
     // shares the operative state and depth testing with the main viewport.
     // The arrow anchor is its tip. On the right, its tail lies toward
-    // minimum X and maximum Y/Z. Pitch the scope 5 degrees superior to
+    // minimum X and maximum Y/Z. Pitch the scope 20 degrees superior to
     // that trajectory. The scope pass mirrors the view for the left.
     const clinoidArrow = meshes.find(mesh => mesh.id === 'TOOL-clinoid');
     const clinoidArrowTail = [clinoidArrow.bounds[0][0], ...clinoidArrow.bounds[1].slice(1)];
@@ -67602,7 +67602,7 @@ header {
         clinoid: {
             target: clinoidArrow.anchor,
             yaw: Math.atan2(-clinoidScopeX, clinoidScopeZ),
-            pitch: Math.atan2(clinoidScopeY, Math.hypot(clinoidScopeX, clinoidScopeZ)) + 5 * Math.PI / 180,
+            pitch: Math.atan2(clinoidScopeY, Math.hypot(clinoidScopeX, clinoidScopeZ)) + 20 * Math.PI / 180,
             distance: 5.4,
             showCortex: true,
             cortexDisplacement: 1.25,
