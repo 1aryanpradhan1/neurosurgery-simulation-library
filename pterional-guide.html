@@ -66773,7 +66773,9 @@ header {
         glideCamera(stepView(steps[stage]), 900);
         roomCameraAuto = false;
     } activeStepId = steps[stage].id; applyRecommendedView({ preserveCamera: true }); updateChangeControls(); updateMobileReaderHeight(); alignActiveStep();
-    if (changed && !cameraExplicit && steps[stage].id === 'sphenoid-ridge')
+    // The lateral drilling view can obscure the medial clinoid. Use the
+    // existing clinoid close-up on entry unless an explicit preset is active.
+    if (changed && !cameraExplicit && ['sphenoid-ridge', 'clinoid'].includes(steps[stage].id))
         glideCamera(stepView(steps[stage]), 650);
     if (mode === '2d') showSourceFigures();
     }
