@@ -317,15 +317,41 @@
     figureVideo.muted = true;
     figureVideo.playsInline = true;
     let videoUrl = '', pendingSeek = null, figureSeek = null, videoFailed = false;
-    let previousVideoTime = null, followingVideo = false, stepSeekTarget = null;
+    let previousVideoTime = null, followingVideo = false, seekingFromGuide = false;
+    let bufferingForSeek = false, resumeAfterLoad = false;
+
+    function makeVideoSeekable() {
+        if (bufferingForSeek) return;
+        const source = videoUrl;
+        bufferingForSeek = true;
+        fetch(source).then(response => {
+            if (!response.ok) throw Error('Video unavailable');
+            return response.blob();
+        }).then(blob => {
+            if (videoUrl === source) attachVideo(blob, !video.paused);
+        }).catch(() => {
+            if (videoUrl !== source) return;
+            pendingSeek = null;
+            $('#caseVideoStatus').textContent = 'This server does not support video seeking. Load the MP4 from About to synchronize it with the guide.';
+        });
+    }
 
     function seekPendingVideo() {
         if (pendingSeek === null || video.readyState < 1 || videoFailed) return;
         if (pendingSeek < video.duration && Math.abs(video.currentTime - pendingSeek) > 0.01) {
-            stepSeekTarget = pendingSeek;
+            if (!videoUrl.startsWith('blob:') &&
+                (!video.seekable.length || video.seekable.end(video.seekable.length - 1) < pendingSeek)) {
+                makeVideoSeekable();
+                return;
+            }
+            seekingFromGuide = true;
             video.currentTime = pendingSeek;
         }
         pendingSeek = null;
+        if (resumeAfterLoad) {
+            resumeAfterLoad = false;
+            video.play().catch(() => {});
+        }
     }
 
     function syncVideoStep() {
@@ -363,12 +389,14 @@
         else drawSourceFrame();
     }
 
-    function attachVideo(file) {
+    function attachVideo(file, resume = false) {
         if (!file) return;
         if (videoUrl.startsWith('blob:')) URL.revokeObjectURL(videoUrl);
         videoUrl = URL.createObjectURL(file);
         previousVideoTime = null;
-        stepSeekTarget = null;
+        seekingFromGuide = false;
+        bufferingForSeek = false;
+        resumeAfterLoad = resume;
         pendingSeek = null;
         videoFailed = false;
         $('#caseVideoPlayer').hidden = false;
@@ -381,14 +409,21 @@
         if (mode === '2d') showSourceFigures();
     }
 
-    video.addEventListener('loadedmetadata', seekPendingVideo);
+    video.addEventListener('loadedmetadata', () => {
+        seekPendingVideo();
+        if (resumeAfterLoad && pendingSeek === null) {
+            resumeAfterLoad = false;
+            video.play().catch(() => {});
+        }
+    });
     video.addEventListener('seeking', () => { previousVideoTime = null; });
     video.addEventListener('seeked', () => {
         const now = video.currentTime;
-        const stepInitiated = stepSeekTarget !== null && Math.abs(now - stepSeekTarget) < 0.1;
-        stepSeekTarget = null;
         previousVideoTime = now;
-        if (stepInitiated) return;
+        if (seekingFromGuide) {
+            seekingFromGuide = false;
+            return;
+        }
         let selectedStep = 0;
         for (let i = 0; i < steps.length; i++) {
             if (steps[i].videoTime !== null && steps[i].videoTime <= now) selectedStep = i;
@@ -400,7 +435,7 @@
     });
     video.addEventListener('timeupdate', () => {
         const now = video.currentTime;
-        if (!video.seeking && !video.paused && previousVideoTime !== null && now >= previousVideoTime) {
+        if (!seekingFromGuide && pendingSeek === null && !video.seeking && !video.paused && previousVideoTime !== null && now >= previousVideoTime) {
             let next = -1;
             for (let i = 0; i < steps.length; i++) {
                 const time = steps[i].videoTime;

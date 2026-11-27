@@ -45,7 +45,7 @@
             throw new Error('Anatomy data is incomplete. Please refresh the page.');
         window.__GUIDE_DATA__ = payload;
         const script = document.createElement('script');
-        script.src = 'assets/app.js?v=external-landmarks';
+        script.src = 'assets/app.js?v=step-arrow-video-seek';
         script.onload = () => document.getElementById(loadingId)?.remove();
         script.onerror = () => { message.textContent = 'The guide could not be loaded. Please refresh the page.'; };
         document.body.append(script);
