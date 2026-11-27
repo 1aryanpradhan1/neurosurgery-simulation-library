@@ -65721,7 +65721,7 @@ header {
         'Facial artery', 'Angular artery', 'Transverse facial artery',
         'Inferior labial artery', 'Superior labial artery', 'Infra-orbital artery',
     ]);
-    function relevantMesh(m) {
+    function relevantMesh(m, scope = null) {
         const s = steps[stage];
         if (m.externalSurface || s?.id === 'orient' && m.group === 'skin')
             return true;
@@ -65731,7 +65731,7 @@ header {
         if (m.contextOnly)
             return !!s?.contextGroups?.includes(m.group) && !m.nativeName.startsWith('Hyoid'); if (m.group === 'bone' && s?.isolateBone && !s.isolateBone.includes(m.nativeName))
         return false; // The isolated skull-base view omits cortex (and the arachnoid on it), as the About panel states.
-    if (s?.isolateBone && ['brain', 'arachnoid'].includes(m.group))
+    if (s?.isolateBone && ['brain', 'arachnoid'].includes(m.group) && !(scope?.showCortex && m.group === 'brain'))
         return false; return true; }
     // A step's recommended camera, mirrored for a left-sided procedure (yaw and roll change sign; eye/up x flip).
     function stepView(s) { const sign = sideSign(), v = s.view, mx = p => p && [p[0] * sign, p[1], p[2]]; return { ...v, frame: v.frame || 'head', yaw: v.yaw * sign, roll: (v.roll || 0) * sign, eye: mx(v.eye), up: mx(v.up) }; }
@@ -66827,7 +66827,7 @@ header {
     function visible(m) {
         return baseVisible(m) && !hiddenByClearance().has(m.id);
     }
-    function baseVisible(m, wholeStep = false) { if (!m || m.hidden || hiddenWhileSeparated(m))
+    function baseVisible(m, wholeStep = false, scope = null) { if (!m || m.hidden || hiddenWhileSeparated(m))
         return false; const side = meshSide(m); if (contextSide !== 'both' && side !== 'both' && side !== contextSide && !wholeScalp(m))
         return false; if (m.marker)
         return procedure && side === operativeSide() && (baseId(m).replace(/-l$/, '') !== 'MARK-incision' && showsStageMarker(m, steps[stage].id)) && (!m.markerFissure || m.markerFissure === config.fissure); if (m.instrument) {
@@ -66846,7 +66846,7 @@ header {
         return true;
     } if (!wholeStep && m.group === 'arachnoid' && arachnoidSealed(m))
         return false; if (SCALP_OVERLAP.has(m.id) && scalpShownOn(meshSide(m)))
-        return false; return !!allEnabled[m.group] || !!enabled[m.group] && relevantMesh(m); }
+        return false; return !!allEnabled[m.group] || !!enabled[m.group] && relevantMesh(m, scope); }
     // The scalp is one covering: when a step shows the whole-head scalp (contextGroups) or its layer is expanded (All),
     // the contralateral half is drawn too (intact), so a one-sided procedure does not show a half-scalped head.
     function wholeScalp(m) { return ['skin', 'galea', 'pericranium'].includes(m.group) && !m.marker && (!!allEnabled[m.group] || !!steps[stage]?.contextGroups?.includes(m.group) || m.group === 'skin' && enabled.skin && (m.externalSurface || steps[stage]?.id === 'orient')); }
@@ -67592,7 +67592,7 @@ header {
     const scopeViews = {
         'sphenoid-ridge': { target: drillTip, yaw: 1.16, pitch: .38, distance: 4.5, label: 'Sphenoid wing' },
         extension: { target: [-2.25,-1.15,1.98], yaw: 1.08, pitch: .48, distance: 4.6, label: 'Basal bone exposure' },
-        clinoid: { target: [-.8,-1.1,1.35], yaw: .60, pitch: 1.25, distance: 4.8, label: 'Anterior clinoid and optic region' },
+        clinoid: { target: [-.8,-1.1,1.35], yaw: .60, pitch: 1.25, distance: 4.8, showCortex: true, label: 'Anterior clinoid and optic region' },
         dura: { target: [-2.4,.05,1.35], yaw: 1.30, pitch: .30, distance: 5.7, label: 'Dural opening' },
         fissure: { target: [-2.08,-.49,1.05], yaw: 1.30, pitch: .45, distance: 4.8, label: 'Sylvian fissure' },
         cistern: { target: [-1.02,-1.02,1.46], yaw: .78, pitch: .85, distance: 4.6, label: 'Opticocarotid corridor' },
@@ -67618,6 +67618,7 @@ header {
             M: qMat(qFromAngles(spec.yaw * sign, spec.pitch, 0)),
             target,
             distance: spec.distance,
+            showCortex: spec.showCortex,
             zoom: 1.5,
             lens,
         };
@@ -68043,7 +68044,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         // pass translucent meshes are drawn after the opaque ones with the depth test, so a click identifies the
         // nearest surface; the arachnoid veil is left out (pickThrough) so clicks reach the cortex and vessels.
         const hidden = hiddenByClearance();
-        const visibleList = meshes.filter(m => baseVisible(m) && !hidden.has(m.id)), opaque = visibleList.filter(m => opacity(m) >= 1), depth = m => mApply(basis.M, vSub(movePoint(m, m.anchor), basis.target))[2];
+        const visibleList = meshes.filter(m => baseVisible(m, false, scope) && !hidden.has(m.id)), opaque = visibleList.filter(m => opacity(m) >= 1), depth = m => mApply(basis.M, vSub(movePoint(m, m.anchor), basis.target))[2];
         const translucent = visibleList.filter(m => opacity(m) < 1 && opacity(m) > 0 && !(picking && m.group === 'arachnoid')).map(m => [depth(m), m]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
         const list = [...opaque, ...translucent];
         gl.disable(gl.BLEND);
