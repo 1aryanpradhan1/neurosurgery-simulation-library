@@ -3,6 +3,8 @@
     const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
     const guideData = window.__GUIDE_DATA__;
     const meshes = guideData?.['mesh-data'] ?? JSON.parse($('#mesh-data').textContent);
+    meshes.push(...(window.pterionalExternalLandmarks || []));
+    delete window.pterionalExternalLandmarks;
     const manifest = guideData?.['manifest-data'] ?? JSON.parse($('#manifest-data').textContent);
     const displayConflicts = window.__GUIDE_DATA__?.['clearance-data'] ??
         JSON.parse($('#clearance-data')?.textContent || '{}');
@@ -1017,6 +1019,7 @@
             return procedure && instrumentsOn && m.instrumentStage === step.id &&
                 (wholeStep || !beforeCurrent && opening >= (m.fromProgress ?? 0) && opening <= (m.to ?? 1));
         if (!enabled[m.group] && !allEnabled[m.group]) return false;
+        if (m.externalSurface && separateLayers) return false;
         if (m.part === 'vaultOriginal') return !procedure || stateProgress('bone') === 0;
         if (m.part === 'rim' || m.part === 'boneFlap') {
             const progress = stateProgress('bone');
@@ -1604,11 +1607,11 @@ void main(){if(uStudyBurr.w>0.&&vOriginal.y>uStudyBurr.z){
  length(vec2(x-.5,z-h))<.103*clamp(tick-4.,0.,1.))discard;
 }if(uIsMarker>.5){if(uMarkReveal<=.001)discard;float t=0.;if(uMarkKind==1.)t=(atan(vOriginal.z-uMarkCenter.z,vOriginal.y-uMarkCenter.y)+3.14159265)/6.2831853;else if(uMarkKind==2.){float v=uMarkAxis==2.?vOriginal.z:uMarkAxis==0.?vOriginal.x:vOriginal.y;t=(v-uMarkRange.x)/max(.001,uMarkRange.y-uMarkRange.x);}else if(uMarkKind==3.)t=vIncT;if(t>uMarkReveal)discard;}float fisT=.5,veil=0.;if(uFisVeil>.5){float d=fissureDist(vOriginal,fisT);veil=(1.-smoothstep(.06,.22,d))*smoothstep(0.,.12,fisT)*smoothstep(1.,.88,fisT);}
 if(uPick>.5){gl_FragColor=uColor;return;}if(uLine>0.){vec3 n=normalize(vNormal),V=normalize(vEye);float nv=abs(dot(n,V));vec3 c=uColor.rgb*(.82+.18*max(0.,dot(n,normalize(vec3(-.35,.55,1.)))))+vec3(.10)*pow(nv,30.);c=mix(uColor.rgb*.45,c,smoothstep(.12,.45,nv));if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.5);gl_FragColor=vec4(c,1.);return;}
-vec3 n=normalize(vNormal),V=normalize(vEye);float nv=dot(n,V),ao=clamp(vAO,0.,1.),alpha=uColor.a,rim=pow(1.-abs(nv),2.);bool tissue=uMaterial>-.5&&uIsMarker<.5,arach=uMaterial>8.5&&uMaterial<9.5,skin=uMaterial>9.5&&uMaterial<10.5;
+vec3 n=normalize(vNormal),V=normalize(vEye);float nv=dot(n,V),ao=clamp(vAO,0.,1.),alpha=uColor.a,rim=pow(1.-abs(nv),2.);bool tissue=uMaterial>-.5&&uIsMarker<.5,arach=uMaterial>8.5&&uMaterial<9.5,slab=uMaterial>9.5&&uMaterial<10.5,skin=slab||uMaterial>12.5;
 /* skin slab faces (rest pose): outer skin srad > .45, inner (subcutaneous) < -.45, cut walls between; wall vertex
    normals are tilted +-.34 toward/away from the shell centre at load, so srad runs from the epidermis (+.34) to the
    deep subcutaneous edge (-.34) across a wall. */
-float srad=skin?dot(normalize(vObjN),normalize(vOriginal-vec3(0.,-.4,-.4))):1.;
+float srad=slab?dot(normalize(vObjN),normalize(vOriginal-vec3(0.,-.4,-.4))):1.;
 float light=.30+.55*abs(dot(n,normalize(vec3(-.5,.7,1.))))+.12*abs(dot(n,normalize(vec3(.9,-.2,.3))));vec3 c=uColor.rgb*light;
 if(tissue&&uSurgical<.5){if(skin&&srad<.45)c=uInner*light;c*=mix(1.,ao,.75);if(arach)alpha=clamp(alpha*(.55+.8*rim),0.,.85);}
 if(tissue&&uSurgical>.5){
@@ -1629,7 +1632,7 @@ if(tissue&&uSurgical>.5){
  else if(uMaterial<7.5){float m=fbm(P*5.);base*=.94+.06*m+.05*vnoise(vec3(P.x*30.,P.y*90.,P.z*30.));base=mix(base,vec3(.64,.67,.74),.22*smoothstep(.35,.75,fbm(P*2.3+3.)));shin=150.;specI=.24;wrap=.35;sss=.1;}
  else if(uMaterial<8.5){base*=.9+.12*vnoise(P*26.);shin=110.;specI=.6;wrap=.3;sss=.2;}
  else if(uMaterial<9.5){shin=130.;specI=.75;wrap=.6;}
- else if(uMaterial<10.5){
+ else if(skin){
   /* skin: mottled warm epidermis with fine pores and a faint sheen; cut edge = pink-white dermis over lobulated
      yellow subcutaneous fat with a thin bloody line at the epidermis; inner face = subcutaneous fat */
   if(srad>.45){float m=fbm(P*3.5);base*=.96+.08*m;base=mix(base,base*vec3(1.04,.93,.92),.24*smoothstep(.45,.8,fbm(P*2.3+5.)));base*=1.-.025*NOISE*smoothstep(.68,.9,vnoise(P*60.));shin=16.;specI=.09;wrap=.57;sss=.6;}
@@ -1863,12 +1866,13 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
             const flat = m.marker || m.instrument || !(m.group in materialIds), see = !picking && opacity(m) < 1;
             // The illustrative sulcal backing gets a darker, recessed cortex tone in the Surgical palette too.
             let rgb = palette === 'surgical' && !flat ? (m.surgicalTint || surgicalRgb[m.group]) : m.rgb;
-            gl.uniform1f(uniforms.InkProgress, m.group === 'skin' && !m.marker ? inkProgress : 0);
+            gl.uniform1f(uniforms.InkProgress, m.group === 'skin' && !m.externalSurface && !m.marker ? inkProgress : 0);
+            if (m.id.startsWith('EXT-brow')) rgb = m.rgb;
             if (see) {
                 gl.enable(gl.BLEND);
                 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             }
-            gl.uniform1f(uniforms.Material, flat ? -1 : materialIds[m.group]);
+            gl.uniform1f(uniforms.Material, flat ? -1 : m.externalSurface ? 13 : materialIds[m.group]);
             if (picking) {
                 const id = m.index + 1;
                 rgb = [(id & 255) / 255, ((id >> 8) & 255) / 255, ((id >> 16) & 255) / 255];

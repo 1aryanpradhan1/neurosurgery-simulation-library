@@ -7,6 +7,8 @@
         backLink.href = 'https://github.com/1aryanpradhan1/neurosurgery-simulation-library';
     }
     const meshes = guideData?.['mesh-data'] ?? JSON.parse($('#mesh-data').textContent);
+    meshes.push(...(window.pterionalExternalLandmarks || []));
+    delete window.pterionalExternalLandmarks;
     const manifest = guideData?.['manifest-data'] ?? JSON.parse($('#manifest-data').textContent);
     const papers = manifest.papers;
     const escape = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -683,14 +685,14 @@
     }
 
     function visible(m) {
-        if (!m || m.hidden || (contextSide === 'left' && meshSide(m) === 'right')) return false;
+        if (!m || m.hidden || (contextSide === 'left' && meshSide(m) === 'right' && !m.externalSurface)) return false;
         const step = steps[stage];
         if (m.marker) return procedure && !beforeCurrent && m.markerStages.includes(step.id) &&
             opening > (m.finish ? .88 : .06);
         if (m.instrument) return procedure && !beforeCurrent && instrumentsOn &&
             step.id === m.instrumentStage && opening > .08;
         const preview = step.id === 'scan' && m.preview;
-        const relevant = !m.contextOnly || step.phase === 'overview' && m.overview;
+        const relevant = m.externalSurface || !m.contextOnly || step.phase === 'overview' && m.overview;
         const inLayer = m.clip ? enabled.arteries || allEnabled.arteries :
             allEnabled[m.group] || enabled[m.group] && relevant;
         if (!inLayer) return false;
@@ -771,7 +773,7 @@
         } const top = Array.from(sum, (x, k) => cnt[k] ? x / cnt[k] : NaN), gf = new Float64Array(NA * NE).fill(Infinity), gc = new Float64Array(NA * NE).fill(Infinity);
         // support: bone (without the small internal bones) and every other skin record, every 2nd vertex
         for (const m of meshes) {
-            if (m.marker || m.instrument || m.move || m.cutEdge || !(m.group === 'bone' && !SMALL_BONE.test(m.name) || !dura && m.group === 'skin' && !m.flap)) continue;
+            if (m.marker || m.instrument || m.move || m.cutEdge || m.externalSurface || !(m.group === 'bone' && !SMALL_BONE.test(m.name) || !dura && m.group === 'skin' && !m.flap)) continue;
             ensureGeometry(m);
             const f = m.vertexData;
             for (let p = 0; p < f.length; p += dura ? 6 : 12) {
@@ -1212,7 +1214,7 @@
         updateMobileReaderHeight(); }).observe($('.layout'));
     function ensureGeometry(m) { if (m.geometryReady)
         return; const bytes = decode64(m.data), floats = new Float32Array(bytes.buffer); if (floats.length !== m.count * 6)
-        throw Error('Invalid geometry buffer ' + m.id); if (m.group === 'skin')
+        throw Error('Invalid geometry buffer ' + m.id); if (m.group === 'skin' && !m.externalSurface)
         tiltSkinWalls(floats); m.vertexData = floats; gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferSubData(gl.ARRAY_BUFFER, m.first * 24, floats); m.geometryReady = true; delete m.data; }
     // Skin slabs: cut-wall triangles (face normal across the shell radial) span the whole slab; tilt each wall vertex
     // normal by about 20 degrees outward (outer-surface vertex) or inward (inner-surface vertex), keeping its length
@@ -1359,11 +1361,11 @@ if(uFissureProgress.x+uFissureProgress.y>0.){
     if(d<width)discard;
 }
 if(uPick>.5){gl_FragColor=uColor;return;}if(uLine>0.){vec3 n=normalize(vNormal),V=normalize(vEye);float nv=abs(dot(n,V));vec3 c=uColor.rgb*(.82+.18*max(0.,dot(n,normalize(vec3(-.35,.55,1.)))))+vec3(.10)*pow(nv,30.);c=mix(uColor.rgb*.45,c,smoothstep(.12,.45,nv));if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.5);gl_FragColor=vec4(c,1.);return;}
-vec3 n=normalize(vNormal),V=normalize(vEye);float nv=dot(n,V),ao=clamp(vAO,0.,1.),alpha=uColor.a,rim=pow(1.-abs(nv),2.);bool tissue=uMaterial>-.5&&uIsMarker<.5,arach=uMaterial>8.5&&uMaterial<9.5,skin=uMaterial>9.5&&uMaterial<10.5;
+vec3 n=normalize(vNormal),V=normalize(vEye);float nv=dot(n,V),ao=clamp(vAO,0.,1.),alpha=uColor.a,rim=pow(1.-abs(nv),2.);bool tissue=uMaterial>-.5&&uIsMarker<.5,arach=uMaterial>8.5&&uMaterial<9.5,slab=uMaterial>9.5&&uMaterial<10.5,skin=slab||uMaterial>12.5;
 /* skin slab faces (rest pose): outer skin srad > .45, inner (subcutaneous) < -.45, cut walls between; wall vertex
    normals are tilted +-.34 toward/away from the shell centre at load, so srad runs from the epidermis (+.34) to the
    deep subcutaneous edge (-.34) across a wall. */
-float srad=skin?dot(normalize(vObjN),normalize(vOriginal-vec3(0.,-.4,-.4))):1.;
+float srad=slab?dot(normalize(vObjN),normalize(vOriginal-vec3(0.,-.4,-.4))):1.;
 float light=.30+.55*abs(dot(n,normalize(vec3(-.5,.7,1.))))+.12*abs(dot(n,normalize(vec3(.9,-.2,.3))));vec3 c=uColor.rgb*light;
 if(tissue&&uSurgical<.5){if(skin&&srad<.45)c=uInner*light;c*=mix(1.,ao,.75);if(arach)alpha=clamp(alpha*(.55+.8*rim),0.,.85);}
 if(tissue&&uSurgical>.5){
@@ -1384,7 +1386,7 @@ if(tissue&&uSurgical>.5){
  else if(uMaterial<7.5){float m=fbm(P*5.);base*=.94+.06*m+.05*vnoise(vec3(P.x*30.,P.y*90.,P.z*30.));base=mix(base,vec3(.64,.67,.74),.22*smoothstep(.35,.75,fbm(P*2.3+3.)));shin=150.;specI=.24;wrap=.35;sss=.1;}
  else if(uMaterial<8.5){base*=.9+.12*vnoise(P*26.);shin=110.;specI=.6;wrap=.3;sss=.2;}
  else if(uMaterial<9.5){shin=130.;specI=.75;wrap=.6;}
- else if(uMaterial<10.5){
+ else if(skin){
   /* skin: mottled warm epidermis with fine pores and a faint sheen; cut edge = pink-white dermis over lobulated
      yellow subcutaneous fat with a thin bloody line at the epidermis; inner face = subcutaneous fat */
   if(srad>.45){float m=fbm(P*3.5);base*=.96+.08*m;base=mix(base,base*vec3(1.04,.93,.92),.24*smoothstep(.45,.8,fbm(P*2.3+5.)));base*=1.-.025*NOISE*smoothstep(.68,.9,vnoise(P*60.));shin=16.;specI=.09;wrap=.57;sss=.6;}
@@ -1609,12 +1611,13 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
             ensureGeometry(m);
             const flat = m.marker || m.instrument || !(m.group in materialIds), see = !picking && opacity(m) < 1;
             let rgb = palette === 'surgical' && !flat ? surgicalRgb[m.id === 'sac' ? 'clot' : m.group] : m.rgb;
-            gl.uniform1f(uniforms.InkProgress, m.group === 'skin' && meshSide(m) === 'left' ? inkProgress : 0);
+            gl.uniform1f(uniforms.InkProgress, m.group === 'skin' && !m.externalSurface && meshSide(m) === 'left' ? inkProgress : 0);
+            if (m.id.startsWith('EXT-brow')) rgb = m.rgb;
             if (see) {
                 gl.enable(gl.BLEND);
                 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             }
-            gl.uniform1f(uniforms.Material, flat ? -1 : materialIds[m.group]);
+            gl.uniform1f(uniforms.Material, flat ? -1 : m.externalSurface ? 13 : materialIds[m.group]);
             if (picking) {
                 const id = m.index + 1;
                 rgb = [(id & 255) / 255, ((id >> 8) & 255) / 255, ((id >> 16) & 255) / 255];
