@@ -2945,6 +2945,11 @@ header {
 
 
 #labelLines[hidden], #stepLabels[hidden] { display: none; }
+body:has(input[name="residentLevel"][value="senior"]:checked) [data-resident="junior"],
+body:not(:has(input[name="residentLevel"][value="senior"]:checked)) [data-resident="senior"] { display:none }
+.config-heading:has(.resident-level) { flex-wrap:wrap; }
+.resident-level { margin-top:4px; }
+.resident-step { font-weight:600; }
 .study-notes { margin-top: .5rem; color: inherit; }
 .study-notes summary { cursor: pointer; font-size: .8rem; font-weight: 450; padding: .25rem 0; }
 .study-notes p { margin: .35rem 0; }
@@ -2972,7 +2977,8 @@ header {
 <body>
 <div id="anatomy-loading" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:9999;display:grid;place-content:center;gap:12px;background:#101b20;color:#e5efdf;font:16px Calibri, Carlito, Arial, sans-serif;text-align:center;padding:30px"><strong style="font-size:24px">Pterional Craniotomy</strong><span id="anatomy-loading-message">Loading Anatomy…</span></div><noscript>This interactive guide requires JavaScript.</noscript>
 <header><div class="case-header-heading"><a class="case-back" href="procedures.html" data-case-back>← Back</a><h1>Pterional Craniotomy</h1></div><div class="headeractions"><button class="pill" id="exportPlan">Export guide</button><button class="pill" id="creditsOpen">About</button></div></header>
-<section class="config" aria-label="Choose the Surgical Approach"><div class="config-heading"><strong>Choose the Surgical Approach</strong><span>Select one option in each group</span></div>
+<section class="config" aria-label="Choose the Surgical Approach"><div class="config-heading"><strong>Choose the Surgical Approach</strong><fieldset class="resident-level"><legend>Resident Level</legend><div class="choices"><label><input name="residentLevel" type="radio" value="junior" checked><span>Junior Resident</span></label><label><input name="residentLevel" type="radio" value="senior"><span>Senior Resident</span></label></div></fieldset></div>
+
 <fieldset><legend>Clinoidectomy Approach</legend><div class="choices"><label><input name="clinoid" type="radio" value="none" checked><span>No</span></label><label><input name="clinoid" type="radio" value="extra"><span>Extradural</span></label><label><input name="clinoid" type="radio" value="intra"><span>Intradural</span></label></div></fieldset>
 <fieldset><legend>Temporalis Dissection</legend><div class="choices"><label><input name="muscle" type="radio" value="subfascial" checked><span>Subfascial</span></label><label><input name="muscle" type="radio" value="split"><span>Muscle-splitting</span></label></div></fieldset>
 <fieldset><legend>Open the Sylvian Fissure?</legend><div class="choices"><label><input name="fissure" type="radio" value="yes" checked><span>Yes</span></label><label><input name="fissure" type="radio" value="no"><span>No</span></label></div></fieldset>
@@ -2982,7 +2988,19 @@ header {
 <div id="gesturehint" class="hint">Drag: orbit 360° on both axes · Alt/Option-drag: roll camera · Wheel: zoom · Shift-drag: pan</div><div id="orientGizmo" aria-hidden="true"><svg viewBox="-50 -50 100 100"></svg><small></small></div><div class="viewtools" id="viewTools"><button data-view="anterior">Anterior</button><button data-view="right">Right</button><button data-view="left">Left</button><button data-view="posterior">Posterior</button><button data-view="superior">Top</button><button id="resetView">Reset View</button></div><div class="mobile-model-dock" id="mobileModelDock"></div><svg id="labelLines" aria-hidden="true"></svg><div id="stepLabels"></div><div id="popup" hidden></div><div id="noGL" hidden></div><div id="loading" class="loadstatus">Loading embedded anatomy…</div></div>
 <div class="statusbar" id="stepStatus"><div><span id="stagecaption"></span><small id="visualnote">Reference anatomy with illustrative procedure states.</small></div><div class="pager" id="stepPager"><button id="previous" aria-label="Previous step">←</button><span id="stagecount"></span><button id="next" aria-label="Next step">→</button></div></div><button type="button" class="reading-toggle" aria-pressed="false" aria-label="Expand reading panel" title="Expand reading panel">‹</button></section>
 <aside class="side"><div class="tabs" id="guideTabs" role="tablist" aria-label="Study content"><button role="tab" id="tab-overview" aria-selected="false" aria-controls="overview-panel">Overview</button><button role="tab" id="tab-steps" aria-selected="true" aria-controls="steps-panel">Guide</button><button role="tab" id="tab-indications" aria-selected="false" aria-controls="indications-panel">Indications</button><button role="tab" id="tab-papers" aria-selected="false" aria-controls="papers-panel">Papers <span id="paperCount">7</span></button></div><div class="mobile-step-nav" id="mobileStepNav"></div>
-<div class="scroll" id="overview-panel" role="tabpanel" aria-labelledby="tab-overview" hidden><article class="clinical-overview"><h2>Pterional Craniotomy</h2><p>The pterional, or frontotemporal, craniotomy provides a route to the Sylvian fissure and selected targets of the anterior and middle skull base. Its bony opening is centered near the junction of the frontal, temporal, parietal and sphenoid bones. The exposure is tailored to the intended intradural treatment and the relationship of the lesion to surrounding neurovascular structures. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><h3>Indications and approach selection</h3><p>The Sylvian fissure separates the frontal and temporal lobes and provides an anatomical corridor toward the basal cisterns and major vessels. A pterional exposure can provide access to selected anterior circulation aneurysms and skull-base lesions, among other targets. The exact route depends on where the lesion lies and which vessels, nerves and brain structures surround it. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><p>The exposure is adapted to the operative objective rather than applied as an identical sequence in every case. A lesion's position can favor a more subfrontal, transsylvian or pretemporal perspective. The bone opening, degree of fissure dissection and optional extensions are chosen for that goal. A smaller opening may be sufficient for one target but limit the working angle needed for another. Alternative approaches should be compared on their merits for the individual lesion.</p><h3>Surgical anatomy</h3><p>The superficial exposure includes the scalp and temporalis region. The superficial tissues contain vessels and facial nerve branches relevant to the incision and dissection. The temporalis muscle covers part of the skull and is important for chewing and appearance. Deep to it are the bony landmarks of the pterion; deeper still are dura, the Sylvian fissure and the intracranial vessels. These layers define the progression from the surface to the intradural working corridor. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6759424/" target="_blank" rel="noopener noreferrer">[2]</a></p><p>The sphenoid ridge is a bony boundary near the skull base. Its relationship to the intended working angle helps explain why some procedures include additional bone work. The amount required depends on the target. Similarly, opening the Sylvian fissure or removing the anterior clinoid is not automatically part of every pterional craniotomy; each has its own anatomical purpose and risks. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><h3>Preoperative planning</h3><p>Planning begins with the lesion’s location and its relationship to structures that must be reached or preserved. MRI can show soft tissue and brain relationships; CT helps define bone and sinus anatomy. When vascular anatomy is central to the lesion or corridor, the team reviews appropriate vascular imaging. The selected side and head position follow from the intended line of sight, the patient's anatomy and the planned operation.</p><p>Baseline neurologic function, prior operations and medical conditions provide context for both planning and postoperative comparison. On imaging, the frontal sinus, orbital region and bony landmarks matter because their location can affect the planned opening. The simulator shows representative anatomy rather than the exact relationships in any one patient.</p><h3>Complications and postoperative considerations</h3><p>At the surface, injury to the frontotemporal branch of the facial nerve can affect forehead movement. Temporalis injury or atrophy can affect chewing or appearance; sensory nerve injury can cause altered sensation. Preservation of the relevant fascial planes and blood supply is therefore important to functional and cosmetic outcomes. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><p>Deeper risks—including hemorrhage, infection, cerebrospinal fluid leak and neurologic or vascular injury—depend on the target and intradural work. After surgery, examination and imaging address the specific lesion and operation, alongside wound healing and temporal muscle function. A good exposure is only one contributor to outcome: an aneurysm and a tumor cannot be expected to share a single recovery rate simply because both were approached through a pterional opening.</p><h3>Anatomical relationships in the simulation</h3><p>The simulation follows the marked scalp incision through temporalis exposure and bone removal to the dura. The pterion and sphenoid ridge provide orientation at the surface, while the lesion and its relationships determine the deeper working corridor.</p><p>Fissure dissection and optional extensions are shown in relation to the additional view they may provide and the structures encountered at that depth. The model uses illustrative movement and anatomy; it does not reproduce the tissue properties, vascular variation or lesion-specific constraints of an individual patient. Use the cited sources to deepen the anatomy and interpret each optional step in context.</p><h3>Sources</h3><p class="overview-source">[1] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">Pterional Approach: anatomy, variations and complications.</a> [2] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6759424/" target="_blank" rel="noopener noreferrer">Rodriguez Rubio et al. Immersive Surgical Anatomy of the Pterional Approach.</a></p></article></div>
+<div class="scroll" id="overview-panel" role="tabpanel" aria-labelledby="tab-overview" hidden><article class="clinical-overview"><h2>Pterional Craniotomy</h2>
+<section data-resident="junior">
+  <h3>Junior Resident Objectives</h3>
+  <p>Use the model to trace the approach from scalp to skull base. Identify the pterion and sphenoid ridge on bone imaging, then locate the Sylvian fissure, optic nerve, and internal carotid artery. For each phase, name the tissue plane, explain the purpose of the exposure, and identify a structure to protect.</p>
+  <p>Review the baseline neurologic examination and practice recognizing postoperative changes that need escalation, including new weakness, reduced alertness, and visual change.</p>
+</section>
+<section data-resident="senior">
+  <h3>Senior Resident and Board Review Objectives</h3>
+  <p>Given a lesion and imaging, justify the side, operative corridor, and degree of basal exposure. Compare Sylvian fissure opening with a limited subfrontal route, and explain when retaining the clinoid or choosing an extradural or intradural route changes the balance of exposure and risk.</p>
+  <p>For case-based review, state your imaging and examination priorities, structures at risk, and what would make you change the plan. Rehearse the differential for postoperative visual loss, focal deficit, hemorrhage, and CSF leak, and identify the findings that warrant urgent escalation.</p>
+  <p>The board-review prompts are original exercises.</p>
+</section>
+<p>Training references: <a href="https://www.acgme.org/globalassets/pdfs/milestones/neurologicalsurgerymilestones.pdf">ACGME Neurological Surgery Milestones</a> · <a href="https://www.cns.org/education/sans-lifelong-learning/">CNS SANS</a> · <a href="https://www.abns.org/home/displayPDF/Rules-and-Regulations-Code.pdf/">ABNS examination scope</a></p><p>The pterional, or frontotemporal, craniotomy provides a route to the Sylvian fissure and selected targets of the anterior and middle skull base. Its bony opening is centered near the junction of the frontal, temporal, parietal and sphenoid bones. The exposure is tailored to the intended intradural treatment and the relationship of the lesion to surrounding neurovascular structures. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><h3>Indications and approach selection</h3><p>The Sylvian fissure separates the frontal and temporal lobes and provides an anatomical corridor toward the basal cisterns and major vessels. A pterional exposure can provide access to selected anterior circulation aneurysms and skull-base lesions, among other targets. The exact route depends on where the lesion lies and which vessels, nerves and brain structures surround it. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><p>The exposure is adapted to the operative objective rather than applied as an identical sequence in every case. A lesion's position can favor a more subfrontal, transsylvian or pretemporal perspective. The bone opening, degree of fissure dissection and optional extensions are chosen for that goal. A smaller opening may be sufficient for one target but limit the working angle needed for another. Alternative approaches should be compared on their merits for the individual lesion.</p><h3>Surgical anatomy</h3><p>The superficial exposure includes the scalp and temporalis region. The superficial tissues contain vessels and facial nerve branches relevant to the incision and dissection. The temporalis muscle covers part of the skull and is important for chewing and appearance. Deep to it are the bony landmarks of the pterion; deeper still are dura, the Sylvian fissure and the intracranial vessels. These layers define the progression from the surface to the intradural working corridor. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6759424/" target="_blank" rel="noopener noreferrer">[2]</a></p><p>The sphenoid ridge is a bony boundary near the skull base. Its relationship to the intended working angle helps explain why some procedures include additional bone work. The amount required depends on the target. Similarly, opening the Sylvian fissure or removing the anterior clinoid is not automatically part of every pterional craniotomy; each has its own anatomical purpose and risks. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><h3>Preoperative planning</h3><p>Planning begins with the lesion’s location and its relationship to structures that must be reached or preserved. MRI can show soft tissue and brain relationships; CT helps define bone and sinus anatomy. When vascular anatomy is central to the lesion or corridor, the team reviews appropriate vascular imaging. The selected side and head position follow from the intended line of sight, the patient's anatomy and the planned operation.</p><p>Baseline neurologic function, prior operations and medical conditions provide context for both planning and postoperative comparison. On imaging, the frontal sinus, orbital region and bony landmarks matter because their location can affect the planned opening. The simulator shows representative anatomy rather than the exact relationships in any one patient.</p><h3>Complications and postoperative considerations</h3><p>At the surface, injury to the frontotemporal branch of the facial nerve can affect forehead movement. Temporalis injury or atrophy can affect chewing or appearance; sensory nerve injury can cause altered sensation. Preservation of the relevant fascial planes and blood supply is therefore important to functional and cosmetic outcomes. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">[1]</a></p><p>Deeper risks—including hemorrhage, infection, cerebrospinal fluid leak and neurologic or vascular injury—depend on the target and intradural work. After surgery, examination and imaging address the specific lesion and operation, alongside wound healing and temporal muscle function. A good exposure is only one contributor to outcome: an aneurysm and a tumor cannot be expected to share a single recovery rate simply because both were approached through a pterional opening.</p><h3>Anatomical relationships in the simulation</h3><p>The simulation follows the marked scalp incision through temporalis exposure and bone removal to the dura. The pterion and sphenoid ridge provide orientation at the surface, while the lesion and its relationships determine the deeper working corridor.</p><p>Fissure dissection and optional extensions are shown in relation to the additional view they may provide and the structures encountered at that depth. The model uses illustrative movement and anatomy; it does not reproduce the tissue properties, vascular variation or lesion-specific constraints of an individual patient. Use the cited sources to deepen the anatomy and interpret each optional step in context.</p><h3>Sources</h3><p class="overview-source">[1] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9179065/" target="_blank" rel="noopener noreferrer">Pterional Approach: anatomy, variations and complications.</a> [2] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6759424/" target="_blank" rel="noopener noreferrer">Rodriguez Rubio et al. Immersive Surgical Anatomy of the Pterional Approach.</a></p></article></div>
 <div class="scroll" id="steps-panel" role="tabpanel" aria-labelledby="tab-steps"><div id="steps"></div></div>
 <div class="scroll" id="indications-panel" role="tabpanel" aria-labelledby="tab-indications" hidden><div id="indications"></div></div>
 <div class="scroll" id="papers-panel" role="tabpanel" aria-labelledby="tab-papers" hidden><div id="conflict" class="warning" hidden></div><div class="article-tools"><input id="paperSearch" type="search" placeholder="Search papers, techniques, authors…" aria-label="Search papers"></div><div class="sectionintro"><p>References for the approach and all selectable techniques.</p><button class="smallbutton" id="pdfRequests">Download source list</button></div><div id="papers"></div><div id="paperEmpty" class="empty" hidden>No papers match this search.</div></div>
@@ -66627,6 +66645,158 @@ header {
             `<li>${sourceLink(paper.url, paper.citation || paper.title)}</li>`).join('')}</ul>` : '';
     }
 
+    // Teaching notes keyed to the existing procedure steps and approach variants.
+    const residentStudy = {
+        orient: [
+            'Find the pterion and sphenoid ridge. Trace the route from the skull surface to the Sylvian fissure.',
+            'Use imaging to justify side and corridor. Compare the line of sight to the lesion with access to proximal vascular control and the amount of frontal or temporal retraction required.',
+        ],
+        position: [
+            'Explain how head rotation and extension change the angle of approach and how gravity can assist exposure.',
+            'Discuss how excessive rotation or flexion can impair jugular drainage. If the brain is unexpectedly tense, include position and venous outflow alongside anesthetic and intracranial causes.',
+        ],
+        prepare: [
+            'Identify the zygomatic root, hairline, and expected course of the superficial temporal artery before assessing the incision.',
+            'Explain when preservation or preoperative mapping of the superficial temporal artery matters, including when it may be needed for bypass.',
+        ],
+        sterile: [
+            'Identify the landmarks that should remain recognizable after preparation and draping.',
+            'Reconcile the planned incision, imaging laterality, and exposed landmarks at the team pause. Discuss how you would handle a discrepancy before incision.',
+        ],
+        incision: [
+            'Follow the skin incision and distinguish scalp vessels from the deeper facial nerve branches.',
+            'Compare scalp bleeding with a threatened flap blood supply. Explain how extension or revision of the incision could alter perfusion or injure a vessel reserved for bypass.',
+        ],
+        'scalp-flap': [
+            'Identify which tissues move with the scalp flap in the selected approach.',
+            'Explain where the frontal branch of the facial nerve is vulnerable. Distinguish postoperative brow weakness from temporal hollowing and relate each to a different tissue layer.',
+        ],
+        muscle: [
+            'Identify temporalis fascia, muscle, and the tissue plane used in this approach.',
+            'Compare exposure with preservation of temporalis innervation and blood supply. Discuss mechanisms of postoperative mastication pain, muscle atrophy, and temporal hollowing.',
+        ],
+        'retract-flap': [
+            'Locate the flap edge and identify which bony landmarks become visible after reflection.',
+            'Review the tradeoff between traction for exposure and pressure on the flap or its pedicle. Explain what a change in flap color or tension would prompt you to reassess.',
+        ],
+        periosteum: [
+            'Distinguish pericranium on bone from temporalis fascia and dura.',
+            'Identify when a vascularized pericranial flap could be useful for skull-base reconstruction, particularly if the frontal sinus may be encountered.',
+        ],
+        'burr-holes': [
+            'Relate the planned burr holes to the orbit, sphenoid ridge, and underlying dura.',
+            'Use bone-window CT to review frontal sinus extent. Explain the consequences of an orbital or sinus breach and how unexpected dural adherence changes the plan.',
+        ],
+        'bone-edges': [
+            'Trace the bone flap perimeter and distinguish the intended cut from the later basal drilling.',
+            'Explain the competing risks of a high basal edge, which may limit the view, and drilling too close to the orbit or sinus. Identify where the dura or venous structures may be adherent.',
+        ],
+        'dural-separation': [
+            'Identify the epidural plane between the inner table and dura.',
+            'Anticipate dural tears and bleeding from adherent dura or meningeal vessels. Explain why resistance to separation changes the assessment before lifting the flap.',
+        ],
+        bone: [
+            'Identify the frontal and temporal parts of the opening and the dura beneath them.',
+            'Describe what you would inspect if the flap resists lifting. Consider residual bony attachment, dural tethering, and the risk of avulsion bleeding.',
+        ],
+        'epidural-hemostasis': [
+            'Distinguish bleeding from bone edges, epidural tissues, and the dural surface.',
+            'Explain how persistent epidural bleeding can lead to postoperative hematoma. New depressed consciousness or focal deficit warrants urgent evaluation for hemorrhage and other causes.',
+        ],
+        'sphenoid-ridge': [
+            'Identify the lateral sphenoid ridge and explain why flattening it improves the basal line of sight.',
+            'Explain how a lower bony corridor can reduce retraction. Identify the thin orbital roof and the more medial optic and superior orbital fissure anatomy that constrain drilling.',
+        ],
+        extension: [
+            'Identify the orbital roof and temporal base and explain when more basal exposure might help.',
+            'Justify an extension by the specific angle or structure still inaccessible. Balance that gain against orbital entry, sinus violation, and risk to nearby neurovascular structures.',
+        ],
+        'clinoid:extra': [
+            'Identify the anterior clinoid, optic canal roof, optic strut, and superior orbital fissure. Explain where the dura lies in the extradural variant.',
+            'Review bone-window CT for clinoid or optic-strut pneumatization and bony variants near the carotid. Discuss direct or thermal optic injury, cavernous bleeding, oculomotor palsy, carotid injury, and CSF rhinorrhea if a sinus communication persists.',
+        ],
+        'clinoid:intra': [
+            'Locate the optic nerve and internal carotid artery after dural opening. Identify the clinoid beside the optic canal.',
+            'Explain how direct inspection of optic nerve, carotid, and lesion relationships informs the extent of bone removal. Consider optic injury from heat, mechanical trauma, or ischemia, aneurysm rupture when the dome abuts bone, and CSF rhinorrhea with a pneumatized clinoid or strut.',
+        ],
+        'tack-up': [
+            'Explain how dural hitch sutures reduce the space between dura and bone.',
+            'Relate a persistent epidural space or residual bleeding to hematoma risk. Discuss where a dural attachment, vessel, or fragile edge limits placement.',
+        ],
+        dura: [
+            'Identify the dural edge and underlying cortex before comparing the selected opening patterns.',
+            'Explain how the dural opening balances exposure and protection of superficial veins. Compare the consequences of cortical injury, venous injury, and an opening that restricts access.',
+        ],
+        fissure: [
+            'Identify the Sylvian veins, frontal and temporal opercula, and the middle cerebral artery in the deeper corridor.',
+            'Localize potential deficits after M2 branch injury versus injury to a deep perforator. Discuss how venous anatomy changes the split and how venous congestion can present postoperatively.',
+        ],
+        cistern: [
+            'Identify the optic nerve and internal carotid artery as landmarks for the limited subfrontal route.',
+            'Explain when the limited route gives inadequate visualization of a lesion or its vessels. Discuss whether a wider exposure would reduce traction or improve proximal control.',
+        ],
+        retain: [
+            'Identify the intact anterior clinoid and the structures visible around it.',
+            'Explain when the added exposure of clinoidectomy justifies its optic, vascular, and sinus risks. Name the specific structure or angle that would change your decision.',
+        ],
+        'intradural-work': [
+            'Locate the internal carotid and middle cerebral arteries and distinguish major branches from perforators.',
+            'Describe the plan for proximal control and the structures that must remain patent. Explain how the differential for a new deficit depends on the territory and operative events.',
+        ],
+        'dura-close': [
+            'Identify the dural margins and explain how closure restores the CSF barrier.',
+            'Distinguish a wound pseudomeningocele from CSF rhinorrhea after skull-base drilling. Explain why a dural repair and a sinus communication require separate assessment.',
+        ],
+        'bone-replace': [
+            'Identify the bone flap edges and explain why the reconstructed contour matters.',
+            'Explain how fixation, residual epidural bleeding, or unaddressed sinus entry can affect postoperative contour, hematoma risk, or delayed wound complications.',
+        ],
+        'muscle-close': [
+            'Identify the temporalis attachment and explain the goal of reapproximation.',
+            'Differentiate temporal hollowing from frontalis weakness. Discuss how muscle devascularization, denervation, or inferior displacement can change the postoperative contour.',
+        ],
+        drain: [
+            'Identify the subgaleal plane and explain why a drain is considered selectively.',
+            'Compare a superficial fluid collection with concern for ongoing bleeding or CSF. Discuss how the suspected source changes the interpretation of postoperative drain output.',
+        ],
+        'galea-close': [
+            'Distinguish galeal closure from skin closure and explain how the deeper layer supports the wound.',
+            'Explain how dead space, tension, and poor perfusion can contribute to fluid collection or wound breakdown.',
+        ],
+        'skin-close': [
+            'Assess skin-edge apposition and identify which superficial tissues should be inspected after closure.',
+            'Distinguish early wound hematoma, infection, and CSF drainage. Explain what features of the wound and neurologic exam would prompt urgent reassessment.',
+        ],
+    };
+    const residentReview = {
+        'clinoid:extra': ['What finding on bone-window CT changes your discussion of postoperative clear rhinorrhea?',
+            'Pneumatization of the anterior clinoid or optic strut can connect the operative site to a paranasal sinus. A persistent communication can provide a route for CSF rhinorrhea.'],
+        'clinoid:intra': ['Vision declines after anterior clinoidectomy. Which mechanisms should you consider?',
+            'Consider direct or thermal optic nerve injury, ischemia involving the ophthalmic circulation, and compression. Compare the postoperative examination with baseline and treat new visual loss as urgent.'],
+        fissure: ['What complication can follow injury to a major Sylvian draining vein?',
+            'Venous congestion can lead to edema or hemorrhagic venous infarction. Relate the imaging distribution to the venous anatomy and operative events.'],
+    };
+
+    function residentStepKey(step) {
+        return step.id === 'clinoid' ? 'clinoid:' + config.clinoid : step.id;
+    }
+
+    function residentStepSummary(step) {
+        const notes = residentStudy[residentStepKey(step)];
+        if (!notes) return '';
+        return `<p class="resident-step" data-resident="junior">Learning focus · ${escape(notes[0])}</p>
+            <p class="resident-step" data-resident="senior">Clinical judgment · ${escape(notes[1])}</p>`;
+    }
+
+    function residentStepReview(step) {
+        const key = residentStepKey(step);
+        const review = residentReview[key];
+        const clinoidSource = step.id === 'clinoid'
+            ? `<p>${sourceLink('https://pmc.ncbi.nlm.nih.gov/articles/PMC3205487/', 'Anterior clinoidectomy and complication avoidance')}</p>` : '';
+        if (!review && !clinoidSource) return '';
+        return `<div data-resident="senior">${review ? `<details><summary>Board review · ${escape(review[0])}</summary><p>${escape(review[1])}</p></details>` : ''}${clinoidSource}</div>`;
+    }
+
     function studyNotes(step, index) {
         const entry = studyEntry(step);
         if (!entry) return '';
@@ -66638,6 +66808,7 @@ header {
         if (reading) links.push(sourceLink(reading.url, 'Atlas'));
         return `<details class="study-notes"><summary>Details</summary>
             <p>${escape(entry.detail)}${links.length ? ` <span class="study-reference-links">${links.join(' ')}</span>` : ''}</p>
+            ${residentStepReview(step)}
             ${citations.length || reading ? `<h4>Sources for this step</h4><ul class="study-citations">${citations.map(paper => `<li>${sourceLink(paper.url, paper.citation || paper.title)}</li>`).join('')}${reading ? `<li>${sourceLink(reading.url, reading.label || 'Atlas')}</li>` : ''}</ul>` : ''}</details>`;
     }
 
@@ -66736,7 +66907,7 @@ header {
         add('skin-close', 'Close the skin', 'Align and close the skin edges with the selected sutures or staples. This restores the external barrier and completes the wound closure with attention to scalp perfusion and contour.', { sources: ['general', 'radiopaedia'], groups: soft, contextGroups: ['skin'], labels: ['Skin closure — schematic'], change: { skin: false }, sections: { general: 'Closure' }, note: 'The illustrative skin edges close; sutures or staples are marked schematically, not modeled.' });
         return list;
     }
-    function rebuild({ reset = false } = {}) { animationToken++; const old = steps[stage]?.id; steps = buildSteps(); $('#steps').replaceChildren(); steps.forEach((s, i) => { const card = document.createElement('article'); card.className = 'step'; card.tabIndex = 0; card.innerHTML = `<div class="step-heading"><span class="step-number">${String(i + 1).padStart(2, '0')}</span><div class="step-heading-text"><h2>${escape(titleCase(s.title))}</h2></div></div><p>${escape(s.body)}</p>${studyNotes(s, i)}`; card.onclick = event => { if (!event.target.closest('details, a, button')) activate(i); }; card.onkeydown = e => { if (e.target === card && ['Enter', ' '].includes(e.key)) {
+    function rebuild({ reset = false } = {}) { animationToken++; const old = steps[stage]?.id; steps = buildSteps(); $('#steps').replaceChildren(); steps.forEach((s, i) => { const card = document.createElement('article'); card.className = 'step'; card.tabIndex = 0; card.innerHTML = `<div class="step-heading"><span class="step-number">${String(i + 1).padStart(2, '0')}</span><div class="step-heading-text"><h2>${escape(titleCase(s.title))}</h2></div></div><p>${escape(s.body)}</p>${residentStepSummary(s)}${studyNotes(s, i)}`; card.onclick = event => { if (!event.target.closest('details, a, button')) activate(i); }; card.onkeydown = e => { if (e.target === card && ['Enter', ' '].includes(e.key)) {
         e.preventDefault();
         activate(i);
     } }; $('#steps').append(card); }); $('#conflict').hidden = !(config.clinoid === 'intra' && config.fissure === 'no'); $('#conflict').textContent = 'Evidence conflict: this intradural clinoidectomy source describes wide Sylvian splitting. This selectable combination is shown for comparison, but is not validated by the cited sequence.'; renderPapers(); renderIndications(); activate(reset ? 0 : Math.max(0, steps.findIndex(s => s.id === old))); $('#planLive').textContent = steps.length + ' guide steps. Configuration updated.'; }
@@ -66746,7 +66917,7 @@ header {
     // (regenerate with JSON.stringify(guideQA.variantSnapshot()) in the browser console; the build keeps the field).
     const VARIANT_KEYS = ['id', 'title', 'body', 'note', 'sources', 'groups', 'labels', 'state', 'beforeState', 'change', 'changes', 'stagger', 'visualAction', 'markings', 'isolateBone', 'contextGroups', 'contextLayers', 'view', 'evidence', 'figure', 'page'];
     function variantSnapshot() { const keep = { ...config }, at = stage, out = configs.map((c, i) => { choose(c); return { number: i + 1, config: { ...c }, steps: steps.map(s => Object.fromEntries(VARIANT_KEYS.map(k => [k, s[k] ?? null]))), evidence_conflict: c.clinoid === 'intra' && c.fissure === 'no' }; }); choose(keep); activate(at); return out; }
-    $$('.config input').forEach(i => i.onchange = e => { config[e.target.name] = e.target.value; rebuild(); });
+    $$('.config input:not([name=residentLevel])').forEach(i => i.onchange = e => { config[e.target.name] = e.target.value; rebuild(); });
     function syncControls() { $$('[data-layer]').forEach(e => e.checked = enabled[e.dataset.layer]); $$('[data-swatch]').forEach(e => e.style.background = palettes[palette][e.dataset.swatch]); if ($('#palette'))
         $('#palette').value = palette; $$('[data-all-layer]').forEach(e => e.checked = allEnabled[e.dataset.allLayer]); $('#side').value = contextSide; $('#procedure').checked = procedure; $('#prelabels').checked = prelabelsOn; $('#instruments').checked = instrumentsOn; }
     const persistentLayers = new Set(['brain', 'arteries', 'veins', 'nerves', 'arachnoid']);
